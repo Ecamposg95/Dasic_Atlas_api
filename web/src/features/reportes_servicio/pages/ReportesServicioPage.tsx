@@ -113,9 +113,9 @@ function ConversionSection({ dias }: { dias: number }) {
             key={k.label}
             className="bg-card border border-border rounded-xl p-4"
           >
-            <p className="text-xs text-slate-600 dark:text-slate-500 mb-1">{k.label}</p>
+            <p className="text-xs text-muted-foreground mb-1">{k.label}</p>
             <p className="text-2xl font-bold text-accent-glow">{k.value}</p>
-            <p className="text-xs text-slate-600 dark:text-slate-500 mt-1">{k.sub}</p>
+            <p className="text-xs text-muted-foreground mt-1">{k.sub}</p>
           </div>
         ))}
       </div>
@@ -149,7 +149,7 @@ function TopServiciosSection({ dias }: { dias: number }) {
   return (
     <Section title="Top servicios">
       {data && (
-        <p className="text-xs text-slate-600 dark:text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Total: {data.total_lineas_servicio} líneas ·{' '}
           ${fmt(data.monto_total_servicios_mxn)} MXN
         </p>
@@ -177,7 +177,7 @@ function TopServiciosSection({ dias }: { dias: number }) {
           ) : (
             items.map((row, idx) => (
               <DataTableRow key={`${row.servicio_id ?? 'libre'}-${idx}`}>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-500 text-xs">{idx + 1}</td>
+                <td className="px-4 py-3 text-muted-foreground text-xs">{idx + 1}</td>
                 <td className="px-4 py-3 text-foreground">{row.nombre}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-foreground">
                   {row.cantidad_lineas}
@@ -218,7 +218,7 @@ function FantasmasSection() {
   return (
     <Section title="Fantasmas por proveedor">
       {data && (
-        <p className="text-xs text-slate-600 dark:text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Total pendientes: {data.total_pendientes}
         </p>
       )}
@@ -238,7 +238,7 @@ function FantasmasSection() {
           </DataTableBody>
         </DataTable>
       ) : grupos.length === 0 ? (
-        <p className="text-sm text-slate-600 dark:text-slate-500 italic">
+        <p className="text-sm text-muted-foreground italic">
           Sin fantasmas pendientes
         </p>
       ) : (
@@ -253,7 +253,7 @@ function FantasmasSection() {
                   {grupo.proveedor_nombre}
                 </span>
                 <Badge variant="amber">{grupo.cantidad} pendientes</Badge>
-                <span className="text-xs text-slate-600 dark:text-slate-500">
+                <span className="text-xs text-muted-foreground">
                   {grupo.veces_solicitado_total} solicitudes totales
                 </span>
               </div>
@@ -307,7 +307,7 @@ function VencimientosSection({ dias }: { dias: number }) {
   return (
     <Section title="Vencimientos próximos">
       {data && (
-        <p className="text-xs text-slate-600 dark:text-slate-500">
+        <p className="text-xs text-muted-foreground">
           {data.total_cotizaciones} cotizaciones · $
           {fmt(data.monto_total_mxn)} MXN en riesgo
         </p>
@@ -369,7 +369,7 @@ function OrdenesPendientesSection() {
   return (
     <Section title="Órdenes pendientes de entrega">
       {data && (
-        <p className="text-xs text-slate-600 dark:text-slate-500">
+        <p className="text-xs text-muted-foreground">
           {data.total} órdenes · ${fmt(data.monto_total_mxn)} MXN
         </p>
       )}
@@ -445,7 +445,7 @@ export function ReportesServicioPage({ embedded = false }: { embedded?: boolean 
           className={`px-3 py-1.5 rounded-lg text-sm transition ${
             dias === r.value
               ? 'bg-accent-glow/20 text-accent-glow font-semibold border border-accent-glow/40'
-              : 'bg-surface-2 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
+              : 'bg-surface-2 text-muted-foreground hover:bg-border'
           }`}
         >
           {r.label}

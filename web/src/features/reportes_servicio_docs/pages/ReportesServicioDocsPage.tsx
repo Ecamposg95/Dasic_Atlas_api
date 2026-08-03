@@ -136,17 +136,17 @@ function ReporteRow({ item, onRecepcion }: RowProps) {
             {item.orden_venta_folio}
           </a>
         ) : (
-          <span className="text-slate-500 italic text-xs">—</span>
+          <span className="text-muted-foreground/70 italic text-xs">—</span>
         )}
       </td>
       <td className="px-4 py-3 text-foreground text-sm">
-        {item.cliente_nombre ?? <span className="text-slate-500 italic">—</span>}
+        {item.cliente_nombre ?? <span className="text-muted-foreground/70 italic">—</span>}
       </td>
       <td className="px-4 py-3 text-muted-foreground text-xs">
         {fmtFecha(item.fecha_reporte)}
       </td>
       <td className="px-4 py-3 text-foreground text-sm">
-        {item.tecnico_nombre ?? <span className="text-slate-500 italic">—</span>}
+        {item.tecnico_nombre ?? <span className="text-muted-foreground/70 italic">—</span>}
       </td>
       <td className="px-4 py-3">
         <StatusBadge
@@ -216,7 +216,7 @@ export function ReportesServicioDocsPage() {
           <ClipboardCheck className="h-6 w-6 text-accent-glow" />
           <h1 className="text-2xl font-semibold">Reportes de servicio</h1>
           {!isLoading && (
-            <span className="text-slate-500 text-sm">
+            <span className="text-muted-foreground text-sm">
               ({total} {total === 1 ? 'reporte' : 'reportes'})
             </span>
           )}
@@ -253,7 +253,7 @@ export function ReportesServicioDocsPage() {
             Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
           ) : items.length === 0 ? (
             <DataTableEmpty colSpan={7}>
-              <div className="flex flex-col items-center gap-2 text-slate-500">
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
                 <ClipboardCheck className="h-10 w-10 opacity-30" />
                 {searchDebounced ? (
                   <p>Sin coincidencias con la búsqueda</p>
