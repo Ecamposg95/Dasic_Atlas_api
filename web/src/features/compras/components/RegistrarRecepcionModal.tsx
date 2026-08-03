@@ -65,18 +65,18 @@ export function RegistrarRecepcionModal({ id, folio, onClose }: Props) {
   return (
     <Modal title={`Recepción de OC ${folio ?? `#${id}`}`} onClose={onClose} size="xl">
       {isLoading ? (
-        <p className="text-sm text-slate-500">Cargando líneas…</p>
+        <p className="text-sm text-muted-foreground">Cargando líneas…</p>
       ) : (
         <div className="space-y-3 text-sm">
           <div className="flex items-end justify-between gap-3 flex-wrap">
-            <label className="text-xs text-slate-500">
+            <label className="text-xs text-muted-foreground">
               Fecha de recepción
               <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="mt-1 w-44" />
             </label>
             <Button variant="outline" size="sm" onClick={recibirTodo}>Recibir todo lo pendiente</Button>
           </div>
           <table className="w-full text-xs">
-            <thead className="text-slate-500 uppercase">
+            <thead className="text-muted-foreground uppercase">
               <tr>
                 <th className="text-left p-1.5">Descripción</th>
                 <th className="p-1.5 text-center w-16">Pedido</th>
@@ -95,7 +95,7 @@ export function RegistrarRecepcionModal({ id, folio, onClose }: Props) {
                         {l.producto_id == null && <span className="ml-1 text-[10px] text-amber-500">fantasma</span>}
                       </div>
                       {(l.clave_unidad_sat || l.clave_prod_serv) && (
-                        <div className="text-[10px] font-mono text-slate-400">SAT {l.clave_prod_serv ?? '—'} · {l.clave_unidad_sat ?? '—'}</div>
+                        <div className="text-[10px] font-mono text-muted-foreground/70">SAT {l.clave_prod_serv ?? '—'} · {l.clave_unidad_sat ?? '—'}</div>
                       )}
                     </td>
                     <td className="p-1.5 text-center">{l.cantidad}</td>
@@ -119,7 +119,7 @@ export function RegistrarRecepcionModal({ id, folio, onClose }: Props) {
               })}
             </tbody>
           </table>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-muted-foreground/70">
             Las líneas de catálogo ingresan a inventario por lo recibido (kardex). Las líneas fantasma solo registran la recepción; su stock entra al promoverlas.
           </p>
         </div>

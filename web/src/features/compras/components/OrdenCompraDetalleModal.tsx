@@ -55,34 +55,34 @@ export function OrdenCompraDetalleModal({
           {/* Encabezado */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div>
-              <div className="text-xs text-slate-500 mb-0.5">Folio</div>
+              <div className="text-xs text-muted-foreground mb-0.5">Folio</div>
               <div className="font-mono font-bold text-cyan-700 dark:text-cyan-300">
                 {oc.folio ?? `#${oc.id}`}
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 mb-0.5">Proveedor</div>
+              <div className="text-xs text-muted-foreground mb-0.5">Proveedor</div>
               <div className="font-medium">{oc.proveedor ?? '—'}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 mb-0.5">Fecha</div>
+              <div className="text-xs text-muted-foreground mb-0.5">Fecha</div>
               <div>{fmtDate(oc.fecha)}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 mb-0.5">Estatus</div>
+              <div className="text-xs text-muted-foreground mb-0.5">Estatus</div>
               <div>{badgeEstatus(oc.estatus)}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 mb-0.5">Moneda</div>
+              <div className="text-xs text-muted-foreground mb-0.5">Moneda</div>
               <div>{oc.moneda}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 mb-0.5">Tipo cambio</div>
+              <div className="text-xs text-muted-foreground mb-0.5">Tipo cambio</div>
               <div className="font-mono">{oc.tipo_cambio}</div>
             </div>
             {oc.cotizacion_id && (
               <div>
-                <div className="text-xs text-slate-500 mb-0.5">Cotización origen</div>
+                <div className="text-xs text-muted-foreground mb-0.5">Cotización origen</div>
                 <a
                   href={`/ventas/cotizador?edit=${oc.cotizacion_id}`}
                   className="text-cyan-600 hover:underline text-xs dark:text-cyan-400"
@@ -97,7 +97,7 @@ export function OrdenCompraDetalleModal({
 
           {/* Líneas */}
           <div>
-            <div className="text-xs font-bold uppercase text-slate-500 mb-2 tracking-wider">
+            <div className="text-xs font-bold uppercase text-muted-foreground mb-2 tracking-wider">
               Líneas ({oc.detalles.length})
             </div>
             <table className="w-full text-xs border-collapse">
@@ -116,12 +116,12 @@ export function OrdenCompraDetalleModal({
                   const nombre = d.producto?.nombre ?? d.descripcion_libre ?? '—';
                   const importe = d.cantidad * d.costo_unitario;
                   return (
-                    <tr key={d.id} className="border-b border-slate-200 dark:border-slate-800/50">
+                    <tr key={d.id} className="border-b border-border">
                       <td className="py-1.5 pr-2">
                         <span className="font-mono text-foreground">{sku}</span>{' '}
                         <span className="text-muted-foreground">{nombre}</span>
                         {(d.clave_unidad_sat || d.clave_prod_serv) && (
-                          <div className="text-[10px] font-mono text-slate-400">SAT {d.clave_prod_serv ?? '—'} · {d.clave_unidad_sat ?? '—'}</div>
+                          <div className="text-[10px] font-mono text-muted-foreground/70">SAT {d.clave_prod_serv ?? '—'} · {d.clave_unidad_sat ?? '—'}</div>
                         )}
                       </td>
                       <td className="text-center py-1.5 px-2">{d.cantidad}</td>
@@ -142,7 +142,7 @@ export function OrdenCompraDetalleModal({
           {/* Total */}
           <div className="flex justify-end">
             <div className="text-right">
-              <div className="text-xs text-slate-500 mb-0.5">Total OC</div>
+              <div className="text-xs text-muted-foreground mb-0.5">Total OC</div>
               <div className="text-lg font-bold text-cyan-700 dark:text-cyan-300">
                 {fmtMoney(oc.total, oc.moneda)} {oc.moneda}
               </div>
@@ -159,7 +159,7 @@ export function OrdenCompraDetalleModal({
             href={`/api/compras/${oc.id}/imprimir`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-100 hover:bg-surface-2 dark:hover:bg-slate-700 text-sm border border-border-strong"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface-2 hover:bg-surface-2/70 text-sm border border-border-strong"
           >
             Imprimir
           </a>

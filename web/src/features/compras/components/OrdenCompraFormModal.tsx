@@ -229,7 +229,7 @@ export function OrdenCompraFormModal({ onClose }: Props) {
         {/* Líneas */}
         <div className="border border-border rounded-lg overflow-hidden">
           <table className="w-full text-xs">
-            <thead className="bg-slate-100 dark:bg-slate-800/50 text-muted-foreground">
+            <thead className="bg-surface-2 text-muted-foreground">
               <tr>
                 <th className="px-2 py-2 text-left w-32">SKU (P/N)</th>
                 <th className="px-2 py-2 text-left">Descripción *</th>
@@ -312,7 +312,7 @@ export function OrdenCompraFormModal({ onClose }: Props) {
                 </tr>
               ))}
             </tbody>
-            <tfoot className="bg-slate-50 dark:bg-slate-900/40">
+            <tfoot className="bg-surface-2">
               <tr>
                 <td colSpan={3} className="px-2 py-2">
                   <Button

@@ -155,7 +155,7 @@ export function ComprasPage() {
         >
           Limpiar
         </Button>
-        <span className="text-xs text-slate-500 ml-auto">{filtradas.length} orden(es)</span>
+        <span className="text-xs text-muted-foreground ml-auto">{filtradas.length} orden(es)</span>
       </div>
 
       {/* Tabla */}
@@ -177,7 +177,7 @@ export function ComprasPage() {
           )}
           {!isLoading && filtradas.length === 0 && (
             <DataTableEmpty colSpan={7}>
-              <ShoppingCart className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-700 mb-2" />
+              <ShoppingCart className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
               Sin órdenes que coincidan
             </DataTableEmpty>
           )}
@@ -190,7 +190,7 @@ export function ComprasPage() {
               <td className="p-3 text-xs text-muted-foreground">{fmtDate(o.fecha)}</td>
               <td className="p-3 text-right font-mono text-sm">
                 {fmtMoney(o.total, o.moneda)}{' '}
-                <span className="text-xs text-slate-500">{o.moneda}</span>
+                <span className="text-xs text-muted-foreground">{o.moneda}</span>
               </td>
               <td className="p-3 text-center">{badgeEstatus(o.estatus)}</td>
               <td className="p-3 text-xs">
@@ -203,7 +203,7 @@ export function ComprasPage() {
                     #{o.cotizacion_id}
                   </button>
                 ) : (
-                  <span className="text-slate-400 dark:text-slate-600">—</span>
+                  <span className="text-muted-foreground/70">—</span>
                 )}
               </td>
               <td className="p-3 text-right whitespace-nowrap">
@@ -222,7 +222,7 @@ export function ComprasPage() {
                   target="_blank"
                   rel="noreferrer"
                   title="Imprimir"
-                  className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 px-1"
+                  className="text-muted-foreground hover:text-foreground px-1"
                 >
                   <Printer className="h-4 w-4 inline" />
                 </a>
