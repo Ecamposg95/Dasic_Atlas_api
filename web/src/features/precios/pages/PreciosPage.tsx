@@ -95,7 +95,7 @@ function ComparativaPanel({ productoId }: { productoId: number }) {
             <div className="w-full bg-surface-2 rounded-full h-2">
               <div
                 className={`h-2 rounded-full ${
-                  isMenor ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-500'
+                  isMenor ? 'bg-emerald-500' : 'bg-muted-foreground'
                 }`}
                 style={{ width: `${pct}%` }}
               />
@@ -286,7 +286,7 @@ export function PreciosPage() {
                       <td className="px-4 py-3 text-foreground text-sm">
                         <div className="font-medium">{label}</div>
                         {item.sku_libre && (
-                          <div className="text-slate-500 dark:text-slate-500 text-xs">
+                          <div className="text-muted-foreground text-xs">
                             {item.sku_libre}
                           </div>
                         )}
@@ -300,7 +300,7 @@ export function PreciosPage() {
                           <Badge variant="cyan" className="ml-2 text-xs">USD</Badge>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-500 dark:text-slate-500 text-xs">
+                      <td className="px-4 py-3 text-muted-foreground text-xs">
                         {item.notas ?? '—'}
                       </td>
                       {isAdmin && (

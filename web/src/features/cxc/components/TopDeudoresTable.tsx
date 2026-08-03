@@ -69,7 +69,7 @@ export function TopDeudoresTable({ deudores, loading }: Props) {
             Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
           ) : deudores.length === 0 ? (
             <DataTableEmpty colSpan={5}>
-              <div className="flex flex-col items-center gap-2 text-slate-500">
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
                 <Users className="h-10 w-10 opacity-30" />
                 <p>Sin cuentas por cobrar</p>
               </div>

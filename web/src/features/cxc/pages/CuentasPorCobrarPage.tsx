@@ -74,7 +74,7 @@ function KpiCard({ label, value, sub, Icon, color = 'text-accent-glow', loading 
             ) : (
               <p className={`text-2xl font-bold tabular-nums ${color}`}>{value}</p>
             )}
-            {sub && !loading && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
+            {sub && !loading && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
           </div>
           <Icon className={`h-6 w-6 flex-shrink-0 ${color} opacity-70 mt-1`} />
         </div>
@@ -114,7 +114,7 @@ function VencimientoRow({ item }: { item: VencimientoItem }) {
             OV-{item.orden_venta_id}
           </a>
         ) : (
-          <span className="text-slate-500 italic">—</span>
+          <span className="text-muted-foreground/70 italic">—</span>
         )}
       </td>
       <td className="px-4 py-3 text-foreground text-sm">{item.cliente ?? '—'}</td>
@@ -317,7 +317,7 @@ export function CuentasPorCobrarPage() {
               Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
             ) : items.length === 0 ? (
               <DataTableEmpty colSpan={5}>
-                <div className="flex flex-col items-center gap-2 text-slate-500">
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
                   <Wallet className="h-10 w-10 opacity-30" />
                   <p>Sin vencimientos pendientes</p>
                 </div>

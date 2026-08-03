@@ -41,7 +41,7 @@ export function ComparadorRapido() {
 
         <div className="flex flex-wrap gap-2 items-stretch">
           <div className="relative flex-1 min-w-[220px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -70,7 +70,7 @@ export function ComparadorRapido() {
             ) : (
               <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
-                  <thead className="bg-slate-50 dark:bg-slate-800/50 text-[10px] text-muted-foreground uppercase tracking-wider">
+                  <thead className="bg-surface-2 text-[10px] text-muted-foreground uppercase tracking-wider">
                     <tr>
                       <th className="text-left p-2 w-10">#</th>
                       <th className="text-left p-2">Proveedor</th>

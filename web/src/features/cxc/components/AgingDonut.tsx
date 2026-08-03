@@ -30,7 +30,7 @@ interface Props {
 
 export function AgingDonut({ buckets, loading }: Props) {
   const data = buckets.map((b) => {
-    const cfg = BUCKET_CONFIG[b.rango] ?? { label: b.rango, color: '#94a3b8', dotClass: 'bg-slate-500' };
+    const cfg = BUCKET_CONFIG[b.rango] ?? { label: b.rango, color: '#94a3b8', dotClass: 'bg-muted-foreground' };
     return { ...cfg, rango: b.rango, value: b.monto, count: b.count };
   });
 
@@ -46,9 +46,9 @@ export function AgingDonut({ buckets, loading }: Props) {
       </CardHeader>
       <CardContent className="px-4 pb-4">
         {loading ? (
-          <div className="h-[200px] animate-pulse bg-slate-100 dark:bg-slate-800/40 rounded" />
+          <div className="h-[200px] animate-pulse bg-surface-2 rounded" />
         ) : totalMonto === 0 ? (
-          <div className="h-[200px] flex items-center justify-center text-sm text-slate-500">
+          <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
             Sin saldos pendientes
           </div>
         ) : (
@@ -81,7 +81,7 @@ export function AgingDonut({ buckets, loading }: Props) {
               </ResponsiveContainer>
               {/* Centro */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] uppercase text-slate-500">Cargos</span>
+                <span className="text-[10px] uppercase text-muted-foreground">Cargos</span>
                 <span className="text-sm font-bold">{totalCount}</span>
               </div>
             </div>
@@ -94,8 +94,8 @@ export function AgingDonut({ buckets, loading }: Props) {
                     className="h-2.5 w-2.5 rounded-sm shrink-0"
                     style={{ backgroundColor: d.color }}
                   />
-                  <span className="text-slate-600 dark:text-slate-300 flex-1">{d.label}</span>
-                  <span className="text-slate-400">{d.count} cargos</span>
+                  <span className="text-muted-foreground flex-1">{d.label}</span>
+                  <span className="text-muted-foreground/70">{d.count} cargos</span>
                   <span className="font-mono text-foreground w-32 text-right">
                     {fmtMXN(d.value)}
                   </span>

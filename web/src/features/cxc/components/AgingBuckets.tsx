@@ -72,9 +72,9 @@ export function AgingBuckets({ buckets, loading }: Props) {
       {buckets.map((bucket) => {
         const meta = BUCKET_META[bucket.rango] ?? {
           label: bucket.rango,
-          accentClass: 'bg-slate-500',
+          accentClass: 'bg-muted-foreground',
           textClass: 'text-muted-foreground',
-          borderClass: 'border-l-slate-500',
+          borderClass: 'border-l-muted-foreground',
         };
         return (
           <Card
@@ -88,7 +88,7 @@ export function AgingBuckets({ buckets, loading }: Props) {
               <p className={`text-xl font-bold tabular-nums ${meta.textClass}`}>
                 ${fmtMXN(bucket.monto)}
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {bucket.count} cargo{bucket.count !== 1 ? 's' : ''}
               </p>
             </CardContent>

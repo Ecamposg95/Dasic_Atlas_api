@@ -99,7 +99,7 @@ export function ContactosPage() {
 
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 w-full sm:w-auto sm:min-w-[220px]">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre, email o cargo…" className="pl-7" />
         </div>
         <select
@@ -153,14 +153,14 @@ export function ContactosPage() {
                 <td className="p-2">
                   <button type="button" onClick={() => setEmpresaId(c.cliente_id)} className="text-accent-glow hover:underline">{c.empresa_nombre}</button>
                 </td>
-                <td className="p-2 text-slate-500">{c.cargo || '—'}</td>
-                <td className="p-2 text-slate-500 truncate max-w-[160px]" title={c.email || ''}>{c.email || '—'}</td>
-                <td className="p-2 text-slate-500">{c.telefono || '—'}</td>
+                <td className="p-2 text-muted-foreground">{c.cargo || '—'}</td>
+                <td className="p-2 text-muted-foreground truncate max-w-[160px]" title={c.email || ''}>{c.email || '—'}</td>
+                <td className="p-2 text-muted-foreground">{c.telefono || '—'}</td>
                 <td className="p-2">
                   <div className="flex items-center justify-center gap-1">
-                    <button type="button" title="Cotizar" onClick={() => onCotizar(c)} className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-accent-glow"><FileText className="h-4 w-4" /></button>
-                    <button type="button" title="Historial" onClick={() => setHistContacto(c)} className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"><History className="h-4 w-4" /></button>
-                    <button type="button" title="Editar" onClick={() => { setEditing(c); setFormOpen(true); }} className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"><Pencil className="h-4 w-4" /></button>
+                    <button type="button" title="Cotizar" onClick={() => onCotizar(c)} className="p-1.5 rounded hover:bg-surface-2/60 text-accent-glow"><FileText className="h-4 w-4" /></button>
+                    <button type="button" title="Historial" onClick={() => setHistContacto(c)} className="p-1.5 rounded hover:bg-surface-2/60 text-muted-foreground"><History className="h-4 w-4" /></button>
+                    <button type="button" title="Editar" onClick={() => { setEditing(c); setFormOpen(true); }} className="p-1.5 rounded hover:bg-surface-2/60 text-muted-foreground"><Pencil className="h-4 w-4" /></button>
                     <DeleteContactoButton contacto={c} />
                   </div>
                 </td>

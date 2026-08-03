@@ -144,7 +144,7 @@ export function ServiciosPage() {
           <Wrench className="h-5 w-5 text-cyan-400" /> Servicios
         </h1>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-600 dark:text-slate-500">{total} servicio(s)</span>
+          <span className="text-xs text-muted-foreground">{total} servicio(s)</span>
           {isAdminOrAsistente && (
             <Button size="sm" onClick={() => setModalCrear(true)}>
               + Nuevo servicio
@@ -208,7 +208,7 @@ export function ServiciosPage() {
           )}
           {!isLoading && items.length === 0 && (
             <DataTableEmpty colSpan={6}>
-              <Wrench className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-700 mb-2" />
+              <Wrench className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
               {!qDebounced && !filtroCategoria
                 ? 'Sin servicios registrados'
                 : 'Sin coincidencias con la búsqueda'}
@@ -222,7 +222,7 @@ export function ServiciosPage() {
                 {s.categoria_servicio ? (
                   <Badge variant="violet">{s.categoria_servicio}</Badge>
                 ) : (
-                  <span className="text-slate-400 dark:text-slate-600 text-xs">—</span>
+                  <span className="text-muted-foreground/70 text-xs">—</span>
                 )}
               </td>
               <td className="p-3 text-right whitespace-nowrap">
@@ -239,7 +239,7 @@ export function ServiciosPage() {
                 {isAdminOrAsistente && (
                   <button
                     onClick={() => setModalEditar(s)}
-                    className="text-foreground hover:text-slate-900 dark:hover:text-slate-100 px-1.5 text-xs"
+                    className="text-muted-foreground hover:text-foreground px-1.5 text-xs"
                   >
                     Editar
                   </button>
