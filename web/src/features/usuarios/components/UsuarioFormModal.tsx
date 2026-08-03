@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { branding } from '@/lib/branding';
 import type { Usuario, UsuarioCreate, UsuarioUpdate, RolUsuario } from '../types';
 
 const ROL_OPTIONS: { value: RolUsuario; label: string }[] = [
@@ -97,7 +98,7 @@ export function UsuarioFormModal({ mode, usuario, onSave, onClose, busy }: Props
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="usuario@dasic.com"
+            placeholder={branding.emailPlaceholder}
           />
         </div>
 

@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight, AlertCircle, Loader2, Check } from 'lucide-react';
 import { api, normalizeDetail } from '@/lib/api';
+import { branding } from '@/lib/branding';
 import { useAuth, type User } from '@/stores/auth';
 
-const VENTAJAS = [
-  'Cotizaciones en minutos',
-  'Inventario y reservas en vivo',
-  'OC, remisiones y reportes',
-];
+const VENTAJAS = branding.loginBullets;
+const CREDITO = `Powered by ${branding.poweredBy} · ${branding.productName} ${branding.productVersion}`;
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -92,19 +90,21 @@ export function LoginPage() {
         />
 
         <div className="relative z-10">
-          <img
-            src="/static/img/Logo_main.png"
-            alt="DASIC"
-            className="h-16 w-auto object-contain drop-shadow-2xl"
-            onError={hideOnError}
-          />
+          {branding.logoUrl && (
+            <img
+              src={branding.logoUrl}
+              alt={branding.organizationName}
+              className="h-16 w-auto object-contain drop-shadow-2xl"
+              onError={hideOnError}
+            />
+          )}
         </div>
 
         <div className="relative z-10 max-w-md">
-          <h2 className="text-4xl font-bold tracking-tight">Atlas ONE</h2>
-          <p className="mt-2 text-slate-400">Sistema Industrial <span className="text-accent-glow">·</span> DASIC</p>
+          <h2 className="text-4xl font-bold tracking-tight">{branding.productName}</h2>
+          <p className="mt-2 text-slate-400">{branding.tagline} <span className="text-accent-glow">·</span> {branding.organizationName}</p>
           <p className="mt-6 text-lg text-slate-300 leading-relaxed">
-            La plataforma para cotizar, surtir y entregar — todo en un solo lugar.
+            {branding.loginHeadline}
           </p>
           <ul className="mt-8 space-y-3">
             {VENTAJAS.map((v) => (
@@ -118,25 +118,25 @@ export function LoginPage() {
           </ul>
         </div>
 
-        <p className="relative z-10 text-[11px] text-slate-600">
-          Powered by Atlas Tech · Atlas ONE v2.0
-        </p>
+        <p className="relative z-10 text-[11px] text-slate-600">{CREDITO}</p>
       </aside>
 
       {/* ── Panel del formulario ────────────────────────────────────── */}
       <main className="flex flex-1 items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-sm">
           {/* Logo compacto (solo móvil) */}
-          <img
-            src="/static/img/Logo_main.png"
-            alt="DASIC"
-            className="mx-auto mb-8 h-14 w-auto object-contain lg:hidden"
-            onError={hideOnError}
-          />
+          {branding.logoUrl && (
+            <img
+              src={branding.logoUrl}
+              alt={branding.organizationName}
+              className="mx-auto mb-8 h-14 w-auto object-contain lg:hidden"
+              onError={hideOnError}
+            />
+          )}
 
           <div className="mb-8">
             <h1 className="text-2xl font-bold tracking-tight">Bienvenido de vuelta</h1>
-            <p className="mt-1 text-sm text-slate-400">Inicia sesión en Atlas ONE</p>
+            <p className="mt-1 text-sm text-slate-400">Inicia sesión en {branding.productName}</p>
           </div>
 
           {error && (
@@ -158,7 +158,7 @@ export function LoginPage() {
                 required
                 autoComplete="email"
                 autoFocus
-                placeholder="admin@dasic.mx"
+                placeholder={branding.emailPlaceholder}
                 className="w-full bg-slate-800/60 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent-glow focus:ring-1 focus:ring-accent-glow/40 transition"
               />
             </div>
@@ -217,9 +217,7 @@ export function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-10 text-center text-[10px] text-slate-600 lg:hidden">
-            Powered by Atlas Tech · Atlas ONE v2.0
-          </p>
+          <p className="mt-10 text-center text-[10px] text-slate-600 lg:hidden">{CREDITO}</p>
         </div>
       </main>
     </div>

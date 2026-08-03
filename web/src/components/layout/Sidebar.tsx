@@ -7,6 +7,7 @@ import {
   Truck, UserCog, Users, Wallet, Wrench,
 } from 'lucide-react';
 import { useIsSuperadmin } from '@/lib/permissions';
+import { branding } from '@/lib/branding';
 
 type NavItem = { to: string; label: string; Icon: LucideIcon };
 type NavSection = { title: string; items: NavItem[] };
@@ -101,9 +102,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         }`}
       >
         <div className="px-4 pt-4 pb-3 shrink-0 border-b border-sidebar-border">
-          <div className="text-xl font-bold leading-tight">DASIC</div>
+          <div className="text-xl font-bold leading-tight">{branding.organizationName}</div>
           <div className="text-[10px] uppercase tracking-[0.2em] text-sidebar-dim mt-0.5">
-            Atlas ONE <span className="text-accent-glow">·</span> Sistema Industrial
+            {branding.productName} <span className="text-accent-glow">·</span> {branding.tagline}
           </div>
         </div>
 
