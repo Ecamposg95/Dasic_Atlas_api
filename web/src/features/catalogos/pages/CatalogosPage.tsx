@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BookMarked, Tags, Layers, Ruler, Wrench, FileSearch } from 'lucide-react';
 import { api } from '@/lib/api';
+import { PageHeader } from '@/components/ui/page-header';
 import type { ResumenCatalogo } from '../types';
 import { MarcasTab } from '../components/MarcasTab';
 import { CategoriasTab } from '../components/CategoriasTab';
@@ -37,10 +38,14 @@ export function CatalogosPage() {
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-5">
       {/* Header */}
-      <header className="flex items-center gap-2">
-        <BookMarked className="h-5 w-5 text-accent-glow" />
-        <h1 className="text-2xl font-semibold">Catálogos</h1>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <BookMarked className="h-5 w-5 text-accent-glow" />
+            Catálogos
+          </span>
+        }
+      />
 
       {/* KPIs */}
       {resumen && (

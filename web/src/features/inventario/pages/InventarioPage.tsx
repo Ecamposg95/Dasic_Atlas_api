@@ -5,6 +5,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ClipboardList, Packa
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
 import {
   DataTable,
   DataTableBody,
@@ -204,33 +205,37 @@ export function InventarioPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
       {/* Header */}
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Package className="h-5 w-5 text-cyan-400" /> Inventario
-        </h1>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{filtrados.length} producto(s)</span>
-          <Button size="sm" onClick={() => setModalNuevo(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Nuevo producto
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={triggerImport}
-            disabled={importMut.isPending}
-          >
-            <Upload className="h-4 w-4 mr-1" />
-            {importMut.isPending ? 'Importando…' : 'Importar Excel'}
-          </Button>
-          <input
-            ref={importInputRef}
-            type="file"
-            accept=".csv,.xlsx,.xls"
-            className="hidden"
-            onChange={onImportFile}
-          />
-        </div>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Package className="h-5 w-5 text-cyan-400" /> Inventario
+          </span>
+        }
+        actions={
+          <>
+            <span className="text-xs text-muted-foreground">{filtrados.length} producto(s)</span>
+            <Button size="sm" onClick={() => setModalNuevo(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Nuevo producto
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={triggerImport}
+              disabled={importMut.isPending}
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              {importMut.isPending ? 'Importando…' : 'Importar Excel'}
+            </Button>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              className="hidden"
+              onChange={onImportFile}
+            />
+          </>
+        }
+      />
 
       {/* Banner de feedback del import. Verde si OK, rojo si hubo error o
           errores granulares por fila. Permite expandir la lista de errores. */}

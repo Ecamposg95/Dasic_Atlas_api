@@ -5,6 +5,7 @@ import { Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ListToolbar } from '@/components/ui/list-toolbar';
+import { PageHeader } from '@/components/ui/page-header';
 import { Pagination } from '@/components/ui/pagination';
 import {
   DataTable,
@@ -139,19 +140,23 @@ export function ServiciosPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Wrench className="h-5 w-5 text-cyan-400" /> Servicios
-        </h1>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{total} servicio(s)</span>
-          {isAdminOrAsistente && (
-            <Button size="sm" onClick={() => setModalCrear(true)}>
-              + Nuevo servicio
-            </Button>
-          )}
-        </div>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Wrench className="h-5 w-5 text-cyan-400" /> Servicios
+          </span>
+        }
+        actions={
+          <>
+            <span className="text-xs text-muted-foreground">{total} servicio(s)</span>
+            {isAdminOrAsistente && (
+              <Button size="sm" onClick={() => setModalCrear(true)}>
+                + Nuevo servicio
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* Filtros */}
       <div className="bg-card border border-border rounded-xl p-3">

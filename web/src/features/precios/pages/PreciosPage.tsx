@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
+import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
 import {
   DataTable,
   DataTableHead,
@@ -54,7 +56,7 @@ function ComparativaPanel({ productoId }: { productoId: number }) {
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-8 bg-surface-2 rounded animate-pulse" />
+          <Skeleton key={i} className="h-8" />
         ))}
       </div>
     );
@@ -104,22 +106,6 @@ function ComparativaPanel({ productoId }: { productoId: number }) {
         );
       })}
     </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Skeleton row
-// ---------------------------------------------------------------------------
-
-function SkeletonRow() {
-  return (
-    <tr className="border-b border-border">
-      {Array.from({ length: 7 }).map((_, i) => (
-        <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-surface-2 rounded animate-pulse" />
-        </td>
-      ))}
-    </tr>
   );
 }
 
@@ -196,22 +182,24 @@ export function PreciosPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
       {/* Header */}
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-3">
-          <Tags className="h-6 w-6 text-accent-glow" />
-          <h1 className="text-2xl font-semibold text-foreground">
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            <Tags className="h-6 w-6 text-accent-glow" />
             Precios proveedores
-          </h1>
-          {!isLoading && (
-            <span className="text-muted-foreground text-sm">
-              ({total} {total === 1 ? 'precio' : 'precios'})
-            </span>
-          )}
-        </div>
-        <Button size="sm" onClick={() => setShowModal(true)}>
-          + Registrar precio
-        </Button>
-      </header>
+            {!isLoading && (
+              <span className="text-muted-foreground text-sm font-normal">
+                ({total} {total === 1 ? 'precio' : 'precios'})
+              </span>
+            )}
+          </span>
+        }
+        actions={
+          <Button size="sm" onClick={() => setShowModal(true)}>
+            + Registrar precio
+          </Button>
+        }
+      />
 
       {/* Comparador rápido (restaurado del Jinja viejo) */}
       <ComparadorRapido />
@@ -264,7 +252,7 @@ export function PreciosPage() {
             </DataTableHead>
             <DataTableBody>
               {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+                <SkeletonRows rows={5} cols={isAdmin ? 6 : 5} />
               ) : items.length === 0 ? (
                 <DataTableEmpty colSpan={isAdmin ? 6 : 5}>
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
