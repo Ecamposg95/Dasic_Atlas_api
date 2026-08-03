@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { LayoutDashboard, AlertTriangle, TrendingUp, Package, CreditCard, BellRing } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from '@/lib/toast';
 import { useHero } from '../hooks/useHero';
 import { usePipeline } from '../hooks/usePipeline';
@@ -121,7 +122,7 @@ export function DashboardPage() {
         key: `saldo-${c.id}`,
         severity,
         text: `${c.empresa}: saldo ${fmtMoney(c.saldo)} sin pago hace ${c.dias_sin_pago} días`,
-        link: `/spa/clientes`,
+        link: `/spa/cuentas-por-cobrar`,
       });
     });
 
@@ -130,6 +131,7 @@ export function DashboardPage() {
         key: `oc-${oc.id}`,
         severity: 'info',
         text: `OC borrador ${oc.folio}${oc.proveedor ? ` (${oc.proveedor})` : ''} — ${fmtMoney(oc.total, oc.moneda)}`,
+        link: `/spa/compras`,
       });
     });
   }
@@ -137,10 +139,16 @@ export function DashboardPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <header className="flex items-center gap-2">
-        <LayoutDashboard className="h-5 w-5 text-accent-glow" />
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <LayoutDashboard className="h-5 w-5 text-accent-glow" />
+            Dashboard
+          </span>
+        }
+        description="Centro de trabajo — cada indicador navega a su vista de detalle"
+        className="mb-0"
+      />
 
       {/* Row 1: KPIs hero */}
       <section>
@@ -156,12 +164,14 @@ export function DashboardPage() {
             spark={hero?.ventas.sparkline_30d?.map((p) => p.v)}
             tone="emerald"
             loading={heroQ.isLoading}
+            to="/spa/analitica?tab=ventas"
           />
           <KpiCard
             label="Pipeline abierto"
             value={fmtMoney(hero?.pipeline.monto_mxn ?? 0)}
             sub={hero ? `${fmtInt(hero.pipeline.count)} cotizaciones · ticket prom. ${fmtMoney(hero.pipeline.ticket_promedio_mxn)}` : undefined}
             loading={heroQ.isLoading}
+            to="/spa/seguimiento"
           />
           <KpiCard
             label="Conversión 30d"
@@ -170,6 +180,7 @@ export function DashboardPage() {
             spark={hero?.conversion.sparkline_4w}
             tone="cyan"
             loading={heroQ.isLoading}
+            to="/spa/analitica?tab=ventas"
           />
           <KpiCard
             label="Margen prom."
@@ -223,9 +234,9 @@ export function DashboardPage() {
                 </Badge>
                 <span className="text-sm text-foreground flex-1 leading-snug">{a.text}</span>
                 {a.link && (
-                  <a href={a.link} className="text-xs text-cyan-400 hover:text-cyan-300 shrink-0 self-center">
+                  <Link to={a.link} className="text-xs text-cyan-400 hover:text-cyan-300 shrink-0 self-center">
                     ver →
-                  </a>
+                  </Link>
                 )}
               </div>
             ))}

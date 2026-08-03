@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkline } from './Sparkline';
@@ -10,6 +11,7 @@ export function KpiCard({
   delta,
   spark,
   tone,
+  to,
 }: {
   label: string;
   value: string;
@@ -18,9 +20,11 @@ export function KpiCard({
   delta?: number | null;
   spark?: number[];
   tone?: 'emerald' | 'cyan' | 'rose' | 'slate';
+  /** Vista filtrada a la que navega el indicador (todo KPI debería llevar a su detalle). */
+  to?: string;
 }) {
-  return (
-    <Card>
+  const card = (
+    <Card className={to ? 'transition-shadow hover:shadow-elev-2 hover:border-border-strong h-full' : undefined}>
       <CardHeader className="pb-1 pt-4 px-4">
         <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{label}</p>
       </CardHeader>
@@ -49,5 +53,12 @@ export function KpiCard({
         {sub && <p className="text-xs text-muted-foreground mt-1">{loading ? '' : sub}</p>}
       </CardContent>
     </Card>
+  );
+
+  if (!to) return card;
+  return (
+    <Link to={to} className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl">
+      {card}
+    </Link>
   );
 }
