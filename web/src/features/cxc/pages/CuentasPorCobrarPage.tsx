@@ -11,6 +11,9 @@ import { useIsAdmin } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
 import {
   DataTable,
   DataTableHead,
@@ -70,7 +73,7 @@ function KpiCard({ label, value, sub, Icon, color = 'text-accent-glow', loading 
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{label}</p>
             {loading ? (
-              <div className="h-8 w-32 bg-surface-2 rounded animate-pulse" />
+              <Skeleton className="h-8 w-32" />
             ) : (
               <p className={`text-2xl font-bold tabular-nums ${color}`}>{value}</p>
             )}
@@ -124,22 +127,6 @@ function VencimientoRow({ item }: { item: VencimientoItem }) {
       <td className="px-4 py-3 text-muted-foreground text-xs">{fmtFecha(item.fecha_vencimiento)}</td>
       <td className="px-4 py-3">{diasBadge}</td>
     </DataTableRow>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Skeleton row
-// ---------------------------------------------------------------------------
-
-function SkeletonRow() {
-  return (
-    <tr className="border-b border-border">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-surface-2 rounded animate-pulse" />
-        </td>
-      ))}
-    </tr>
   );
 }
 
@@ -211,28 +198,27 @@ export function CuentasPorCobrarPage() {
       {/* ---------------------------------------------------------------- */}
       {/* 1. Header                                                         */}
       {/* ---------------------------------------------------------------- */}
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-3">
-          <TrendingDown className="h-6 w-6 text-accent-glow" />
-          <div>
-            <h1 className="text-2xl font-semibold leading-tight">Centro de cobranza</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Cuentas por cobrar · Aging · Top deudores
-            </p>
-          </div>
-        </div>
-        {isAdmin && (
-          <Button
-            size="sm"
-            variant="secondary"
-            disabled={marcarMutation.isPending}
-            onClick={handleMarcarVencidos}
-          >
-            <RefreshCw className="h-3.5 w-3.5 mr-1" />
-            {marcarMutation.isPending ? 'Procesando…' : 'Marcar vencidos'}
-          </Button>
-        )}
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            <TrendingDown className="h-6 w-6 text-accent-glow" /> Centro de cobranza
+          </span>
+        }
+        description="Cuentas por cobrar · Aging · Top deudores"
+        actions={
+          isAdmin && (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={marcarMutation.isPending}
+              onClick={handleMarcarVencidos}
+            >
+              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+              {marcarMutation.isPending ? 'Procesando…' : 'Marcar vencidos'}
+            </Button>
+          )
+        }
+      />
 
       {/* ---------------------------------------------------------------- */}
       {/* 2. KPI cards                                                      */}
@@ -314,13 +300,10 @@ export function CuentasPorCobrarPage() {
           </DataTableHead>
           <DataTableBody>
             {loadingVenc ? (
-              Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+              <SkeletonRows rows={5} cols={5} />
             ) : items.length === 0 ? (
               <DataTableEmpty colSpan={5}>
-                <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <Wallet className="h-10 w-10 opacity-30" />
-                  <p>Sin vencimientos pendientes</p>
-                </div>
+                <EmptyState icon={Wallet} title="Sin vencimientos pendientes" className="py-0" />
               </DataTableEmpty>
             ) : (
               items.map((item) => <VencimientoRow key={item.id} item={item} />)

@@ -7,6 +7,7 @@ import type { StatusTone } from '@/lib/status-tones';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal, ModalFooter } from '@/components/ui/modal';
+import { PageHeader } from '@/components/ui/page-header';
 import { Tabs } from '@/components/ui/tabs';
 import {
   DataTable,
@@ -192,17 +193,20 @@ export function RecordatoriosPage() {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <div className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-4">
         {/* Header */}
-        <header className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3">
-            <BellRing className="h-6 w-6 text-accent-glow" />
-            <h1 className="text-2xl font-semibold">Recordatorios</h1>
-          </div>
-          {/* Recordatorio libre (sin orden); para atarlo a una cotización, usa Seguimiento. */}
-          <Button size="sm" onClick={() => setCrearOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Nuevo recordatorio
-          </Button>
-        </header>
+        <PageHeader
+          title={
+            <span className="flex items-center gap-3">
+              <BellRing className="h-6 w-6 text-accent-glow" /> Recordatorios
+            </span>
+          }
+          actions={
+            /* Recordatorio libre (sin orden); para atarlo a una cotización, usa Seguimiento. */
+            <Button size="sm" onClick={() => setCrearOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Nuevo recordatorio
+            </Button>
+          }
+        />
 
         {/* Tab filter */}
         <Tabs

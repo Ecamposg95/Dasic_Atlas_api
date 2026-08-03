@@ -3,6 +3,7 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Clock } from 'lucide-react';
 import type { AgingBucket } from '../types';
 
@@ -46,7 +47,7 @@ export function AgingDonut({ buckets, loading }: Props) {
       </CardHeader>
       <CardContent className="px-4 pb-4">
         {loading ? (
-          <div className="h-[200px] animate-pulse bg-surface-2 rounded" />
+          <Skeleton className="h-[200px]" />
         ) : totalMonto === 0 ? (
           <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
             Sin saldos pendientes

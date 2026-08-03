@@ -1,6 +1,7 @@
 // 4 tarjetas de resumen por bucket de aging.
 
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { AgingBucket } from '../types';
 
 const BUCKET_META: Record<
@@ -47,9 +48,9 @@ function BucketSkeleton() {
     <Card>
       <CardContent className="pt-5">
         <div className="space-y-2">
-          <div className="h-3 w-20 bg-surface-2 rounded animate-pulse" />
-          <div className="h-7 w-32 bg-surface-2 rounded animate-pulse" />
-          <div className="h-3 w-16 bg-surface-2 rounded animate-pulse" />
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-7 w-32" />
+          <Skeleton className="h-3 w-16" />
         </div>
       </CardContent>
     </Card>

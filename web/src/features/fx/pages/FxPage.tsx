@@ -11,6 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
 import {
   DataTable,
   DataTableHead,
@@ -179,10 +182,13 @@ export function FxPage() {
   return (
     <div className="p-6 max-w-5xl mx-auto w-full space-y-6">
       {/* Header */}
-      <header className="flex items-center gap-3">
-        <Coins className="h-6 w-6 text-accent-glow" />
-        <h1 className="text-2xl font-semibold">Tipo de cambio USD/MXN</h1>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            <Coins className="h-6 w-6 text-accent-glow" /> Tipo de cambio USD/MXN
+          </span>
+        }
+      />
 
       {/* Card TC del día */}
       <Card>
@@ -191,7 +197,7 @@ export function FxPage() {
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">TC Hoy</p>
               {loadingHoy ? (
-                <div className="h-12 w-48 bg-surface-2 rounded animate-pulse" />
+                <Skeleton className="h-12 w-48" />
               ) : (
                 <>
                   <p className="text-4xl font-bold tabular-nums text-accent-glow">
@@ -252,21 +258,10 @@ export function FxPage() {
           </DataTableHead>
           <DataTableBody>
             {loadingHist ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-border">
-                  {Array.from({ length: 4 }).map((__, j) => (
-                    <td key={j} className="px-4 py-3">
-                      <div className="h-4 bg-surface-2 rounded animate-pulse" />
-                    </td>
-                  ))}
-                </tr>
-              ))
+              <SkeletonRows rows={5} cols={4} />
             ) : items.length === 0 ? (
               <DataTableEmpty colSpan={4}>
-                <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <Coins className="h-10 w-10 opacity-30" />
-                  <p>Sin historial disponible</p>
-                </div>
+                <EmptyState icon={Coins} title="Sin historial disponible" className="py-0" />
               </DataTableEmpty>
             ) : (
               items.map((row) => (

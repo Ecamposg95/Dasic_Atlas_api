@@ -25,6 +25,7 @@ import {
   DataTableRow,
   DataTableEmpty,
 } from '@/components/ui/data-table';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from '@/lib/toast';
 import { confirm } from '@/lib/confirm';
 import { api, type ApiError } from '@/lib/api';
@@ -337,10 +338,13 @@ export function SeguimientoPage() {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <div className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-4">
         {/* Header */}
-        <header className="flex items-center gap-3">
-          <ListChecks className="h-6 w-6 text-accent-glow" />
-          <h1 className="text-2xl font-semibold">Seguimiento de cotizaciones</h1>
-        </header>
+        <PageHeader
+          title={
+            <span className="flex items-center gap-3">
+              <ListChecks className="h-6 w-6 text-accent-glow" /> Seguimiento de cotizaciones
+            </span>
+          }
+        />
 
         {/* Error banner */}
         {showError && (

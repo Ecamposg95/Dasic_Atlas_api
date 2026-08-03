@@ -6,6 +6,8 @@ import { UserCog } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ListToolbar } from '@/components/ui/list-toolbar';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   DataTable,
   DataTableBody,
@@ -157,19 +159,23 @@ export function UsuariosPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-4">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <UserCog className="h-5 w-5 text-cyan-400" /> Usuarios
-        </h1>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
-            {hasFiltros ? `${items.length} de ${todos.length}` : `${todos.length}`} usuario(s)
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <UserCog className="h-5 w-5 text-cyan-400" /> Usuarios
           </span>
-          <Button size="sm" onClick={() => setModalCrear(true)}>
-            + Nuevo usuario
-          </Button>
-        </div>
-      </header>
+        }
+        actions={
+          <>
+            <span className="text-xs text-muted-foreground">
+              {hasFiltros ? `${items.length} de ${todos.length}` : `${todos.length}`} usuario(s)
+            </span>
+            <Button size="sm" onClick={() => setModalCrear(true)}>
+              + Nuevo usuario
+            </Button>
+          </>
+        }
+      />
 
       <ListToolbar
         search={search}
@@ -218,8 +224,11 @@ export function UsuariosPage() {
           )}
           {!isLoading && items.length === 0 && (
             <DataTableEmpty colSpan={5}>
-              <UserCog className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
-              {hasFiltros ? 'Sin coincidencias con los filtros' : 'Sin usuarios registrados'}
+              <EmptyState
+                icon={UserCog}
+                title={hasFiltros ? 'Sin coincidencias con los filtros' : 'Sin usuarios registrados'}
+                className="py-0"
+              />
             </DataTableEmpty>
           )}
           {items.map((u) => (
