@@ -80,7 +80,7 @@ function BorradorRow({ item, onDiscard, isDiscarding, onContinuar }: RowProps) {
     <DataTableRow>
       <td className="px-4 py-3 font-mono text-xs text-accent-glow">{item.folio}</td>
       <td className="px-4 py-3 text-foreground">
-        {item.cliente_nombre ?? <span className="text-slate-500 italic">Sin cliente</span>}
+        {item.cliente_nombre ?? <span className="text-muted-foreground/70 italic">Sin cliente</span>}
       </td>
       <td className="px-4 py-3 text-right tabular-nums">
         {formatTotal(item.total, item.moneda)}
@@ -156,7 +156,7 @@ export function BorradoresPage() {
           <FileClock className="h-6 w-6 text-accent-glow" />
           <h1 className="text-2xl font-semibold">Borradores de cotizaciones</h1>
           {!isLoading && (
-            <span className="text-slate-500 text-sm">
+            <span className="text-muted-foreground text-sm">
               ({total} {total === 1 ? 'borrador' : 'borradores'})
             </span>
           )}
@@ -179,7 +179,7 @@ export function BorradoresPage() {
             Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
           ) : items.length === 0 ? (
             <DataTableEmpty colSpan={5}>
-              <div className="flex flex-col items-center gap-2 text-slate-500">
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
                 <FileClock className="h-10 w-10 opacity-30" />
                 <p>No hay borradores pendientes</p>
                 <p className="text-xs">

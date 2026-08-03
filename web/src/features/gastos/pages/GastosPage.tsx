@@ -76,7 +76,7 @@ function GastoRow({ item, onEdit, onDelete, isDeleting }: RowProps) {
     <DataTableRow>
       <td className="px-4 py-3 text-muted-foreground text-xs">{fmtFecha(item.fecha)}</td>
       <td className="px-4 py-3 text-foreground text-sm">
-        {item.descripcion ?? <span className="text-slate-500 italic">—</span>}
+        {item.descripcion ?? <span className="text-muted-foreground/70 italic">—</span>}
       </td>
       <td className="px-4 py-3">
         <Badge variant="default">{item.categoria}</Badge>
@@ -84,7 +84,7 @@ function GastoRow({ item, onEdit, onDelete, isDeleting }: RowProps) {
       <td className="px-4 py-3 text-right tabular-nums text-foreground font-medium">
         {fmtMonto(item.monto, item.moneda)}
       </td>
-      <td className="px-4 py-3 text-slate-500 text-xs">
+      <td className="px-4 py-3 text-muted-foreground text-xs">
         {item.usuario ?? '—'}
       </td>
       <td className="px-4 py-3">
@@ -233,7 +233,7 @@ export function GastosPage() {
           <Receipt className="h-6 w-6 text-accent-glow" />
           <h1 className="text-2xl font-semibold">Gastos</h1>
           {!isLoading && (
-            <span className="text-slate-500 text-sm">
+            <span className="text-muted-foreground text-sm">
               ({total} {total === 1 ? 'gasto' : 'gastos'})
             </span>
           )}
@@ -300,7 +300,7 @@ export function GastosPage() {
             Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
           ) : filtered.length === 0 ? (
             <DataTableEmpty colSpan={6}>
-              <div className="flex flex-col items-center gap-2 text-slate-500">
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
                 <Receipt className="h-10 w-10 opacity-30" />
                 <p>{total === 0 && !busquedaDebounced && !filtroCategoria && !fechaDesde && !fechaHasta ? 'No hay gastos registrados' : 'Sin resultados para estos filtros'}</p>
               </div>

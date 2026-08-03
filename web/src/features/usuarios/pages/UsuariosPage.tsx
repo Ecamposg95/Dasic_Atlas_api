@@ -162,7 +162,7 @@ export function UsuariosPage() {
           <UserCog className="h-5 w-5 text-cyan-400" /> Usuarios
         </h1>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 dark:text-slate-500">
+          <span className="text-xs text-muted-foreground">
             {hasFiltros ? `${items.length} de ${todos.length}` : `${todos.length}`} usuario(s)
           </span>
           <Button size="sm" onClick={() => setModalCrear(true)}>
@@ -218,7 +218,7 @@ export function UsuariosPage() {
           )}
           {!isLoading && items.length === 0 && (
             <DataTableEmpty colSpan={5}>
-              <UserCog className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-700 mb-2" />
+              <UserCog className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
               {hasFiltros ? 'Sin coincidencias con los filtros' : 'Sin usuarios registrados'}
             </DataTableEmpty>
           )}
@@ -239,7 +239,7 @@ export function UsuariosPage() {
               <td className="p-3 text-right whitespace-nowrap space-x-1">
                 <button
                   onClick={() => setModalEditar(u)}
-                  className="text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 px-1.5 text-xs"
+                  className="text-muted-foreground hover:text-foreground px-1.5 text-xs"
                 >
                   Editar
                 </button>

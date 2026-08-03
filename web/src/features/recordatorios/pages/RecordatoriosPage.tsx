@@ -304,7 +304,7 @@ export function RecordatoriosPage() {
                                 variant="ghost"
                                 size="icon"
                                 title="Marcar como completado"
-                                className="h-7 w-7 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400"
+                                className="h-7 w-7 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400"
                                 disabled={completar.isPending}
                                 onClick={() => handleCompletar(rec)}
                               >
@@ -318,7 +318,7 @@ export function RecordatoriosPage() {
                                 variant="ghost"
                                 size="icon"
                                 title="Posponer"
-                                className="h-7 w-7 text-slate-500 hover:text-amber-600 dark:hover:text-amber-400"
+                                className="h-7 w-7 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400"
                                 onClick={() => setPosponerRec(rec)}
                               >
                                 <Clock className="h-3.5 w-3.5" />
@@ -330,7 +330,7 @@ export function RecordatoriosPage() {
                               variant="ghost"
                               size="icon"
                               title="Eliminar"
-                              className="h-7 w-7 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400"
+                              className="h-7 w-7 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400"
                               disabled={eliminar.isPending}
                               onClick={() => handleEliminar(rec)}
                             >

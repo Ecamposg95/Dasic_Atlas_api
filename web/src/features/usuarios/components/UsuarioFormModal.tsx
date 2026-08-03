@@ -123,7 +123,7 @@ export function UsuarioFormModal({ mode, usuario, onSave, onClose, busy }: Props
             type="checkbox"
             checked={activo}
             onChange={(e) => setActivo(e.target.checked)}
-            className="rounded border-slate-400 dark:border-slate-600"
+            className="rounded border-border-strong bg-card"
           />
           <label htmlFor="activo-check" className="text-sm text-foreground">
             Usuario activo

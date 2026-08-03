@@ -208,7 +208,7 @@ export function FxPage() {
                         <Badge variant={tcHoy.fuente === 'MANUAL' ? 'amber' : 'default'}>
                           {tcHoy.fuente}
                         </Badge>
-                        <span className="text-slate-600 dark:text-slate-500 text-xs">{fmtFecha(tcHoy.fecha)}</span>
+                        <span className="text-muted-foreground text-xs">{fmtFecha(tcHoy.fecha)}</span>
                       </>
                     )}
                   </div>
@@ -263,7 +263,7 @@ export function FxPage() {
               ))
             ) : items.length === 0 ? (
               <DataTableEmpty colSpan={4}>
-                <div className="flex flex-col items-center gap-2 text-slate-600 dark:text-slate-500">
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
                   <Coins className="h-10 w-10 opacity-30" />
                   <p>Sin historial disponible</p>
                 </div>
@@ -283,7 +283,7 @@ export function FxPage() {
                       {row.fuente}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-500 text-xs">
+                  <td className="px-4 py-3 text-muted-foreground text-xs">
                     {row.nota ?? '—'}
                   </td>
                 </DataTableRow>
