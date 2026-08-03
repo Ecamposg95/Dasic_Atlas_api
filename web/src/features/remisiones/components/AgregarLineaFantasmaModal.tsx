@@ -47,36 +47,36 @@ export function AgregarLineaFantasmaModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4">
       <div className="bg-card border border-amber-700/50 rounded-xl shadow-2xl max-w-lg w-full">
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Ghost className="h-4 w-4 text-amber-500" /> Agregar producto fantasma
           </h3>
-          <button type="button" onClick={() => { reset(); onClose(); }} className="text-slate-400 hover:text-slate-600">
+          <button type="button" onClick={() => { reset(); onClose(); }} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="px-5 py-4 space-y-3">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Descripción *</label>
+            <label className="block text-xs text-muted-foreground mb-1">Descripción *</label>
             <Input value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Descripción del producto" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-slate-500 mb-1">SKU</label>
+              <label className="block text-xs text-muted-foreground mb-1">SKU</label>
               <Input value={sku} onChange={(e) => setSku(e.target.value)} className="font-mono" />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Clave unidad SAT</label>
+              <label className="block text-xs text-muted-foreground mb-1">Clave unidad SAT</label>
               <Input value={claveUnidad} onChange={(e) => setClaveUnidad(e.target.value)} maxLength={10} placeholder="Ej. H87" className="font-mono" />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Cantidad *</label>
+              <label className="block text-xs text-muted-foreground mb-1">Cantidad *</label>
               <Input type="number" min="1" value={cantidad} onChange={(e) => setCantidad(e.target.value)} />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Precio unitario</label>
+              <label className="block text-xs text-muted-foreground mb-1">Precio unitario</label>
               <Input type="number" step="0.01" min="0" value={precio} onChange={(e) => setPrecio(e.target.value)} className="text-right font-mono" />
             </div>
           </div>

@@ -147,36 +147,36 @@ function DetalleModal({ remisionId, onClose }: DetalleModalProps) {
         <div className="space-y-4 text-sm">
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-foreground">
             <div>
-              <span className="text-slate-500 text-xs">Orden de venta</span>
+              <span className="text-muted-foreground text-xs">Orden de venta</span>
               <div>{data.orden_folio ?? '—'}</div>
             </div>
             <div>
-              <span className="text-slate-500 text-xs">Cliente</span>
+              <span className="text-muted-foreground text-xs">Cliente</span>
               <div>{data.cliente_nombre ?? '—'}</div>
             </div>
             <div>
-              <span className="text-slate-500 text-xs">Fecha remisión</span>
+              <span className="text-muted-foreground text-xs">Fecha remisión</span>
               <div>{fmtFecha(data.fecha_remision)}</div>
             </div>
             <div>
-              <span className="text-slate-500 text-xs">Transportista</span>
+              <span className="text-muted-foreground text-xs">Transportista</span>
               <div>{data.transportista ?? '—'}</div>
             </div>
             {data.recibido_por && (
               <>
                 <div>
-                  <span className="text-slate-500 text-xs">Recibido por</span>
+                  <span className="text-muted-foreground text-xs">Recibido por</span>
                   <div>{data.recibido_por}</div>
                 </div>
                 <div>
-                  <span className="text-slate-500 text-xs">Fecha recepción</span>
+                  <span className="text-muted-foreground text-xs">Fecha recepción</span>
                   <div>{fmtFecha(data.recibido_at)}</div>
                 </div>
               </>
             )}
             {data.observaciones && (
               <div className="col-span-2">
-                <span className="text-slate-500 text-xs">Observaciones</span>
+                <span className="text-muted-foreground text-xs">Observaciones</span>
                 <div className="text-muted-foreground">{data.observaciones}</div>
               </div>
             )}
@@ -195,7 +195,7 @@ function DetalleModal({ remisionId, onClose }: DetalleModalProps) {
                 </thead>
                 <tbody>
                   {data.detalles.map((d) => (
-                    <tr key={d.id} className="border-b border-slate-200/60 dark:border-slate-800/60">
+                    <tr key={d.id} className="border-b border-border/60">
                       <td className="px-3 py-2 font-mono text-muted-foreground">{d.sku ?? '—'}</td>
                       <td className="px-3 py-2">{d.descripcion ?? '—'}</td>
                       <td className="px-3 py-2 text-right tabular-nums">{d.cantidad}</td>
@@ -242,11 +242,11 @@ function RemisionRow({ item, onVerDetalle, onRecepcion }: RowProps) {
             {item.orden_folio}
           </Link>
         ) : (
-          <span className="text-slate-500 italic text-xs">—</span>
+          <span className="text-muted-foreground/70 italic text-xs">—</span>
         )}
       </td>
       <td className="px-4 py-3 text-foreground text-sm">
-        {item.cliente_nombre ?? <span className="text-slate-500 italic">—</span>}
+        {item.cliente_nombre ?? <span className="text-muted-foreground/70 italic">—</span>}
       </td>
       <td className="px-4 py-3 text-muted-foreground text-xs">{fmtFecha(item.fecha_remision)}</td>
       <td className="px-4 py-3">
@@ -341,7 +341,7 @@ export function RemisionesPage() {
           <Truck className="h-6 w-6 text-accent-glow" />
           <h1 className="text-2xl font-semibold">Remisiones</h1>
           {!isLoading && (
-            <span className="text-slate-500 text-sm">
+            <span className="text-muted-foreground text-sm">
               ({total} {total === 1 ? 'remisión' : 'remisiones'})
             </span>
           )}
@@ -387,7 +387,7 @@ export function RemisionesPage() {
             Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
           ) : items.length === 0 ? (
             <DataTableEmpty colSpan={6}>
-              <div className="flex flex-col items-center gap-2 text-slate-500">
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
                 <Truck className="h-10 w-10 opacity-30" />
                 {searchDebounced || recibidaFiltro !== 'todas' ? (
                   <p>Sin coincidencias con los filtros</p>

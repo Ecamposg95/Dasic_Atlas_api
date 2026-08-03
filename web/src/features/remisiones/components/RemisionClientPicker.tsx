@@ -27,7 +27,7 @@ export function RemisionClientPicker({ onPick }: { onPick: (c: ClienteLite) => v
   return (
     <div className="relative">
       <div className="relative">
-        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <Input
           value={q}
           onChange={(e) => {
@@ -52,15 +52,15 @@ export function RemisionClientPicker({ onPick }: { onPick: (c: ClienteLite) => v
                 setOpen(false);
                 setQ('');
               }}
-              className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 border-b border-border last:border-b-0 flex items-center gap-2"
+              className="w-full text-left px-3 py-2 hover:bg-surface-2/60 border-b border-border last:border-b-0 flex items-center gap-2"
             >
-              <Building2 className="h-4 w-4 text-slate-500 shrink-0" />
+              <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
               <div className="min-w-0">
                 <div className="text-sm text-foreground truncate">
                   {c.nombre_empresa}
                 </div>
                 {c.rfc_tax_id && (
-                  <div className="text-[11px] font-mono text-slate-500">{c.rfc_tax_id}</div>
+                  <div className="text-[11px] font-mono text-muted-foreground">{c.rfc_tax_id}</div>
                 )}
               </div>
             </button>
