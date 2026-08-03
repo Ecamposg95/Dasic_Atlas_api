@@ -7,6 +7,8 @@ import {
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 import { SatCombobox } from '@/components/ui/sat-combobox';
 import {
   DataTable, DataTableBody, DataTableEmpty, DataTableHead, DataTableRow,
@@ -217,17 +219,21 @@ export function FantasmasPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Ghost className="h-5 w-5 text-violet-600 dark:text-violet-400" /> Productos Fantasma apilados
-        </h1>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportarCSV}>
-            <FileSpreadsheet className="h-4 w-4 mr-1" /> CSV
-          </Button>
-          <span className="text-xs text-muted-foreground">{filtrados.length} fantasma(s)</span>
-        </div>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Ghost className="h-5 w-5 text-violet-600 dark:text-violet-400" /> Productos Fantasma apilados
+          </span>
+        }
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={exportarCSV}>
+              <FileSpreadsheet className="h-4 w-4 mr-1" /> CSV
+            </Button>
+            <span className="text-xs text-muted-foreground">{filtrados.length} fantasma(s)</span>
+          </>
+        }
+      />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
@@ -346,10 +352,11 @@ export function FantasmasPage() {
             <DataTableEmpty colSpan={9}>Cargando fantasmas…</DataTableEmpty>
           )}
           {!isLoading && filtrados.length === 0 && (
-            <DataTableEmpty colSpan={9}>
-              <Ghost className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
-              Sin fantasmas que coincidan
-            </DataTableEmpty>
+            <tr>
+              <td colSpan={9}>
+                <EmptyState icon={Ghost} title="Sin fantasmas que coincidan" />
+              </td>
+            </tr>
           )}
           {filtrados.map((f) => (
             <DataTableRow key={f.id}>

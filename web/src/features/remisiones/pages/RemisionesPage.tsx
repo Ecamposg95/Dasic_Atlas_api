@@ -9,12 +9,14 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { ListToolbar } from '@/components/ui/list-toolbar';
 import { Pagination } from '@/components/ui/pagination';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
 import {
   DataTable,
   DataTableHead,
   DataTableBody,
   DataTableRow,
-  DataTableEmpty,
 } from '@/components/ui/data-table';
 import type { RemisionItem } from '../types';
 
@@ -43,22 +45,6 @@ function fmtFecha(iso: string | null): string {
     month: 'short',
     year: 'numeric',
   });
-}
-
-// ---------------------------------------------------------------------------
-// Skeleton
-// ---------------------------------------------------------------------------
-
-function SkeletonRow() {
-  return (
-    <tr className="border-b border-border">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-surface-2 rounded animate-pulse" />
-        </td>
-      ))}
-    </tr>
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -140,7 +126,7 @@ function DetalleModal({ remisionId, onClose }: DetalleModalProps) {
       {isLoading || !data ? (
         <div className="space-y-2 py-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-4 bg-surface-2 rounded animate-pulse" />
+            <Skeleton key={i} className="h-4" />
           ))}
         </div>
       ) : (
@@ -336,21 +322,21 @@ export function RemisionesPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
       {/* Header */}
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-3">
-          <Truck className="h-6 w-6 text-accent-glow" />
-          <h1 className="text-2xl font-semibold">Remisiones</h1>
-          {!isLoading && (
-            <span className="text-muted-foreground text-sm">
-              ({total} {total === 1 ? 'remisión' : 'remisiones'})
-            </span>
-          )}
-        </div>
-        <Button size="sm" onClick={() => navigate('/spa/remisiones-nueva')}>
-          <Plus className="h-4 w-4 mr-1" />
-          Nueva remisión
-        </Button>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            <Truck className="h-6 w-6 text-accent-glow" />
+            Remisiones
+          </span>
+        }
+        description={!isLoading ? `(${total} ${total === 1 ? 'remisión' : 'remisiones'})` : undefined}
+        actions={
+          <Button size="sm" onClick={() => navigate('/spa/remisiones-nueva')}>
+            <Plus className="h-4 w-4 mr-1" />
+            Nueva remisión
+          </Button>
+        }
+      />
 
       {/* Toolbar: búsqueda + filtro de recepción */}
       <ListToolbar
@@ -384,23 +370,21 @@ export function RemisionesPage() {
         </DataTableHead>
         <DataTableBody>
           {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+            <SkeletonRows rows={6} cols={6} />
           ) : items.length === 0 ? (
-            <DataTableEmpty colSpan={6}>
-              <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                <Truck className="h-10 w-10 opacity-30" />
+            <tr>
+              <td colSpan={6}>
                 {searchDebounced || recibidaFiltro !== 'todas' ? (
-                  <p>Sin coincidencias con los filtros</p>
+                  <EmptyState icon={Truck} title="Sin coincidencias con los filtros" />
                 ) : (
-                  <>
-                    <p>No hay remisiones registradas</p>
-                    <p className="text-xs">
-                      Las remisiones se crean desde el detalle de una orden de venta.
-                    </p>
-                  </>
+                  <EmptyState
+                    icon={Truck}
+                    title="No hay remisiones registradas"
+                    description="Las remisiones se crean desde el detalle de una orden de venta."
+                  />
                 )}
-              </div>
-            </DataTableEmpty>
+              </td>
+            </tr>
           ) : (
             items.map((item) => (
               <RemisionRow

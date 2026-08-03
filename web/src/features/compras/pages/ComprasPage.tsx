@@ -6,6 +6,8 @@ import {
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   DataTable, DataTableBody, DataTableEmpty, DataTableHead, DataTableRow,
 } from '@/components/ui/data-table';
@@ -108,28 +110,32 @@ export function ComprasPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
       {/* Header */}
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <ShoppingCart className="h-5 w-5 text-cyan-400" /> Compras
-        </h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setModalProveedores(true)}
-          >
-            Ver proveedores
-          </Button>
-          {puedeCrearOC && (
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5 text-cyan-400" /> Compras
+          </span>
+        }
+        actions={
+          <>
             <Button
+              variant="outline"
               size="sm"
-              onClick={() => setModalCrearOC(true)}
+              onClick={() => setModalProveedores(true)}
             >
-              + Nueva OC manual
+              Ver proveedores
             </Button>
-          )}
-        </div>
-      </header>
+            {puedeCrearOC && (
+              <Button
+                size="sm"
+                onClick={() => setModalCrearOC(true)}
+              >
+                + Nueva OC manual
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* Filtros */}
       <div className="bg-card border border-border rounded-xl p-3 flex flex-wrap items-center gap-2">
@@ -176,10 +182,11 @@ export function ComprasPage() {
             <DataTableEmpty colSpan={7}>Cargando órdenes de compra…</DataTableEmpty>
           )}
           {!isLoading && filtradas.length === 0 && (
-            <DataTableEmpty colSpan={7}>
-              <ShoppingCart className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
-              Sin órdenes que coincidan
-            </DataTableEmpty>
+            <tr>
+              <td colSpan={7}>
+                <EmptyState icon={ShoppingCart} title="Sin órdenes que coincidan" />
+              </td>
+            </tr>
           )}
           {filtradas.map((o) => (
             <DataTableRow key={o.id}>
