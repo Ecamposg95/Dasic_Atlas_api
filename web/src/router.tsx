@@ -32,7 +32,6 @@ const lazyPage = <K extends string>(loader: () => Promise<Record<K, React.Compon
     }
   };
 
-const hello = lazyPage(() => import('@/features/hello/pages/HelloPage'), 'HelloPage');
 const dashboard = lazyPage(() => import('@/features/dashboard/pages/DashboardPage'), 'DashboardPage');
 const cotizador = lazyPage(() => import('@/features/cotizador/pages/CotizadorPage'), 'CotizadorPage');
 const borradores = lazyPage(() => import('@/features/borradores/pages/BorradoresPage'), 'BorradoresPage');
@@ -85,7 +84,6 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/spa/dashboard" replace /> },
       { path: 'login', element: <LoginPage /> },
-      { path: 'hello', lazy: hello },
       { path: 'dashboard', lazy: dashboard },
       { path: 'cotizador', lazy: cotizador },
       { path: 'borradores', lazy: borradores },
