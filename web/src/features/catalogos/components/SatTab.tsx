@@ -165,9 +165,9 @@ export function SatTab() {
           <td className="p-3 font-mono text-xs">{r.codigo}</td>
           <td className="p-3 text-sm">
             {r.nombre}
-            {r.simbolo && <span className="ml-1.5 text-xs text-slate-500">({r.simbolo})</span>}
+            {r.simbolo && <span className="ml-1.5 text-xs text-muted-foreground">({r.simbolo})</span>}
             {r.descripcion && (
-              <div className="text-xs text-slate-500 mt-0.5">{r.descripcion}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{r.descripcion}</div>
             )}
           </td>
           <td className="p-3 text-center">
@@ -227,7 +227,7 @@ export function SatTab() {
 
         {catalog.typeahead && (
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -238,11 +238,11 @@ export function SatTab() {
         )}
 
         {!catalog.typeahead && (
-          <span className="text-xs text-slate-500">Lista completa · {data.length} registros</span>
+          <span className="text-xs text-muted-foreground">Lista completa · {data.length} registros</span>
         )}
 
         {catalog.typeahead && shouldFetch && (
-          <span className="text-xs text-slate-500">{data.length} resultado(s)</span>
+          <span className="text-xs text-muted-foreground">{data.length} resultado(s)</span>
         )}
       </div>
 
@@ -260,7 +260,7 @@ export function SatTab() {
         </DataTableBody>
       </DataTable>
 
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-muted-foreground/70">
         Catálogos SAT (CFDI 4.0) — solo lectura. Los datos son canon del SAT y no se editan desde la aplicación.
       </p>
     </div>
