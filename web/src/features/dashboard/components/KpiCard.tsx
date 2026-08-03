@@ -22,17 +22,17 @@ export function KpiCard({
   return (
     <Card>
       <CardHeader className="pb-1 pt-4 px-4">
-        <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{label}</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{label}</p>
       </CardHeader>
       <CardContent className="px-4 pb-4">
         <div className="flex items-end justify-between gap-2">
-          <CardTitle className={`text-2xl font-bold ${loading ? 'text-slate-400 dark:text-slate-600' : ''}`}>
+          <CardTitle className={`text-2xl font-bold ${loading ? 'text-muted-foreground/70' : ''}`}>
             {loading ? '—' : value}
           </CardTitle>
           {!loading && delta != null && (
             <span
               className={`text-xs font-semibold flex items-center gap-0.5 ${
-                delta > 0 ? 'text-emerald-500' : delta < 0 ? 'text-rose-500' : 'text-slate-400'
+                delta > 0 ? 'text-emerald-500' : delta < 0 ? 'text-rose-500' : 'text-muted-foreground'
               }`}
             >
               {delta > 0 ? <ArrowUpRight className="h-3 w-3" /> : delta < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
@@ -46,7 +46,7 @@ export function KpiCard({
             <Sparkline data={spark} tone={tone} />
           </div>
         )}
-        {sub && <p className="text-xs text-slate-500 mt-1">{loading ? '' : sub}</p>}
+        {sub && <p className="text-xs text-muted-foreground mt-1">{loading ? '' : sub}</p>}
       </CardContent>
     </Card>
   );

@@ -29,9 +29,9 @@ export function TendenciaChart({ series, loading }: { series: TendenciaPunto[]; 
       </CardHeader>
       <CardContent className="px-2 pb-4">
         {loading ? (
-          <div className="h-[260px] animate-pulse bg-slate-100 dark:bg-slate-800/40 rounded" />
+          <div className="h-[260px] animate-pulse bg-surface-2 rounded" />
         ) : !series.length ? (
-          <div className="h-[260px] flex items-center justify-center text-sm text-slate-500">
+          <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
             Sin datos del periodo
           </div>
         ) : (

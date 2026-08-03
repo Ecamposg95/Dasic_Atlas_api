@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { HeatmapDia } from '../types';
 
 function intensity(v: number, max: number): string {
-  if (v <= 0 || max <= 0) return 'bg-slate-100 dark:bg-slate-800/50';
+  if (v <= 0 || max <= 0) return 'bg-surface-2';
   const r = v / max;
   if (r > 0.75) return 'bg-emerald-600';
   if (r > 0.5) return 'bg-emerald-500';
@@ -49,9 +49,9 @@ export function ActivityHeatmap({
       </CardHeader>
       <CardContent className="px-4 pb-4">
         {loading ? (
-          <div className="h-[180px] animate-pulse bg-slate-100 dark:bg-slate-800/40 rounded" />
+          <div className="h-[180px] animate-pulse bg-surface-2 rounded" />
         ) : !days.length ? (
-          <div className="h-[180px] flex items-center justify-center text-sm text-slate-500">Sin actividad</div>
+          <div className="h-[180px] flex items-center justify-center text-sm text-muted-foreground">Sin actividad</div>
         ) : (
           <div className="overflow-x-auto">
             <div className="flex gap-1">
