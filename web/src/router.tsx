@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { NotFound } from '@/components/NotFound';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 
 // Code-split: cada página se carga on-demand al navegar a ella.
@@ -117,6 +118,7 @@ export const router = createBrowserRouter([
       { path: 'superadmin/usuarios', lazy: superadminUsuarios },
       { path: 'crm', lazy: crm },
       { path: 'recordatorios', lazy: recordatorios },
+      { path: '*', element: <NotFound /> },
     ],
   },
   // Rutas legacy — FastAPI sirve el mismo dist/index.html para estas URLs.
@@ -144,4 +146,6 @@ export const router = createBrowserRouter([
   legacyRoute('/precios', precios),
   legacyRoute('/usuarios', usuarios),
   legacyRoute('/servicios', servicios),
+  // Catch-all: cualquier URL desconocida cae en el 404 dentro del shell.
+  { path: '*', element: <Layout />, children: [{ path: '*', element: <NotFound /> }] },
 ]);
