@@ -14,6 +14,7 @@ import {
   DataTableHead,
   DataTableRow,
 } from '@/components/ui/data-table';
+import { PageHeader } from '@/components/ui/page-header';
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { useIsAdmin } from '@/lib/permissions';
@@ -203,25 +204,31 @@ export function ClientesPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Users className="h-5 w-5 text-cyan-400" /> Empresas
-        </h1>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-cyan-400" /> Empresas
+          </span>
+        }
+        description={
+          <>
             {totalCount > 0 ? `${totalCount} empresa(s)` : `${filtrados.length} empresa(s)`}
             {page > 1 ? ` — p. ${page}` : ''}
-          </span>
-          {isAdmin && dupCount > 0 && (
-            <Button size="sm" variant="outline" onClick={() => navigate('/spa/empresas-unificar')}>
-              Unificar duplicados ({dupCount})
+          </>
+        }
+        actions={
+          <>
+            {isAdmin && dupCount > 0 && (
+              <Button size="sm" variant="outline" onClick={() => navigate('/spa/empresas-unificar')}>
+                Unificar duplicados ({dupCount})
+              </Button>
+            )}
+            <Button size="sm" onClick={() => setModalCrear(true)}>
+              + Nueva empresa
             </Button>
-          )}
-          <Button size="sm" onClick={() => setModalCrear(true)}>
-            + Nueva empresa
-          </Button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {/* Filtros */}
       <div className="bg-card border border-border rounded-xl p-3 flex flex-wrap items-center gap-2">

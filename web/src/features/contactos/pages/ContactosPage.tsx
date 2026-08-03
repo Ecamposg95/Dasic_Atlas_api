@@ -3,6 +3,7 @@ import { confirm } from '@/lib/confirm';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Contact, Search, Plus, Pencil, Trash2, FileText, History } from 'lucide-react';
 import { DataTable, DataTableHead, DataTableBody, DataTableRow, DataTableEmpty } from '@/components/ui/data-table';
+import { PageHeader } from '@/components/ui/page-header';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -88,14 +89,18 @@ export function ContactosPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Contact className="h-5 w-5 text-accent-glow" /> Contactos
-        </h1>
-        <Button size="sm" onClick={() => { setEditing(null); setFormOpen(true); }}>
-          <Plus className="h-4 w-4 mr-1" /> Nuevo contacto
-        </Button>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Contact className="h-5 w-5 text-accent-glow" /> Contactos
+          </span>
+        }
+        actions={
+          <Button size="sm" onClick={() => { setEditing(null); setFormOpen(true); }}>
+            <Plus className="h-4 w-4 mr-1" /> Nuevo contacto
+          </Button>
+        }
+      />
 
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 w-full sm:w-auto sm:min-w-[220px]">

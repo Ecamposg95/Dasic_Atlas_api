@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GitMerge, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from '@/lib/toast';
 import { useIsAdmin } from '@/lib/permissions';
 import { useDuplicados, useMergeEmpresas } from '../hooks/useDuplicados';
@@ -116,19 +117,25 @@ export function UnificarEmpresasPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-4">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <GitMerge className="h-5 w-5 text-accent-glow" /> Unificar empresas duplicadas
-        </h1>
-        <Button variant="ghost" size="sm" onClick={() => navigate('/spa/clientes')}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Volver
-        </Button>
-      </header>
-      <p className="text-sm text-muted-foreground">
-        Empresas con el mismo RFC. Elige el sobreviviente por grupo; las demás se fusionan en él
-        (órdenes, transacciones, remisiones y contactos se mueven; el saldo se recalcula) y se borran.
-        Acción irreversible — toma un respaldo antes.
-      </p>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <GitMerge className="h-5 w-5 text-accent-glow" /> Unificar empresas duplicadas
+          </span>
+        }
+        description={
+          <>
+            Empresas con el mismo RFC. Elige el sobreviviente por grupo; las demás se fusionan en él
+            (órdenes, transacciones, remisiones y contactos se mueven; el saldo se recalcula) y se borran.
+            Acción irreversible — toma un respaldo antes.
+          </>
+        }
+        actions={
+          <Button variant="ghost" size="sm" onClick={() => navigate('/spa/clientes')}>
+            <ArrowLeft className="h-4 w-4 mr-1" /> Volver
+          </Button>
+        }
+      />
       {showingFiltered && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Badge variant="cyan">Mostrando {filteredGrupos.length} grupo(s) con las empresas seleccionadas</Badge>
