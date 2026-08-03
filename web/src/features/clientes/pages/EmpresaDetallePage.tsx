@@ -15,7 +15,7 @@ type Tab = (typeof TABS)[number];
 
 const estatusBadge: Record<string, string> = {
   activo: 'bg-emerald-500/15 text-emerald-400',
-  inactivo: 'bg-slate-500/15 text-slate-400',
+  inactivo: 'bg-muted-foreground/15 text-muted-foreground',
   prospecto: 'bg-sky-500/15 text-sky-400',
 };
 

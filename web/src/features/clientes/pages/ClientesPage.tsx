@@ -208,7 +208,7 @@ export function ClientesPage() {
           <Users className="h-5 w-5 text-cyan-400" /> Empresas
         </h1>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-muted-foreground">
             {totalCount > 0 ? `${totalCount} empresa(s)` : `${filtrados.length} empresa(s)`}
             {page > 1 ? ` — p. ${page}` : ''}
           </span>
@@ -294,7 +294,7 @@ export function ClientesPage() {
           )}
           {!isLoading && filtrados.length === 0 && (
             <DataTableEmpty colSpan={9}>
-              <Users className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-700 mb-2" />
+              <Users className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
               {filtroQDebounced || estatus ? 'Sin coincidencias con la búsqueda' : 'Sin clientes registrados'}
             </DataTableEmpty>
           )}
@@ -317,10 +317,10 @@ export function ClientesPage() {
                   </div>
                 </td>
                 <td className="p-3 text-muted-foreground text-xs">
-                  {c.contacto_nombre || <span className="text-slate-400 dark:text-slate-600">—</span>}
+                  {c.contacto_nombre || <span className="text-muted-foreground/70">—</span>}
                 </td>
                 <td className="p-3 font-mono text-xs text-muted-foreground">
-                  {c.rfc_tax_id || <span className="text-slate-400 dark:text-slate-600">—</span>}
+                  {c.rfc_tax_id || <span className="text-muted-foreground/70">—</span>}
                 </td>
                 <td className="p-2 text-center"><Badge variant="slate">{c.n_contactos ?? 0}</Badge></td>
                 <td className="p-3">{estatusBadge(c.estatus)}</td>
@@ -331,7 +331,7 @@ export function ClientesPage() {
                   {saldo > 0 ? (
                     <Badge variant="rose">{fmtMoney(c.moneda_credito, c.saldo_actual)}</Badge>
                   ) : (
-                    <span className="text-xs text-slate-400 dark:text-slate-600">
+                    <span className="text-xs text-muted-foreground/70">
                       {fmtMoney(c.moneda_credito, c.saldo_actual)}
                     </span>
                   )}
@@ -346,7 +346,7 @@ export function ClientesPage() {
                   </button>
                   <button
                     onClick={() => setDetalle(c)}
-                    className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-1.5 text-xs"
+                    className="text-muted-foreground hover:text-foreground px-1.5 text-xs"
                     title="Vista rápida"
                   >
                     ⊞
@@ -354,7 +354,7 @@ export function ClientesPage() {
                   <button
                     onClick={() => setModalEditar(c)}
                     title="Editar"
-                    className="text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 px-1.5 text-xs"
+                    className="text-foreground/80 hover:text-foreground px-1.5 text-xs"
                   >
                     Editar
                   </button>

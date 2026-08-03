@@ -49,7 +49,7 @@ function GrupoCard({ grupo, preselectedIds }: { grupo: GrupoDuplicado; preselect
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-[640px]">
-          <thead className="text-[11px] uppercase text-slate-500">
+          <thead className="text-[11px] uppercase text-muted-foreground">
             <tr>
               <th className="p-2 text-center">Sobrevive</th>
               <th className="p-2 text-left">Empresa</th>
@@ -69,7 +69,7 @@ function GrupoCard({ grupo, preselectedIds }: { grupo: GrupoDuplicado; preselect
                   <input type="radio" name={`surv-${grupo.rfc}`} checked={m.id === survivor} onChange={() => setSurvivor(m.id)} />
                 </td>
                 <td className="p-2">{m.nombre_empresa}</td>
-                <td className="p-2 text-slate-500">{m.contacto_nombre || '—'}</td>
+                <td className="p-2 text-muted-foreground">{m.contacto_nombre || '—'}</td>
                 <td className="p-2 text-right font-mono">{fmt(m.saldo_actual)}</td>
                 <td className="p-2 text-right font-mono">{fmt(m.limite_credito)}</td>
                 <td className="p-2 text-center">{m.n_ordenes}</td>
@@ -82,7 +82,7 @@ function GrupoCard({ grupo, preselectedIds }: { grupo: GrupoDuplicado; preselect
         </table>
       </div>
       <div className="flex items-center justify-between">
-        <p className="text-xs text-slate-500">El saldo del sobreviviente se recalcula desde sus transacciones.</p>
+        <p className="text-xs text-muted-foreground">El saldo del sobreviviente se recalcula desde sus transacciones.</p>
         <Button size="sm" onClick={onConfirm} disabled={merge.isPending || losers.length === 0}>
           {merge.isPending ? 'Fusionando…' : `Fusionar ${losers.length} → sobreviviente`}
         </Button>
@@ -111,7 +111,7 @@ export function UnificarEmpresasPage() {
   const showingFiltered = preselectedIds.length > 0 && filteredGrupos.length > 0;
 
   if (!isAdmin) {
-    return <div className="p-6 text-sm text-slate-500">Solo administradores pueden unificar empresas.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Solo administradores pueden unificar empresas.</div>;
   }
 
   return (
@@ -124,7 +124,7 @@ export function UnificarEmpresasPage() {
           <ArrowLeft className="h-4 w-4 mr-1" /> Volver
         </Button>
       </header>
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted-foreground">
         Empresas con el mismo RFC. Elige el sobreviviente por grupo; las demás se fusionan en él
         (órdenes, transacciones, remisiones y contactos se mueven; el saldo se recalcula) y se borran.
         Acción irreversible — toma un respaldo antes.
@@ -138,7 +138,7 @@ export function UnificarEmpresasPage() {
         </div>
       )}
       {isLoading ? (
-        <p className="text-sm text-slate-400">Cargando…</p>
+        <p className="text-sm text-muted-foreground/70">Cargando…</p>
       ) : !(showingFiltered ? filteredGrupos : grupos).length ? (
         <div className="text-center py-12">
           <Badge variant="emerald">Sin duplicados por RFC 🎉</Badge>

@@ -13,7 +13,7 @@ export function ActividadTab({ clienteId }: { clienteId: number }) {
     <ul className="space-y-2 p-1">
       {data.map((e, i) => (
         <li key={i} className="flex items-start gap-3 rounded-lg border border-border bg-surface-2 p-3">
-          <span className={`mt-1.5 h-2 w-2 rounded-full ${dot[e.tipo] ?? 'bg-slate-400'}`} />
+          <span className={`mt-1.5 h-2 w-2 rounded-full ${dot[e.tipo] ?? 'bg-muted-foreground'}`} />
           <div className="flex-1">
             <div className="text-sm text-foreground">{e.descripcion}</div>
             <div className="text-xs text-muted-foreground">
