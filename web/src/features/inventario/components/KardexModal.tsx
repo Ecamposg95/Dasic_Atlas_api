@@ -23,7 +23,7 @@ export function KardexModal({ producto, onClose }: { producto: Producto; onClose
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-950/70 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-background/70 flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh]">
@@ -32,10 +32,10 @@ export function KardexModal({ producto, onClose }: { producto: Producto; onClose
           <div>
             <h2 className="text-base font-semibold">Kardex — {producto.nombre}</h2>
             {producto.sku && (
-              <p className="text-xs text-slate-500 font-mono mt-0.5">{producto.sku}</p>
+              <p className="text-xs text-muted-foreground font-mono mt-0.5">{producto.sku}</p>
             )}
           </div>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 ml-4">
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground ml-4">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -44,21 +44,21 @@ export function KardexModal({ producto, onClose }: { producto: Producto; onClose
         {data && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 px-5 py-3 border-b border-border text-xs shrink-0">
             <div>
-              <div className="text-slate-500 uppercase font-bold text-[10px]">Stock actual</div>
+              <div className="text-muted-foreground uppercase font-bold text-[10px]">Stock actual</div>
               <div className="text-lg font-bold">{fmt(data.inventario.stock_actual)}</div>
             </div>
             <div>
-              <div className="text-slate-500 uppercase font-bold text-[10px]">Total movs.</div>
+              <div className="text-muted-foreground uppercase font-bold text-[10px]">Total movs.</div>
               <div className="text-lg font-bold">{data.historico.total_movimientos}</div>
             </div>
             <div>
-              <div className="text-slate-500 uppercase font-bold text-[10px]">Primer mov.</div>
+              <div className="text-muted-foreground uppercase font-bold text-[10px]">Primer mov.</div>
               <div className="font-medium">
                 {data.historico.primer_movimiento ? data.historico.primer_movimiento.slice(0, 10) : '—'}
               </div>
             </div>
             <div>
-              <div className="text-slate-500 uppercase font-bold text-[10px]">Último mov.</div>
+              <div className="text-muted-foreground uppercase font-bold text-[10px]">Último mov.</div>
               <div className="font-medium">
                 {data.historico.ultimo_movimiento ? data.historico.ultimo_movimiento.slice(0, 10) : '—'}
               </div>
@@ -69,14 +69,14 @@ export function KardexModal({ producto, onClose }: { producto: Producto; onClose
         {/* Tabla de movimientos */}
         <div className="overflow-y-auto flex-1">
           {isLoading && (
-            <p className="text-sm text-slate-500 p-5">Cargando movimientos…</p>
+            <p className="text-sm text-muted-foreground p-5">Cargando movimientos…</p>
           )}
           {!isLoading && data && data.movimientos.length === 0 && (
-            <p className="text-sm text-slate-500 p-5">Sin movimientos registrados para este producto.</p>
+            <p className="text-sm text-muted-foreground p-5">Sin movimientos registrados para este producto.</p>
           )}
           {!isLoading && data && data.movimientos.length > 0 && (
             <table className="w-full text-xs">
-              <thead className="sticky top-0 bg-surface-2 text-slate-500 uppercase">
+              <thead className="sticky top-0 bg-surface-2 text-muted-foreground uppercase">
                 <tr>
                   <th className="p-3 text-left">Fecha</th>
                   <th className="p-3 text-center">Tipo</th>
@@ -120,7 +120,7 @@ export function KardexModal({ producto, onClose }: { producto: Producto; onClose
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-border text-xs text-slate-500 shrink-0">
+        <div className="px-5 py-3 border-t border-border text-xs text-muted-foreground shrink-0">
           Últimos 100 movimientos · ordenados por más reciente primero.
         </div>
       </div>

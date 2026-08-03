@@ -209,7 +209,7 @@ export function InventarioPage() {
           <Package className="h-5 w-5 text-cyan-400" /> Inventario
         </h1>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500">{filtrados.length} producto(s)</span>
+          <span className="text-xs text-muted-foreground">{filtrados.length} producto(s)</span>
           <Button size="sm" onClick={() => setModalNuevo(true)}>
             <Plus className="h-4 w-4 mr-1" /> Nuevo producto
           </Button>
@@ -249,13 +249,13 @@ export function InventarioPage() {
               type="button"
               onClick={() => { setImportFeedback(null); setExpandErrores(false); }}
               aria-label="Cerrar aviso"
-              className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition shrink-0"
+              className="text-muted-foreground hover:text-foreground transition shrink-0"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
           {importFeedback.hint && (
-            <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{importFeedback.hint}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{importFeedback.hint}</p>
           )}
           {importFeedback.errores.length > 0 && (
             <div className="mt-2 border-t border-rose-300/40 dark:border-rose-500/20 pt-2">
@@ -317,7 +317,7 @@ export function InventarioPage() {
             type="checkbox"
             checked={soloBajoStock}
             onChange={(e) => setSoloBajoStock(e.target.checked)}
-            className="rounded border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800"
+            className="rounded border-border-strong bg-card"
           />
           Solo bajo stock
         </label>
@@ -350,7 +350,7 @@ export function InventarioPage() {
           )}
           {!isLoading && filtrados.length === 0 && (
             <DataTableEmpty colSpan={isAdmin ? 10 : 9}>
-              <Package className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-700 mb-2" />
+              <Package className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
               Sin productos que coincidan con los filtros
             </DataTableEmpty>
           )}
@@ -370,11 +370,11 @@ export function InventarioPage() {
                   <span className="text-foreground">
                     {p.clave_prod_serv}
                     {p.clave_unidad_sat && (
-                      <span className="block text-[10px] text-slate-500 dark:text-slate-500">{p.clave_unidad_sat}</span>
+                      <span className="block text-[10px] text-muted-foreground">{p.clave_unidad_sat}</span>
                     )}
                   </span>
                 ) : (
-                  <span className="text-slate-400 dark:text-slate-600">—</span>
+                  <span className="text-muted-foreground/70">—</span>
                 )}
               </td>
               <td className="p-3 text-right">{stockBadge(p)}</td>
@@ -390,7 +390,7 @@ export function InventarioPage() {
                 <button
                   onClick={() => setModalEditar(p)}
                   title="Editar"
-                  className="text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 px-1"
+                  className="text-muted-foreground hover:text-foreground px-1"
                 >
                   <Pencil className="h-4 w-4 inline" />
                 </button>
