@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { confirm } from '@/lib/confirm';
-import { Pen, Trash2, X } from 'lucide-react';
+import { Pen, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Modal, ModalFooter } from '@/components/ui/modal';
 import {
   DataTable, DataTableBody, DataTableEmpty, DataTableHead, DataTableRow,
 } from '@/components/ui/data-table';
@@ -12,29 +13,6 @@ import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { useCategorias } from '../hooks/useCategorias';
 import type { Categoria } from '../types';
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function ModalShell({
-  title, children, onClose,
-}: { title: string; children: React.ReactNode; onClose: () => void }) {
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
 
 // ─── RenombrarModal ──────────────────────────────────────────────────────────
 
@@ -73,7 +51,7 @@ function RenombrarModal({
   }
 
   return (
-    <ModalShell title="Renombrar categoría" onClose={onClose}>
+    <Modal title="Renombrar categoría" onClose={onClose} size="md">
       <div className="space-y-3">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">Nombre actual</label>
@@ -94,14 +72,14 @@ function RenombrarModal({
         {err && (
           <div className="text-xs bg-rose-100 border border-rose-300 text-rose-700 dark:bg-rose-900/30 dark:border-rose-700/50 dark:text-rose-300 rounded p-2">{err}</div>
         )}
-        <div className="flex justify-end gap-2 pt-3 border-t border-border">
-          <Button variant="ghost" size="sm" onClick={onClose} disabled={renameMut.isPending}>Cancelar</Button>
-          <Button size="sm" onClick={onSubmit} disabled={renameMut.isPending}>
-            {renameMut.isPending ? 'Renombrando…' : 'Renombrar'}
-          </Button>
-        </div>
       </div>
-    </ModalShell>
+      <ModalFooter>
+        <Button variant="ghost" size="sm" onClick={onClose} disabled={renameMut.isPending}>Cancelar</Button>
+        <Button size="sm" onClick={onSubmit} disabled={renameMut.isPending}>
+          {renameMut.isPending ? 'Renombrando…' : 'Renombrar'}
+        </Button>
+      </ModalFooter>
+    </Modal>
   );
 }
 

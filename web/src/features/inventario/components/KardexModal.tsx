@@ -1,5 +1,5 @@
-import { X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Modal } from '@/components/ui/modal';
 import { useCardex } from '../hooks/useProductos';
 import type { Producto } from '../types';
 
@@ -22,27 +22,14 @@ export function KardexModal({ producto, onClose }: { producto: Producto; onClose
   const { data, isLoading } = useCardex(producto.id);
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-background/70 flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <div className="flex items-start justify-between px-5 py-4 border-b border-border shrink-0">
-          <div>
-            <h2 className="text-base font-semibold">Kardex — {producto.nombre}</h2>
-            {producto.sku && (
-              <p className="text-xs text-muted-foreground font-mono mt-0.5">{producto.sku}</p>
-            )}
-          </div>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground ml-4">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <Modal title={`Kardex — ${producto.nombre}`} onClose={onClose} size="xl">
+      {producto.sku && (
+        <p className="text-xs text-muted-foreground font-mono -mt-2 mb-3">{producto.sku}</p>
+      )}
 
-        {/* Métricas históricas */}
-        {data && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 px-5 py-3 border-b border-border text-xs shrink-0">
+      {/* Métricas históricas */}
+      {data && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-3 border-b border-border text-xs">
             <div>
               <div className="text-muted-foreground uppercase font-bold text-[10px]">Stock actual</div>
               <div className="text-lg font-bold">{fmt(data.inventario.stock_actual)}</div>
@@ -63,11 +50,11 @@ export function KardexModal({ producto, onClose }: { producto: Producto; onClose
                 {data.historico.ultimo_movimiento ? data.historico.ultimo_movimiento.slice(0, 10) : '—'}
               </div>
             </div>
-          </div>
-        )}
+        </div>
+      )}
 
-        {/* Tabla de movimientos */}
-        <div className="overflow-y-auto overflow-x-auto flex-1">
+      {/* Tabla de movimientos — scroll interno propio para que el thead sticky funcione */}
+      <div className="overflow-y-auto overflow-x-auto max-h-[55vh]">
           {isLoading && (
             <p className="text-sm text-muted-foreground p-5">Cargando movimientos…</p>
           )}
@@ -117,13 +104,12 @@ export function KardexModal({ producto, onClose }: { producto: Producto; onClose
               </tbody>
             </table>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-5 py-3 border-t border-border text-xs text-muted-foreground shrink-0">
-          Últimos 100 movimientos · ordenados por más reciente primero.
-        </div>
       </div>
-    </div>
+
+      {/* Footer */}
+      <div className="pt-3 mt-3 border-t border-border text-xs text-muted-foreground">
+        Últimos 100 movimientos · ordenados por más reciente primero.
+      </div>
+    </Modal>
   );
 }

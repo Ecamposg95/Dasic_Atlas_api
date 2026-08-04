@@ -7,6 +7,7 @@ import {
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Modal, ModalFooter } from '@/components/ui/modal';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SatCombobox } from '@/components/ui/sat-combobox';
@@ -486,7 +487,7 @@ function DetalleModal({ id, onClose }: { id: number; onClose: () => void }) {
   }, [id]);
 
   return (
-    <ModalShell title="Detalle fantasma" onClose={onClose}>
+    <Modal title="Detalle fantasma" onClose={onClose} size="md">
       {err && <div className="text-rose-600 dark:text-rose-400 text-sm">{err}</div>}
       {!d && !err && <div className="text-muted-foreground text-sm">Cargando…</div>}
       {d && (
@@ -519,7 +520,7 @@ function DetalleModal({ id, onClose }: { id: number; onClose: () => void }) {
           </div>
         </div>
       )}
-    </ModalShell>
+    </Modal>
   );
 }
 
@@ -562,7 +563,7 @@ function EditarModal({
   }
 
   return (
-    <ModalShell title="Editar fantasma" onClose={onClose}>
+    <Modal title="Editar fantasma" onClose={onClose} size="md">
       <label className="block text-xs text-muted-foreground mb-1">Descripción</label>
       <textarea
         value={desc}
@@ -615,13 +616,13 @@ function EditarModal({
       <label className="block text-xs text-muted-foreground mb-1">Observaciones</label>
       <Input value={observaciones} onChange={(e) => setObservaciones(e.target.value)} className="mb-3" placeholder="Notas del fantasma" />
       {err && <div className="text-xs bg-rose-50 dark:bg-rose-900/30 border border-rose-300 dark:border-rose-700/50 rounded p-2 mb-3 text-rose-700 dark:text-rose-300">{err}</div>}
-      <div className="flex justify-end gap-2 pt-3 border-t border-border">
+      <ModalFooter>
         <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>Cancelar</Button>
         <Button size="sm" onClick={onSubmit} disabled={busy}>
           {busy ? 'Guardando…' : 'Guardar'}
         </Button>
-      </div>
-    </ModalShell>
+      </ModalFooter>
+    </Modal>
   );
 }
 
@@ -658,7 +659,7 @@ function AsignarProveedorModal({
   }
 
   return (
-    <ModalShell title={`Asignar proveedor a ${ids.length} fantasma(s)`} onClose={onClose}>
+    <Modal title={`Asignar proveedor a ${ids.length} fantasma(s)`} onClose={onClose} size="md">
       <select
         value={provId}
         onChange={(e) => setProvId(e.target.value)}
@@ -669,33 +670,12 @@ function AsignarProveedorModal({
           <option key={p.id} value={p.id}>{p.nombre_empresa}</option>
         ))}
       </select>
-      <div className="flex justify-end gap-2 pt-3 border-t border-border">
+      <ModalFooter>
         <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>Cancelar</Button>
         <Button size="sm" onClick={onSubmit} disabled={busy}>
           {busy ? 'Asignando…' : 'Asignar'}
         </Button>
-      </div>
-    </ModalShell>
-  );
-}
-
-function ModalShell({
-  title, children, onClose,
-}: { title: string; children: React.ReactNode; onClose: () => void }) {
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-background/70 flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="bg-card border border-border rounded-xl shadow-2xl max-w-lg w-full p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
+      </ModalFooter>
+    </Modal>
   );
 }
