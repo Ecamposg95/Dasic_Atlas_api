@@ -131,7 +131,7 @@ function ReporteRow({ item, onRecepcion }: RowProps) {
       <td className="px-4 py-3">
         {item.orden_venta_folio ? (
           <a
-            href={`/ventas/cotizador?edit=${item.orden_venta_id}`}
+            href={`/spa/cotizador?edit=${item.orden_venta_id}`}
             className="text-accent-glow hover:underline text-xs font-mono"
           >
             {item.orden_venta_folio}

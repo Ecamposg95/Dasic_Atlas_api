@@ -88,7 +88,7 @@ export function DrawerBorradores() {
           {items.map((b) => (
             <a
               key={b.id}
-              href={`/ventas/cotizador?edit=${b.id}`}
+              href={`/spa/cotizador?edit=${b.id}`}
               className="block p-3 rounded border border-border hover:border-accent-glow bg-background transition"
             >
               <div className="flex items-center justify-between mb-1">

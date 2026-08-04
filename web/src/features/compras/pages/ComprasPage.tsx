@@ -204,7 +204,7 @@ export function ComprasPage() {
                 {o.cotizacion_id ? (
                   <button
                     type="button"
-                    onClick={() => navigate(`/ventas/cotizador?edit=${o.cotizacion_id}`)}
+                    onClick={() => navigate(`/spa/cotizador?edit=${o.cotizacion_id}`)}
                     className="text-accent-deep hover:underline dark:text-accent-glow"
                   >
                     #{o.cotizacion_id}

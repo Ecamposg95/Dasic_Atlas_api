@@ -8,6 +8,8 @@ import {
   useEliminarBorrador,
   useCrearCotizacionDesde,
 } from '../hooks/useRemisiones';
+import { useUsuarios } from '@/features/usuarios/hooks/useUsuarios';
+import { useIsAdminOrGerente } from '@/lib/permissions';
 import { toast } from '@/lib/toast';
 import { confirm } from '@/lib/confirm';
 import { Button } from '@/components/ui/button';
@@ -361,7 +363,7 @@ function RemisionRow({ item, onVerDetalle, onRecepcion, onEditar }: RowProps) {
       <td className="px-4 py-3">
         {item.orden_folio ? (
           <Link
-            to={`/ventas/cotizador?edit=${item.orden_venta_id}`}
+            to={`/spa/cotizador?edit=${item.orden_venta_id}`}
             className="text-accent-glow hover:underline text-xs font-mono"
           >
             {item.orden_folio}
@@ -447,6 +449,14 @@ export function RemisionesPage() {
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>('todas');
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
+  // `?orden_venta_id=<id>` filtra el listado por orden de venta — usado por el
+  // botón "Ver entregas/remisiones" de Seguimiento.
+  const [ordenVentaFiltro, setOrdenVentaFiltro] = useState<number | null>(() => {
+    const raw = searchParams.get('orden_venta_id');
+    const id = raw ? parseInt(raw, 10) : NaN;
+    return Number.isNaN(id) ? null : id;
+  });
+  const [creadorFiltro, setCreadorFiltro] = useState<number | null>(null);
   const [detalleId, setDetalleId] = useState<number | null>(null);
   const [recepcionTarget, setRecepcionTarget] = useState<{ id: number; folio: string | null } | null>(null);
   const [cancelarTarget, setCancelarTarget] = useState<{ id: number; folio: string | null } | null>(null);
@@ -468,26 +478,47 @@ export function RemisionesPage() {
 
   const searchDebounced = useDebounced(search);
 
+  const isAdminOrGerente = useIsAdminOrGerente();
+  // Endpoint admin-only: solo se consulta cuando el rol puede ver el filtro.
+  const { data: usuarios } = useUsuarios(isAdminOrGerente);
+
   // Reset page when filters change
-  const prevFilters = useRef({ q: searchDebounced, estado: estadoFiltro, desde, hasta });
+  const prevFilters = useRef({ q: searchDebounced, estado: estadoFiltro, desde, hasta, orden: ordenVentaFiltro, creador: creadorFiltro });
   useEffect(() => {
-    const cur = { q: searchDebounced, estado: estadoFiltro, desde, hasta };
+    const cur = { q: searchDebounced, estado: estadoFiltro, desde, hasta, orden: ordenVentaFiltro, creador: creadorFiltro };
     if (JSON.stringify(prevFilters.current) !== JSON.stringify(cur)) {
       setPage(1);
       prevFilters.current = cur;
     }
-  }, [searchDebounced, estadoFiltro, desde, hasta]);
+  }, [searchDebounced, estadoFiltro, desde, hasta, ordenVentaFiltro, creadorFiltro]);
 
   const { data, isLoading, isPlaceholderData } = useRemisiones(page, searchDebounced, {
     estado: estadoFiltro === 'todas' ? undefined : estadoFiltro,
+    ordenVentaId: ordenVentaFiltro ?? undefined,
     desde: desde || undefined,
     hasta: hasta || undefined,
+    creadoPorId: creadorFiltro ?? undefined,
   });
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const hayFiltrosActivos = !!searchDebounced || estadoFiltro !== 'todas' || !!desde || !!hasta;
+  const hayFiltrosActivos =
+    !!searchDebounced || estadoFiltro !== 'todas' || !!desde || !!hasta ||
+    ordenVentaFiltro !== null || creadorFiltro !== null;
+
+  // Folio de la orden filtrada (si hay resultados que la referencian).
+  const ordenFolioFiltro =
+    ordenVentaFiltro !== null
+      ? items.find((i) => i.orden_venta_id === ordenVentaFiltro)?.orden_folio ?? null
+      : null;
+
+  function quitarFiltroOrden() {
+    setOrdenVentaFiltro(null);
+    const next = new URLSearchParams(searchParams);
+    next.delete('orden_venta_id');
+    setSearchParams(next, { replace: true });
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto w-full space-y-4">
@@ -542,6 +573,36 @@ export function RemisionesPage() {
                 className="h-9 max-w-[150px] text-sm"
               />
             </div>
+            {isAdminOrGerente && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Creador</span>
+                <select
+                  value={creadorFiltro ?? 'todos'}
+                  onChange={(e) =>
+                    setCreadorFiltro(e.target.value === 'todos' ? null : Number(e.target.value))
+                  }
+                  className="text-sm rounded-md border border-border bg-surface-2 px-2 py-1.5 text-foreground focus:outline-none focus:ring-1 focus:ring-accent-glow"
+                >
+                  <option value="todos">Todos</option>
+                  {(usuarios ?? []).map((u) => (
+                    <option key={u.id} value={u.id}>{u.nombre}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {ordenVentaFiltro !== null && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-glow/40 bg-accent-glow/10 px-2.5 py-1 text-xs text-accent-glow">
+                Filtrando por orden {ordenFolioFiltro ?? `#${ordenVentaFiltro}`}
+                <button
+                  type="button"
+                  aria-label="Quitar filtro de orden"
+                  onClick={quitarFiltroOrden}
+                  className="hover:text-foreground"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
           </>
         }
       />

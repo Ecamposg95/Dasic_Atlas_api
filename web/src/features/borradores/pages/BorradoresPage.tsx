@@ -183,7 +183,7 @@ export function BorradoresPage() {
                 item={item}
                 onDiscard={handleDiscard}
                 isDiscarding={cancelar.isPending && cancelar.variables === item.id}
-                onContinuar={(id) => navigate(`/ventas/cotizador?edit=${id}`)}
+                onContinuar={(id) => navigate(`/spa/cotizador?edit=${id}`)}
               />
             ))
           )}

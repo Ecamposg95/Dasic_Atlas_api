@@ -138,7 +138,7 @@ export function HistorialTab({ clienteIdFiltro: _clienteIdFiltro }: { clienteIdF
     if (!(await confirm({ mensaje: `Crear nueva versión de ${orden.folio}? Te llevará al editor con los datos copiados.`, tono: 'danger' }))) return;
     try {
       const r = await recotizar.mutateAsync(orden.id);
-      navigate(`/ventas/cotizador?edit=${r.id}`);
+      navigate(`/spa/cotizador?edit=${r.id}`);
     } catch (e) {
       const err = e as ApiError;
       toast({ kind: 'error', title: 'No se pudo recotizar', description: err.detail });

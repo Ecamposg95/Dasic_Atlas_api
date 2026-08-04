@@ -12,6 +12,7 @@ import {
   XCircle,
   Loader2,
   BellPlus,
+  Truck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,10 +93,11 @@ interface RowActionsProps {
   onCancelar: (item: HistorialItem) => void;
   onEditar: (id: number) => void;
   onRecordar: (item: HistorialItem) => void;
+  onVerEntregas: (id: number) => void;
   loadingId: number | null;
 }
 
-function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRecordar, loadingId }: RowActionsProps) {
+function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRecordar, onVerEntregas, loadingId }: RowActionsProps) {
   const estatus = item.estatus.toUpperCase();
   const isBusy = loadingId === item.id;
 
@@ -104,6 +106,8 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
   const canConvertir = estatus === 'COTIZACION';
   const canCancelar = estatus === 'COTIZACION' || estatus === 'PENDIENTE';
   const canRecordar = estatus === 'COTIZACION';
+  // Ya es VENTA (convertida): PENDIENTE de pago o PAGADA → tiene entregas/remisiones.
+  const canVerEntregas = estatus === 'PENDIENTE' || estatus === 'PAGADA';
 
   return (
     <div className="flex items-center gap-1">
@@ -177,6 +181,19 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
         </Button>
       )}
 
+      {/* Ver entregas/remisiones */}
+      {canVerEntregas && (
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Ver entregas/remisiones"
+          className="h-7 w-7 text-muted-foreground hover:text-foreground"
+          onClick={() => onVerEntregas(item.id)}
+        >
+          <Truck className="h-3.5 w-3.5" />
+        </Button>
+      )}
+
       {/* Recordar seguimiento */}
       {canRecordar && (
         <Button
@@ -245,7 +262,7 @@ export function SeguimientoPage() {
     onSuccess: (data) => {
       toast({ kind: 'success', title: `Nueva versión creada: ${data.folio}` });
       qc.invalidateQueries({ queryKey: ['ventas'] });
-      navigate(`/ventas/cotizador?edit=${data.id}`);
+      navigate(`/spa/cotizador?edit=${data.id}`);
     },
     onError: (err) => {
       toast({ kind: 'error', title: 'Error al recotizar', description: err.detail });
@@ -484,8 +501,9 @@ export function SeguimientoPage() {
                           onRecotizar={handleRecotizar}
                           onConvertir={handleConvertir}
                           onCancelar={handleCancelar}
-                          onEditar={(id) => navigate(`/ventas/cotizador?edit=${id}`)}
+                          onEditar={(id) => navigate(`/spa/cotizador?edit=${id}`)}
                           onRecordar={handleRecordar}
+                          onVerEntregas={(id) => navigate(`/spa/remisiones?orden_venta_id=${id}`)}
                           loadingId={loadingId}
                         />
                       </td>

@@ -95,7 +95,7 @@ export function Cart() {
               ocultan aquí para evitar borrarlas al guardar. Si necesitas
               editarlas, abre la cotización en el cotizador clásico:{' '}
               <a
-                href={`/ventas/cotizador?edit=${useCotizador.getState().editingId}`}
+                href={`/spa/cotizador?edit=${useCotizador.getState().editingId}`}
                 className="underline"
               >
                 cotizador clásico

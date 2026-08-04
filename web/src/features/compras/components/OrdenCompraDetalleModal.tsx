@@ -84,7 +84,7 @@ export function OrdenCompraDetalleModal({
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">Cotización origen</div>
                 <a
-                  href={`/ventas/cotizador?edit=${oc.cotizacion_id}`}
+                  href={`/spa/cotizador?edit=${oc.cotizacion_id}`}
                   className="text-accent-deep hover:underline text-xs dark:text-accent-glow"
                   target="_blank"
                   rel="noreferrer"
