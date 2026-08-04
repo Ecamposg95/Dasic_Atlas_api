@@ -56,6 +56,7 @@ export function EstadoCuentaTab({
           <p className="text-xs text-muted-foreground py-2">Sin documentos.</p>
         ) : (
           <div className="rounded-md border border-border overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead className="bg-surface-2 text-muted-foreground uppercase">
                 <tr>
@@ -87,6 +88,7 @@ export function EstadoCuentaTab({
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </section>
@@ -102,6 +104,7 @@ export function EstadoCuentaTab({
           <Button size="sm" onClick={onRegistrarPago} disabled={pago.isPending}>Registrar</Button>
         </div>
         <div className="rounded-md border border-border overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead className="bg-surface-2 text-muted-foreground uppercase">
               <tr>
@@ -125,6 +128,7 @@ export function EstadoCuentaTab({
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </section>
 
@@ -145,7 +149,7 @@ export function EstadoCuentaTab({
         ) : (estadoCuenta ?? []).length === 0 ? (
           <p className="text-xs text-muted-foreground py-2">Sin movimientos registrados.</p>
         ) : (
-          <div className="rounded-md border border-border overflow-hidden max-h-72 overflow-y-auto">
+          <div className="rounded-md border border-border overflow-hidden max-h-72 overflow-y-auto overflow-x-auto">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-surface-2 text-muted-foreground uppercase">
                 <tr>

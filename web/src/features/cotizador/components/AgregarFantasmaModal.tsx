@@ -179,7 +179,7 @@ export function AgregarFantasmaModal() {
       // El click fuera NO cierra: evita perder datos capturados por accidente.
       // El cierre solo ocurre vía Esc / X / Cancelar (con guarda) o Guardar.
     >
-      <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="fantasma-title" className="bg-white dark:bg-slate-900 border border-amber-700/50 rounded-xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col">
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="fantasma-title" className="bg-card border border-amber-700/50 rounded-xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col">
         {/* US-004: header y footer fijos (shrink-0), cuerpo scrolleable. El
             modal nunca excede 90vh y los botones quedan siempre visibles. */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0 border-b border-border">
@@ -360,7 +360,7 @@ export function AgregarFantasmaModal() {
 
           {/* US-008: marca + claves SAT + notas del fantasma (opcionales). Se
               apilan en el pool de fantasmas y se snapshotean en la línea. */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Marca</label>
               <Input value={marca} onChange={(e) => setMarca(e.target.value)} placeholder="Marca del producto" className="h-8 text-xs" />

@@ -189,7 +189,7 @@ export function EditLineModal() {
               className="w-full text-sm rounded border border-border-strong bg-card px-2 py-1.5 mb-3 focus:border-accent-glow outline-none"
             />
 
-            <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">SKU</label>
                 <Input value={sku} onChange={(e) => setSku(e.target.value)} />
@@ -201,7 +201,7 @@ export function EditLineModal() {
             </div>
 
             {esFantasma && (
-              <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1">Moneda</label>
                   <select

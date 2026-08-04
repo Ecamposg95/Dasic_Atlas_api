@@ -100,6 +100,7 @@ export function OrdenCompraDetalleModal({
             <div className="text-xs font-bold uppercase text-muted-foreground mb-2 tracking-wider">
               Líneas ({oc.detalles.length})
             </div>
+            <div className="overflow-x-auto">
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
@@ -137,6 +138,7 @@ export function OrdenCompraDetalleModal({
                 })}
               </tbody>
             </table>
+            </div>
           </div>
 
           {/* Total */}

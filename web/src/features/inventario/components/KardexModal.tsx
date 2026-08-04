@@ -67,7 +67,7 @@ export function KardexModal({ producto, onClose }: { producto: Producto; onClose
         )}
 
         {/* Tabla de movimientos */}
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto overflow-x-auto flex-1">
           {isLoading && (
             <p className="text-sm text-muted-foreground p-5">Cargando movimientos…</p>
           )}

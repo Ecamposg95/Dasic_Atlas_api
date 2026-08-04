@@ -199,6 +199,7 @@ export function HistorialTab({ clienteIdFiltro: _clienteIdFiltro }: { clienteIdF
 
       {/* Tabla */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead className="bg-slate-100 dark:bg-slate-800/50 text-[10px] text-muted-foreground uppercase tracking-[0.15em] sticky top-0 z-10">
             <tr>
@@ -309,6 +310,7 @@ export function HistorialTab({ clienteIdFiltro: _clienteIdFiltro }: { clienteIdF
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Paginación */}

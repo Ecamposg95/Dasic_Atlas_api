@@ -492,7 +492,7 @@ function DetalleModal({ id, onClose }: { id: number; onClose: () => void }) {
       {d && (
         <div className="text-sm space-y-2">
           <div><span className="text-muted-foreground">Descripción:</span> {d.descripcion}</div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div><span className="text-muted-foreground">SKU:</span> {d.sku_libre || '—'}</div>
             <div><span className="text-muted-foreground">Estado:</span> {d.estado}</div>
             <div><span className="text-muted-foreground">Costo ref:</span> {fmtMoney(d.costo_referencia, d.moneda)}</div>
@@ -572,7 +572,7 @@ function EditarModal({
       />
       <label className="block text-xs text-muted-foreground mb-1">SKU</label>
       <Input value={sku} onChange={(e) => setSku(e.target.value)} className="mb-3" />
-      <div className="grid grid-cols-2 gap-2 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">Costo ref</label>
           <Input type="number" step="0.01" value={costo} onChange={(e) => setCosto(e.target.value)} />
@@ -602,7 +602,7 @@ function EditarModal({
       </select>
       <label className="block text-xs text-muted-foreground mb-1">Marca</label>
       <Input value={marca} onChange={(e) => setMarca(e.target.value)} className="mb-3" placeholder="Marca del producto" />
-      <div className="grid grid-cols-2 gap-2 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">Clave prod/serv SAT</label>
           <SatCombobox value={claveProdServ} onChange={setClaveProdServ} endpoint="/api/sat/clave-prod-serv" minChars={2} maxLength={8} placeholder="Buscar o escribir (ej. 31181701)" className="font-mono" />
