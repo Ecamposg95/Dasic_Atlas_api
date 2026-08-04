@@ -79,12 +79,13 @@ def listar_gastos(
     total = query.count()
 
     # Gran total del conjunto FILTRADO completo (no solo la página), por moneda.
+    # La expresión debe ser EL MISMO objeto en select y group_by: dos llamadas a
+    # func.coalesce generan bind params distintos ($1/$2) y Postgres rechaza el
+    # GROUP BY (GroupingError). SQLite lo tolera, por eso los tests no lo cazan.
+    moneda_expr = func.coalesce(models.Gasto.moneda, "MXN")
     totales_raw = (
-        query.with_entities(
-            func.coalesce(models.Gasto.moneda, "MXN"),
-            func.sum(models.Gasto.monto),
-        )
-        .group_by(func.coalesce(models.Gasto.moneda, "MXN"))
+        query.with_entities(moneda_expr, func.sum(models.Gasto.monto))
+        .group_by(moneda_expr)
         .all()
     )
     totales = {"MXN": 0.0, "USD": 0.0}
