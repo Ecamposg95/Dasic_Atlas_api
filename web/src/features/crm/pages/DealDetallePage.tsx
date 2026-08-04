@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -58,6 +58,7 @@ export function DealDetallePage() {
   const { id } = useParams<{ id: string }>();
   const dealId = Number(id);
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: detalle, isLoading, isError } = useDealDetalle(dealId > 0 ? dealId : null);
 
@@ -355,6 +356,24 @@ export function DealDetallePage() {
                   icon={FileText}
                   title="Sin cotización ligada"
                   className="py-6"
+                  action={
+                    <Button
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => {
+                        // El cotizador lee deal_id/cliente_id y, al crear la
+                        // orden, hace PATCH del deal para ligarla de vuelta.
+                        const qs = new URLSearchParams({ deal_id: String(dealId) });
+                        if (detalle.cliente_id != null) {
+                          qs.set('cliente_id', String(detalle.cliente_id));
+                        }
+                        navigate(`/spa/cotizador?${qs.toString()}`);
+                      }}
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Crear cotización
+                    </Button>
+                  }
                 />
               )}
             </CardContent>

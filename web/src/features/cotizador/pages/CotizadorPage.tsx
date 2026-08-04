@@ -44,6 +44,11 @@ export function CotizadorPage() {
   const editIdNum = editId ? parseInt(editId, 10) : null;
   const clienteParam = params.get('cliente');
   const contactoParam = params.get('contacto');
+  // Vínculo con CRM: al llegar desde un deal (?deal_id=&cliente_id=), se
+  // preselecciona el cliente y, al crear la orden, useGuardarCotizacion hace
+  // PATCH del deal con la orden creada y limpia el param (ver useCotizacion.ts).
+  const clienteIdParam = params.get('cliente_id');
+  const dealIdParam = params.get('deal_id');
   const [tab, setTab] = useState<CotizadorTab>('editor');
 
   const reset = useCotizador((s) => s.reset);
@@ -217,11 +222,13 @@ export function CotizadorPage() {
     }
   }, [editIdNum, reset]);
 
-  // Pre-poblar desde Contactos/Empresas: ?cliente=<id>&contacto=<id>.
+  // Pre-poblar desde Contactos/Empresas (?cliente=<id>&contacto=<id>) o desde
+  // un deal del CRM (?deal_id=<id>&cliente_id=<id>).
   // Solo en cotización nueva (sin ?edit=) y una vez al montar.
   useEffect(() => {
     if (editIdNum != null) return;
-    const cid = clienteParam ? parseInt(clienteParam, 10) : null;
+    const rawCliente = clienteParam || clienteIdParam;
+    const cid = rawCliente ? parseInt(rawCliente, 10) : null;
     const coid = contactoParam ? parseInt(contactoParam, 10) : null;
     if (cid != null && !Number.isNaN(cid)) {
       const st = useCotizador.getState();
@@ -264,6 +271,14 @@ export function CotizadorPage() {
           }
           actions={
             <>
+            {dealIdParam && (
+              <span
+                title="Al guardar, la cotización se ligará a este deal del CRM"
+                className="text-xs bg-sky-900/30 text-sky-300 border border-sky-700/50 px-2 py-1 rounded"
+              >
+                Vinculado a deal #{dealIdParam}
+              </span>
+            )}
             {editingFolio && (
               <span className="text-xs bg-amber-900/30 text-amber-300 border border-amber-700/50 px-2 py-1 rounded flex items-center gap-1">
                 <Pencil className="h-3 w-3" />
