@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
+import { Tabs } from '@/components/ui/tabs';
 import { api } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 import type { Cliente } from '../types';
@@ -48,12 +49,12 @@ export function EmpresaDetallePage() {
           </>
         }
       />
-      <div className="flex gap-1 border-b border-border mb-4 overflow-x-auto">
-        {TABS.map((t) => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 -mb-px ${tab === t ? 'border-accent-glow text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>{t}</button>
-        ))}
-      </div>
+      <Tabs
+        className="mb-4 overflow-x-auto"
+        tabs={TABS.map((t) => ({ key: t, label: t }))}
+        value={tab}
+        onChange={setTab}
+      />
       {tab === 'Resumen' && <ResumenTab clienteId={clienteId} />}
       {tab === 'Contactos' && <ContactosTab clienteId={clienteId} />}
       {tab === 'Estado de cuenta' && <EstadoCuentaTab clienteId={clienteId} monedaCredito={empresa?.moneda_credito} />}

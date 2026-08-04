@@ -13,6 +13,7 @@ export function Tabs<T extends string>({
       {tabs.map((t) => (
         <button
           key={t.key}
+          type="button"
           role="tab"
           aria-selected={value === t.key}
           onClick={() => onChange(t.key)}
