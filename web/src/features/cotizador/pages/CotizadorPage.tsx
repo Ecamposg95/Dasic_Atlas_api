@@ -358,10 +358,10 @@ export function CotizadorPage() {
 
             <HeaderCotizacion />
 
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500 mt-2">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70 mt-2">
               <Package className="h-3 w-3" />
               <span>Productos</span>
-              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
+              <div className="flex-1 h-px bg-border" />
             </div>
             <div>
               <ProductSearch />

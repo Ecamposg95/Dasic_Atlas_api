@@ -89,7 +89,7 @@ export function DrawerBorradores() {
             <a
               key={b.id}
               href={`/ventas/cotizador?edit=${b.id}`}
-              className="block p-3 rounded border border-border hover:border-accent-glow bg-slate-100 dark:bg-slate-950 transition"
+              className="block p-3 rounded border border-border hover:border-accent-glow bg-background transition"
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-mono text-xs font-bold text-cyan-400">{b.folio}</span>

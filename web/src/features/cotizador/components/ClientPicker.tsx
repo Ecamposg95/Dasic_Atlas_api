@@ -131,7 +131,7 @@ export function ClientPicker() {
                         setQ('');
                         setOpen(false);
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition border-b border-border last:border-b-0"
+                      className="w-full text-left px-3 py-2 hover:bg-surface-2/60 transition border-b border-border last:border-b-0"
                     >
                       <div className="text-sm">{c.nombre_empresa}</div>
                       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">

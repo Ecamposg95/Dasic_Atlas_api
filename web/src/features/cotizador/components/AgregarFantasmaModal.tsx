@@ -175,7 +175,7 @@ export function AgregarFantasmaModal() {
   return (
     <div
       data-overlay
-      className="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-950/80 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4"
       // El click fuera NO cierra: evita perder datos capturados por accidente.
       // El cierre solo ocurre vía Esc / X / Cancelar (con guarda) o Guardar.
     >
@@ -187,7 +187,7 @@ export function AgregarFantasmaModal() {
             <Ghost className="h-4 w-4 text-amber-400" />
             {reusingFantasma ? 'Reusar fantasma previo' : 'Agregar producto fantasma'}
           </h3>
-          <button type="button" onClick={requestClose} aria-label="Cerrar" className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100">
+          <button type="button" onClick={requestClose} aria-label="Cerrar" className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -283,7 +283,7 @@ export function AgregarFantasmaModal() {
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-slate-800 dark:text-slate-200 truncate">{f.descripcion}</div>
+                        <div className="text-[11px] text-foreground truncate">{f.descripcion}</div>
                       </div>
                       <div className="text-[11px] text-muted-foreground font-mono whitespace-nowrap">
                         {(f.moneda || 'MXN').toUpperCase()} ${Number(f.costo_referencia).toLocaleString('es-MX', { minimumFractionDigits: 2 })}

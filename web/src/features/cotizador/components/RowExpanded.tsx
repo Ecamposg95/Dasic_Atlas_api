@@ -52,7 +52,7 @@ export function RowExpanded({
               Moneda origen
             </label>
             <div
-              className="h-8 px-2 rounded border border-slate-300 dark:border-slate-700/60 bg-slate-100 dark:bg-slate-950/50 flex items-center justify-between gap-2 font-mono text-xs text-foreground"
+              className="h-8 px-2 rounded border border-border bg-background/50 flex items-center justify-between gap-2 font-mono text-xs text-foreground"
               title={fuente}
             >
               <span>{item.productCurrency}</span>
@@ -109,7 +109,7 @@ export function RowExpanded({
               Costo OC (DOF)
             </label>
             <div
-              className="h-8 px-2 rounded border border-slate-300 dark:border-slate-700/60 bg-slate-100 dark:bg-slate-950/50 flex items-center justify-end text-xs font-mono text-foreground"
+              className="h-8 px-2 rounded border border-border bg-background/50 flex items-center justify-end text-xs font-mono text-foreground"
               title="Costo a tipo de cambio DOF (sin spread) — lo que se le paga al proveedor cuando se genera la OC."
             >
               {moneda} ${fmt(costoOc)}
@@ -135,14 +135,14 @@ export function RowExpanded({
               Marca en PDF
             </label>
             <label
-              className="h-8 px-2 rounded border border-slate-300 dark:border-slate-700/60 bg-slate-100 dark:bg-slate-950/50 flex items-center gap-2 cursor-pointer"
+              className="h-8 px-2 rounded border border-border bg-background/50 flex items-center gap-2 cursor-pointer"
               title="Si está activo, la marca se imprime debajo de la descripción en el PDF de cotización."
             >
               <input
                 type="checkbox"
                 checked={item.mostrar_marca ?? false}
                 onChange={(e) => updateLinea(item.uid, { mostrar_marca: e.target.checked })}
-                className="rounded border-slate-600 bg-surface-2"
+                className="rounded border-border-strong bg-surface-2"
               />
               <span className="text-xs text-foreground truncate">
                 {item.marca ? item.marca : <span className="text-muted-foreground">Sin marca</span>}
@@ -157,7 +157,7 @@ export function RowExpanded({
   }
 
   return (
-    <tr className="bg-slate-100 dark:bg-slate-900/50 border-b border-border">
+    <tr className="bg-surface-2 border-b border-border">
       <td colSpan={8} className="p-3">
         {grid}
       </td>

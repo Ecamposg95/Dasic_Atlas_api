@@ -32,14 +32,14 @@ export function AtajosPopover({ atajos }: { atajos: AtajoHandler[] }) {
         <Keyboard className="h-4 w-4" />
       </button>
       {open && (
-        <div data-overlay className="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-950/80 flex items-center justify-center p-4"
+        <div data-overlay className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}>
           <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Keyboard className="h-4 w-4 text-accent-glow" /> Atajos de teclado
               </h3>
-              <button type="button" onClick={() => setOpen(false)} className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100">
+              <button type="button" onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -47,7 +47,7 @@ export function AtajosPopover({ atajos }: { atajos: AtajoHandler[] }) {
               {atajos.map((a) => (
                 <li key={a.combo} className="flex items-center justify-between text-sm">
                   <span className="text-foreground">{a.description}</span>
-                  <kbd className="px-2 py-1 text-[10px] font-mono bg-surface-2 border border-border-strong rounded text-slate-800 dark:text-slate-200">
+                  <kbd className="px-2 py-1 text-[10px] font-mono bg-surface-2 border border-border-strong rounded text-foreground">
                     {a.combo}
                   </kbd>
                 </li>

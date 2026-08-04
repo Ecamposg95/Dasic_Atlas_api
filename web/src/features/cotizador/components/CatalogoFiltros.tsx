@@ -69,14 +69,14 @@ export function CatalogoFiltros(props: Props) {
 
   return (
     <div className="flex flex-col gap-2 mb-2">
-      <div className="inline-flex gap-1 p-1 rounded-md bg-slate-100 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800/60 w-fit">
+      <div className="inline-flex gap-1 p-1 rounded-md bg-background/60 border border-border w-fit">
         <button
           type="button"
           onClick={() => props.onTipoChange('producto')}
           className={`px-2.5 py-1 text-[11px] rounded transition ${
             props.tipo === 'producto'
               ? 'bg-surface-2 text-accent-glow'
-              : 'text-muted-foreground hover:text-slate-800 dark:hover:text-slate-200'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
           Productos
@@ -87,7 +87,7 @@ export function CatalogoFiltros(props: Props) {
           className={`px-2.5 py-1 text-[11px] rounded transition ${
             props.tipo === 'servicio'
               ? 'bg-surface-2 text-emerald-300'
-              : 'text-muted-foreground hover:text-slate-800 dark:hover:text-slate-200'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
           Servicios

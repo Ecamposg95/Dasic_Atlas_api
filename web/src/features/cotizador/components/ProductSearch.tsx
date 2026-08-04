@@ -152,7 +152,7 @@ export function ProductSearch({ handlers }: { handlers?: ProductSearchHandlers }
             aria-expanded={open}
           />
           {cantidadParseada != null && q.trim() && (
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] bg-violet-900/30 text-violet-300 px-1.5 py-0.5 rounded font-bold pointer-events-none flex items-center gap-1">
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 px-1.5 py-0.5 rounded font-bold pointer-events-none flex items-center gap-1">
               <Sparkles className="h-2.5 w-2.5" /> ×{cantidadParseada}
             </div>
           )}
@@ -173,7 +173,7 @@ export function ProductSearch({ handlers }: { handlers?: ProductSearchHandlers }
             // Modo Servicios: render del catálogo de servicios.
             <>
               {(servicios.length > 0 || isLoading) && (
-                <div className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/95 backdrop-blur border-b border-border px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground flex items-center justify-between">
+                <div className="sticky top-0 z-10 bg-surface-2/95 backdrop-blur border-b border-border px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground flex items-center justify-between">
                   <span>{isLoading ? 'Buscando…' : `${servicios.length} servicio(s)`}</span>
                   {cantidadParseada != null && <span className="text-violet-400">Cantidad detectada: {cantidadParseada}</span>}
                 </div>
@@ -194,7 +194,7 @@ export function ProductSearch({ handlers }: { handlers?: ProductSearchHandlers }
                         <span className="text-[10px] text-muted-foreground">· {s.categoria_servicio}</span>
                       )}
                     </div>
-                    <div className="text-[11px] text-slate-800 dark:text-slate-200 truncate">{s.nombre}</div>
+                    <div className="text-[11px] text-foreground truncate">{s.nombre}</div>
                   </div>
                   <div className="text-[11px] text-muted-foreground font-mono whitespace-nowrap">
                     {fmtCost(Number(s.costo ?? 0), (s.moneda || 'MXN').toUpperCase())}
@@ -214,7 +214,7 @@ export function ProductSearch({ handlers }: { handlers?: ProductSearchHandlers }
               return (
                 <>
                   {(totalCount > 0 || anyLoading) && (
-                    <div className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900/95 backdrop-blur border-b border-border px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground flex items-center justify-between">
+                    <div className="sticky top-0 z-10 bg-surface-2/95 backdrop-blur border-b border-border px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground flex items-center justify-between">
                       <span>
                         {anyLoading
                           ? 'Buscando…'
@@ -253,7 +253,7 @@ export function ProductSearch({ handlers }: { handlers?: ProductSearchHandlers }
                       role="option"
                       aria-selected={false}
                       onClick={() => onSelect(p)}
-                      className="w-full text-left px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition border-b border-border last:border-b-0 flex items-center gap-2"
+                      className="w-full text-left px-2 py-1.5 hover:bg-surface-2/60 transition border-b border-border last:border-b-0 flex items-center gap-2"
                     >
                       <Package className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -264,7 +264,7 @@ export function ProductSearch({ handlers }: { handlers?: ProductSearchHandlers }
                           {p.marca && <span className="text-[10px] text-muted-foreground">· {p.marca}</span>}
                           {stockChip(p.stock_actual)}
                         </div>
-                        <div className="text-[11px] text-slate-800 dark:text-slate-200 truncate">{p.nombre}</div>
+                        <div className="text-[11px] text-foreground truncate">{p.nombre}</div>
                       </div>
                       <div className="text-[11px] text-muted-foreground font-mono whitespace-nowrap">
                         {fmtCost(Number(p.costo_compra ?? 0), p.moneda_compra || 'MXN')}
@@ -310,7 +310,7 @@ export function ProductSearch({ handlers }: { handlers?: ProductSearchHandlers }
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-slate-800 dark:text-slate-200 truncate">{f.descripcion}</div>
+                        <div className="text-[11px] text-foreground truncate">{f.descripcion}</div>
                       </div>
                       <div className="text-[11px] text-muted-foreground font-mono whitespace-nowrap">
                         {(f.moneda || 'MXN').toUpperCase()} $

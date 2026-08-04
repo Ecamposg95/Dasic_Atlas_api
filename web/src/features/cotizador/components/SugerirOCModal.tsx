@@ -67,7 +67,7 @@ export function SugerirOCModal({
   return (
     <div
       data-overlay
-      className="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-950/80 flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4 overflow-y-auto"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="sugeriroc-title" className="bg-card border border-border rounded-xl shadow-2xl max-w-3xl w-full p-5 my-4">
@@ -75,7 +75,7 @@ export function SugerirOCModal({
           <h3 id="sugeriroc-title" className="text-lg font-semibold flex items-center gap-2">
             <Truck className="h-4 w-4 text-accent-glow" /> Sugerir órdenes de compra · {folio}
           </h3>
-          <button type="button" onClick={onClose} aria-label="Cerrar" className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100">
+          <button type="button" onClick={onClose} aria-label="Cerrar" className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -90,7 +90,7 @@ export function SugerirOCModal({
           {porProveedor.map((prov) => {
             const items = prov.items ?? [];
             return (
-              <div key={prov.proveedor_id} className="bg-slate-100 dark:bg-slate-950 border border-border rounded-lg p-3">
+              <div key={prov.proveedor_id} className="bg-background border border-border rounded-lg p-3">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="font-semibold text-sm flex-1">{prov.proveedor_empresa ?? `Proveedor #${prov.proveedor_id}`}</div>
                   <div className="font-mono text-sm text-accent-glow">

@@ -74,8 +74,8 @@ export function TCMiniTable() {
   }
 
   const containerClass = tcNecesario ? '' : 'opacity-60';
-  const activeColClass = 'border-accent-glow/60 bg-slate-100 dark:bg-slate-950/80 text-foreground';
-  const idleColClass = 'border-border bg-slate-100 dark:bg-slate-900/40 text-muted-foreground';
+  const activeColClass = 'border-accent-glow/60 bg-background text-foreground';
+  const idleColClass = 'border-border bg-surface-2 text-muted-foreground';
   const deltaBadge =
     'inline-flex items-center gap-0.5 text-[10px] font-bold px-1 py-px rounded ' +
     'bg-emerald-950/50 border border-emerald-700/50 text-emerald-300';

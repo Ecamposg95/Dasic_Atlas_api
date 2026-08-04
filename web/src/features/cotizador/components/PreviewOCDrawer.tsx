@@ -81,7 +81,7 @@ export function PreviewOCDrawer() {
         <div className="space-y-3">
           {isEmpty && (
             <div className="text-xs text-muted-foreground text-center p-6 flex flex-col items-center gap-2">
-              <Package className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+              <Package className="h-8 w-8 text-muted-foreground/40" />
               <span>Agrega productos al carrito para ver el preview de OCs.</span>
             </div>
           )}
@@ -101,7 +101,7 @@ export function PreviewOCDrawer() {
                 return (
                   <div
                     key={g.proveedor_id ?? 'sin'}
-                    className="bg-slate-100 dark:bg-slate-950 border border-border rounded-lg p-3"
+                    className="bg-background border border-border rounded-lg p-3"
                   >
                     <div className="flex items-center justify-between mb-2 gap-2">
                       <div className="min-w-0 flex-1">

@@ -72,7 +72,7 @@ export function ProveedorPicker({ value, onChange, placeholder = 'Sin asignar â€
                 aria-selected={p.id === value}
                 onClick={() => { onChange(p.id); setOpen(false); setQ(''); }}
                 className={`w-full text-left px-3 py-1.5 text-xs transition border-b border-border last:border-b-0 ${
-                  p.id === value ? 'bg-accent-glow/10 text-accent-glow' : 'text-foreground hover:bg-slate-100 dark:hover:bg-slate-800'
+                  p.id === value ? 'bg-accent-glow/10 text-accent-glow' : 'text-foreground hover:bg-surface-2/60'
                 }`}
               >
                 {p.nombre_empresa}

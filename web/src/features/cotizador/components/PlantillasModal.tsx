@@ -138,14 +138,14 @@ export function PlantillasModal() {
 
   if (!open) return null;
   return (
-    <div data-overlay className="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-950/80 flex items-center justify-center p-4"
+    <div data-overlay className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}>
       <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="plantillas-title" className="bg-card border border-border rounded-xl shadow-2xl max-w-xl w-full p-5 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-3">
           <h3 id="plantillas-title" className="text-lg font-semibold flex items-center gap-2">
             <Folder className="h-4 w-4 text-accent-glow" /> Plantillas
           </h3>
-          <button type="button" onClick={() => setOpen(false)} aria-label="Cerrar" className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100">
+          <button type="button" onClick={() => setOpen(false)} aria-label="Cerrar" className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -174,7 +174,7 @@ export function PlantillasModal() {
               <div className="text-xs text-muted-foreground text-center p-4">Aún no tienes plantillas</div>
             )}
             {(plantillas ?? []).map((p) => (
-              <div key={p.id} className="flex items-center gap-2 p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 border border-border">
+              <div key={p.id} className="flex items-center gap-2 p-2 rounded hover:bg-surface-2/60 border border-border">
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{p.nombre}</div>
                   <div className="text-[11px] text-muted-foreground">

@@ -44,7 +44,7 @@ export function ModalNotaLinea() {
   return (
     <div
       data-overlay
-      className="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-950/80 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) setOpen(false);
       }}
@@ -58,7 +58,7 @@ export function ModalNotaLinea() {
             type="button"
             onClick={() => setOpen(false)}
             aria-label="Cerrar"
-            className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100"
+            className="text-muted-foreground hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>

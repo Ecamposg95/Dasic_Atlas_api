@@ -201,7 +201,7 @@ export function HistorialTab({ clienteIdFiltro: _clienteIdFiltro }: { clienteIdF
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="bg-slate-100 dark:bg-slate-800/50 text-[10px] text-muted-foreground uppercase tracking-[0.15em] sticky top-0 z-10">
+          <thead className="bg-surface-2 text-[10px] text-muted-foreground uppercase tracking-[0.15em] sticky top-0 z-10">
             <tr>
               <th className="p-2 text-left">
                 <span className="inline-flex items-center gap-1">
@@ -248,7 +248,7 @@ export function HistorialTab({ clienteIdFiltro: _clienteIdFiltro }: { clienteIdF
               <tr><td colSpan={7} className="p-4 text-center text-[11px] text-muted-foreground">Sin cotizaciones que coincidan</td></tr>
             )}
             {items.map((o) => (
-              <tr key={o.id} className="border-b border-border hover:bg-slate-100 dark:hover:bg-slate-800/30">
+              <tr key={o.id} className="border-b border-border hover:bg-surface-2/60">
                 <td className="p-2 font-mono text-[11px] font-bold text-cyan-400">{o.folio}</td>
                 <td className="p-2 text-foreground max-w-xs truncate">{o.cliente ?? '—'}</td>
                 <td className="p-2"><span className={badgeEstatus(o.estatus)}>{o.estatus.toUpperCase()}</span></td>

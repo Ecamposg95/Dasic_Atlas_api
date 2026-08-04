@@ -158,13 +158,13 @@ export function EditLineModal() {
   if (!open || !it) return null;
 
   return (
-    <div data-overlay className="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-950/80 flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div data-overlay className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="editline-title" className="bg-card border border-border rounded-xl shadow-2xl max-w-lg w-full p-5 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-3">
           <h3 id="editline-title" className="text-lg font-semibold flex items-center gap-2">
             <Pen className="h-4 w-4 text-accent-glow" /> Editar línea
           </h3>
-          <button type="button" onClick={onClose} aria-label="Cerrar" className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100">
+          <button type="button" onClick={onClose} aria-label="Cerrar" className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -240,7 +240,7 @@ export function EditLineModal() {
                   type="button"
                   onClick={onRestore}
                   disabled={!hayDatosCatalogo}
-                  className="text-xs text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100 hover:underline disabled:opacity-40 disabled:no-underline flex items-center gap-1"
+                  className="text-xs text-muted-foreground hover:text-foreground hover:underline disabled:opacity-40 disabled:no-underline flex items-center gap-1"
                 >
                   <RotateCcw className="h-3 w-3" /> Restaurar valores del catálogo
                 </button>
@@ -302,12 +302,12 @@ export function EditLineModal() {
                   key={p.id}
                   type="button"
                   onClick={() => onPickReplacement(p)}
-                  className="w-full text-left px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition border border-transparent hover:border-accent-glow/40"
+                  className="w-full text-left px-3 py-2 rounded hover:bg-surface-2/60 transition border border-transparent hover:border-accent-glow/40"
                 >
                   <div className="font-mono text-[11px] font-bold text-accent-glow">
                     {p.sku_comercial || p.sku || '—'}
                   </div>
-                  <div className="text-xs text-slate-800 dark:text-slate-200 truncate">{p.nombre}</div>
+                  <div className="text-xs text-foreground truncate">{p.nombre}</div>
                   <div className="text-[11px] text-muted-foreground">
                     {p.moneda_compra || 'MXN'} ${Number(p.costo_compra ?? 0).toFixed(2)} · Stock {p.stock_actual ?? 0}
                   </div>
