@@ -1,7 +1,7 @@
 """remisiones: estados + ciclo de vida (folio nullable, emision/cancelacion)
 
 Revision ID: 20260803_01
-Revises: 20260804_01
+Revises: 20260804_02
 
 Nota: la fecha del nombre de archivo (2026-08-03) es anterior a la de
 20260804_01 (2026-08-04, CRM v2 detalle de oportunidad) porque este task
@@ -14,7 +14,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "20260803_01"
-down_revision = "20260804_01"
+down_revision = "20260804_02"
 branch_labels = None
 depends_on = None
 
