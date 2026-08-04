@@ -243,11 +243,11 @@ describe('computeTotalsPorMoneda (subtotales nativos sin TC)', () => {
   });
 });
 
-describe('resolveDirectionalTcs (tasa de venta unificada DOF + tolerancia)', () => {
-  it('sin overrides: tasa de venta = DOF + tolerancia en ambas direcciones', () => {
-    // 17 + 1 = 18
+describe('resolveDirectionalTcs (modelo direccional DOF ± tolerancia)', () => {
+  it('sin overrides: USD→MN = DOF + tol y MN→USD = DOF − tol (protección bidireccional)', () => {
+    // USD→MN: 17 + 1 = 18 (más pesos por dólar). MN→USD: 17 − 1 = 16 (más dólares por peso).
     const r = resolveDirectionalTcs(17, null, null, 1);
-    expect(r).toEqual({ tc_dof: 17, tc_mn_a_usd: 18, tc_usd_a_mn: 18 });
+    expect(r).toEqual({ tc_dof: 17, tc_mn_a_usd: 16, tc_usd_a_mn: 18 });
   });
 
   it('tolerancia default es 1', () => {
@@ -262,17 +262,18 @@ describe('resolveDirectionalTcs (tasa de venta unificada DOF + tolerancia)', () 
   });
 
   it('tolerancia fraccionaria válida', () => {
-    // 17 + 0.5 = 17.5
+    // USD→MN: 17 + 0.5 = 17.5; MN→USD: 17 − 0.5 = 16.5
     const r = resolveDirectionalTcs(17, null, null, 0.5);
     expect(r.tc_usd_a_mn).toBe(17.5);
-    expect(r.tc_mn_a_usd).toBe(17.5);
+    expect(r.tc_mn_a_usd).toBe(16.5);
   });
 
-  it('honra un override plausible de tc_usd_a_mn y lo espeja en tc_mn_a_usd', () => {
-    // 18.5 está dentro de la banda [17×0.5, 17×1.5] = [8.5, 25.5]
+  it('honra un override plausible de tc_usd_a_mn SOLO en su dirección', () => {
+    // 18.5 está dentro de la banda [17×0.5, 17×1.5] = [8.5, 25.5].
+    // MN→USD no tiene override → deriva DOF − tol = 16.
     const r = resolveDirectionalTcs(17, null, 18.5, 1);
     expect(r.tc_usd_a_mn).toBe(18.5);
-    expect(r.tc_mn_a_usd).toBe(18.5); // invariante: mismo divisor que multiplicador
+    expect(r.tc_mn_a_usd).toBe(16);
   });
 
   it('ignora un override fuera de banda (sentinela legacy 0.000001)', () => {
@@ -281,10 +282,17 @@ describe('resolveDirectionalTcs (tasa de venta unificada DOF + tolerancia)', () 
     expect(r.tc_usd_a_mn).toBe(18);
   });
 
-  it('ignora el parámetro _tc_mn_a_usd aunque venga con valor', () => {
-    // 99 en el 2º parámetro no debe afectar nada: resultado sigue siendo DOF+tol
+  it('override de tc_mn_a_usd fuera de banda se ignora (deriva DOF − tol)', () => {
+    // 99 > 25.5 (banda [8.5, 25.5]) → no confiable → MN→USD = 17 − 1 = 16.
     const r = resolveDirectionalTcs(17, 99, null, 1);
-    expect(r.tc_mn_a_usd).toBe(18);
+    expect(r.tc_mn_a_usd).toBe(16);
+    expect(r.tc_usd_a_mn).toBe(18);
+  });
+
+  it('honra un override plausible de tc_mn_a_usd en su dirección', () => {
+    // 16.4 dentro de banda → se respeta para MN→USD; USD→MN deriva 17 + 1 = 18.
+    const r = resolveDirectionalTcs(17, 16.4, null, 1);
+    expect(r.tc_mn_a_usd).toBe(16.4);
     expect(r.tc_usd_a_mn).toBe(18);
   });
 });

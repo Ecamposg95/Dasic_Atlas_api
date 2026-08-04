@@ -174,18 +174,20 @@ def _resolve_directional_tcs(
     tc_usd_a_mn: Decimal | None,
     tolerancia: Decimal = Decimal("1.0"),
 ) -> tuple[Decimal, Decimal]:
-    """Resuelve la TASA DE VENTA única (modelo unificado, 2026-06-10).
+    """Resuelve los TCs direccionales (modelo direccional, 2026-08-04).
 
-    - Una sola tasa de venta = DOF + tolerancia se usa en AMBAS direcciones:
-      USD→MN multiplica por ella, MN→USD divide por ella (inverso exacto). El
-      cliente pidió que MN→USD sea el inverso de USD→MN; antes MN→USD usaba
-      DOF − tolerancia. T es la tolerancia (default 1.0; configurable 0.1-1.0).
-    - Si el payload manda un override PLAUSIBLE de tc_usd_a_mn, se respeta y
-      tc_mn_a_usd lo espeja. Si viene None o fuera de banda, se deriva DOF + T.
+    Regla de negocio DASIC: la tolerancia protege contra la volatilidad
+    EN AMBAS direcciones:
+    - USD→MN multiplica por DOF + tolerancia (más pesos por dólar cobrado).
+    - MN→USD divide entre DOF − tolerancia (más dólares por peso cobrado).
+    Sustituye al "modelo unificado" del 2026-06-10 (una sola tasa espejo),
+    que dejaba MN→USD sin protección. Overrides PLAUSIBLES del payload se
+    honran por dirección (compat API).
     - Banda de plausibilidad [DOF·0.5, DOF·1.5]: descarta el sentinela legacy
       `0.000001` (y cualquier valor corrupto persistido) en vez de confiar en él,
       lo que antes producía `costo / 0.000001` = ×1,000,000 en MXN→USD.
-    - Devuelve (tc_mn_a_usd_eff, tc_usd_a_mn_eff) con AMBOS = tasa de venta.
+    - Devuelve (tc_mn_a_usd_eff, tc_usd_a_mn_eff). Espejo exacto de
+      `resolveDirectionalTcs` (frontend).
     """
     dof = Decimal(tipo_cambio)
     t = Decimal(tolerancia)
@@ -194,13 +196,14 @@ def _resolve_directional_tcs(
     def _trust(v: Decimal | None) -> bool:
         return v is not None and lo <= Decimal(v) <= hi
 
-    # Modelo unificado (2026-06-10): una sola TASA DE VENTA = DOF + tolerancia,
-    # usada en AMBAS direcciones (× para USD→MN, ÷ para MN→USD). MN→USD es el
-    # inverso EXACTO de USD→MN (antes usaba DOF − tolerancia). Se honra un override
-    # plausible de tc_usd_a_mn; tc_mn_a_usd lo espeja. Espejo de
-    # `resolveDirectionalTcs` (frontend).
-    tc_venta = Decimal(tc_usd_a_mn) if _trust(tc_usd_a_mn) else dof + t
-    return tc_venta, tc_venta
+    # Modelo direccional (2026-08-04): USD→MN = DOF + tol; MN→USD = DOF − tol.
+    # Overrides plausibles se honran por dirección. Guarda de divisor <= 0.
+    tc_usd_eff = Decimal(tc_usd_a_mn) if _trust(tc_usd_a_mn) else dof + t
+    base_mn = dof - t
+    tc_mn_eff = (
+        Decimal(tc_mn_a_usd) if _trust(tc_mn_a_usd) else (base_mn if base_mn > 0 else dof)
+    )
+    return tc_mn_eff, tc_usd_eff
 
 
 def _resolve_exchange_rate(moneda: str, tipo_cambio: Decimal | None) -> Decimal:

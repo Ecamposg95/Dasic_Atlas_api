@@ -214,7 +214,7 @@ export function computeTotalsPorMoneda(cart: CartItem[]): TotalsPorMoneda {
  */
 export function resolveDirectionalTcs(
   tc_dof: number,
-  _tc_mn_a_usd: number | null,
+  tc_mn_a_usd: number | null,
   tc_usd_a_mn: number | null,
   tolerancia: number = 1,
 ): TcSet {
@@ -228,15 +228,18 @@ export function resolveDirectionalTcs(
   const hi = tc_dof * 1.5;
   const trust = (v: number | null): v is number =>
     v != null && v >= lo && v <= hi;
-  // Modelo unificado (2026-06-10): una sola TASA DE VENTA = DOF + tolerancia,
-  // usada en AMBAS direcciones (× para USD→MN, ÷ para MN→USD). El cliente pidió
-  // que MN→USD sea el inverso EXACTO de USD→MN; antes MN→USD usaba DOF − tol.
-  // Se honra un override plausible de tc_usd_a_mn; tc_mn_a_usd lo espeja para
-  // garantizar la invariante (nunca un divisor distinto al multiplicador).
-  const tcVenta = trust(tc_usd_a_mn) ? tc_usd_a_mn : tc_dof + t;
+  // Modelo direccional (2026-08-04, regla de negocio DASIC): la tolerancia
+  // protege contra la volatilidad EN AMBAS direcciones:
+  //   USD→MN multiplica por DOF + tolerancia (más pesos por dólar cobrado).
+  //   MN→USD divide entre DOF − tolerancia (más dólares por peso cobrado).
+  // Sustituye al "modelo unificado" del 2026-06-10 (una sola tasa espejo),
+  // que dejaba MN→USD sin protección (dividía entre DOF+tol → menos USD).
+  // Overrides plausibles del payload se honran POR DIRECCIÓN (compat API).
+  const baseMn = tc_dof - t;
   return {
     tc_dof,
-    tc_mn_a_usd: tcVenta,
-    tc_usd_a_mn: tcVenta,
+    tc_usd_a_mn: trust(tc_usd_a_mn) ? tc_usd_a_mn : tc_dof + t,
+    // Guarda: si la tolerancia alcanzara al DOF, el divisor sería <= 0 — cae al DOF.
+    tc_mn_a_usd: trust(tc_mn_a_usd) ? tc_mn_a_usd : baseMn > 0 ? baseMn : tc_dof,
   };
 }

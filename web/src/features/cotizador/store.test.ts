@@ -95,9 +95,10 @@ describe('hydrateFromOrden — TC direccional persistido (veneno V_03)', () => {
     const s = useCotizador.getState();
     // Mismo cálculo que Cart/TotalsBar/TCMiniTable:
     const tcs = resolveDirectionalTcs(s.tc, s.tc_mn_a_usd, s.tc_usd_a_mn, s.tolerancia_tc);
-    // 17.35 + 0.5 = 17.85 — NO 18.35 (el congelado de mayo).
+    // USD→MN: 17.35 + 0.5 = 17.85 — NO 18.35 (el congelado de mayo).
+    // MN→USD: 17.35 − 0.5 = 16.85 (modelo direccional: protege en ambas vías).
     expect(tcs.tc_usd_a_mn).toBeCloseTo(17.85, 10);
-    expect(tcs.tc_mn_a_usd).toBeCloseTo(17.85, 10);
+    expect(tcs.tc_mn_a_usd).toBeCloseTo(16.85, 10);
   });
 
   it('cambiar la moneda del documento convierte con DOF + tolerancia', () => {
