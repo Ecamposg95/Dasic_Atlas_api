@@ -260,7 +260,7 @@ export function SatTab() {
         </DataTableBody>
       </DataTable>
 
-      <p className="text-xs text-muted-foreground/70">
+      <p className="text-xs text-muted-foreground">
         Catálogos SAT (CFDI 4.0) — solo lectura. Los datos son canon del SAT y no se editan desde la aplicación.
       </p>
     </div>

@@ -104,7 +104,7 @@ export function GenerarReporteServicioModal() {
             onChange={(e) => setClienteRecibeNombre(e.target.value)}
             placeholder="Nombre del contacto que recibe"
           />
-          <p className="text-[10px] text-muted-foreground/70 mt-1">
+          <p className="text-[10px] text-muted-foreground mt-1">
             Opcional al crear. Se puede registrar después con "Registrar
             recepción" desde la lista.
           </p>

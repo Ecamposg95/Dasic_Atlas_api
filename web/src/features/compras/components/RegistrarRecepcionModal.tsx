@@ -95,7 +95,7 @@ export function RegistrarRecepcionModal({ id, folio, onClose }: Props) {
                         {l.producto_id == null && <span className="ml-1 text-[10px] text-amber-500">fantasma</span>}
                       </div>
                       {(l.clave_unidad_sat || l.clave_prod_serv) && (
-                        <div className="text-[10px] font-mono text-muted-foreground/70">SAT {l.clave_prod_serv ?? '—'} · {l.clave_unidad_sat ?? '—'}</div>
+                        <div className="text-[10px] font-mono text-muted-foreground">SAT {l.clave_prod_serv ?? '—'} · {l.clave_unidad_sat ?? '—'}</div>
                       )}
                     </td>
                     <td className="p-1.5 text-center">{l.cantidad}</td>
@@ -119,7 +119,7 @@ export function RegistrarRecepcionModal({ id, folio, onClose }: Props) {
               })}
             </tbody>
           </table>
-          <p className="text-[11px] text-muted-foreground/70">
+          <p className="text-[11px] text-muted-foreground">
             Las líneas de catálogo ingresan a inventario por lo recibido (kardex). Las líneas fantasma solo registran la recepción; su stock entra al promoverlas.
           </p>
         </div>

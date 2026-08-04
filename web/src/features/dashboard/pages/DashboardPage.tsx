@@ -297,7 +297,7 @@ export function DashboardPage() {
                         <span className="text-foreground truncate flex-1">
                           {r.cliente ?? '—'}
                         </span>
-                        <span className="text-muted-foreground/70 shrink-0">
+                        <span className="text-muted-foreground shrink-0">
                           {r.dias < 0 ? `−${Math.abs(r.dias)}d` : 'hoy'}
                         </span>
                       </li>
@@ -333,7 +333,7 @@ export function DashboardPage() {
                 <ol className="space-y-2">
                   {tops.productos.map((p, i) => (
                     <li key={p.id} className="flex items-start gap-2 text-sm">
-                      <span className="text-xs text-muted-foreground/70 w-4 pt-0.5">{i + 1}.</span>
+                      <span className="text-xs text-muted-foreground w-4 pt-0.5">{i + 1}.</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1 flex-wrap">
                           <span className="font-medium text-foreground truncate">{p.nombre}</span>
@@ -370,7 +370,7 @@ export function DashboardPage() {
                 <ol className="space-y-2">
                   {tops.clientes.map((c, i) => (
                     <li key={c.id} className="flex items-start gap-2 text-sm">
-                      <span className="text-xs text-muted-foreground/70 w-4 pt-0.5">{i + 1}.</span>
+                      <span className="text-xs text-muted-foreground w-4 pt-0.5">{i + 1}.</span>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate">{c.empresa}</p>
                         <p className="text-xs text-muted-foreground">
@@ -405,7 +405,7 @@ export function DashboardPage() {
                   <ol className="space-y-2">
                     {tops.vendedores.map((v, i) => (
                       <li key={v.id} className="flex items-start gap-2 text-sm">
-                        <span className="text-xs text-muted-foreground/70 w-4 pt-0.5">{i + 1}.</span>
+                        <span className="text-xs text-muted-foreground w-4 pt-0.5">{i + 1}.</span>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-foreground">{v.nombre}</p>
                           <p className="text-xs text-muted-foreground">

@@ -122,7 +122,7 @@ export function OrdenCompraDetalleModal({
                         <span className="font-mono text-foreground">{sku}</span>{' '}
                         <span className="text-muted-foreground">{nombre}</span>
                         {(d.clave_unidad_sat || d.clave_prod_serv) && (
-                          <div className="text-[10px] font-mono text-muted-foreground/70">SAT {d.clave_prod_serv ?? '—'} · {d.clave_unidad_sat ?? '—'}</div>
+                          <div className="text-[10px] font-mono text-muted-foreground">SAT {d.clave_prod_serv ?? '—'} · {d.clave_unidad_sat ?? '—'}</div>
                         )}
                       </td>
                       <td className="text-center py-1.5 px-2">{d.cantidad}</td>

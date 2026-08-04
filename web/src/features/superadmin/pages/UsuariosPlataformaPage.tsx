@@ -311,7 +311,7 @@ export function UsuariosPlataformaPage() {
         )}
 
         {/* Note */}
-        <p className="font-mono text-[10px] text-muted-foreground/70">
+        <p className="font-mono text-[10px] text-muted-foreground">
           Los cambios de rol se aplican en el siguiente login del usuario afectado. Los guard-errors del backend (último superadmin, auto-degradación) aparecen como toast.
         </p>
       </div>

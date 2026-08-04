@@ -338,7 +338,7 @@ export function ClientesPage() {
                   {saldo > 0 ? (
                     <Badge variant="rose">{fmtMoney(c.moneda_credito, c.saldo_actual)}</Badge>
                   ) : (
-                    <span className="text-xs text-muted-foreground/70">
+                    <span className="text-xs text-muted-foreground">
                       {fmtMoney(c.moneda_credito, c.saldo_actual)}
                     </span>
                   )}
