@@ -15,6 +15,8 @@ from datetime import datetime
 from decimal import Decimal
 
 from fastapi import HTTPException
+from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.orm.exc import ObjectDeletedError
 
 from app import models
 from app.domains.remisiones import repository
@@ -30,6 +32,30 @@ def _get_or_404(db, remision_id: int) -> models.Remision:
     if not rem:
         raise HTTPException(404, "Remisión no encontrada")
     return rem
+
+
+def _refresh_or_404(db, rem: models.Remision) -> None:
+    """Re-lee `rem` tras adquirir el lock — SIEMPRE la primera cosa que se
+    hace con `rem` después de llamar a `locker()`, antes de tocar cualquier
+    otro atributo. Si otra transacción borró la fila mientras esperábamos
+    el lock (carrera con `eliminar_borrador`), la fila ya no existe — 404
+    explícito en vez de dejar que SQLAlchemy propague su excepción interna.
+
+    Verificado empíricamente contra sqlalchemy==2.0.51 (la versión de este
+    repo) con dos escenarios reales: (1) leer un atributo de `rem` (p.ej.
+    `rem.orden_venta_id`) inmediatamente después de que el propio `locker`
+    hizo un `commit()` ajeno expira `rem` por `expire_on_commit`, y esa
+    lectura implícita revienta con `ObjectDeletedError` si la fila ya no
+    existe; (2) llamar a `db.refresh(rem)` explícitamente sobre una fila
+    borrada da `InvalidRequestError` ("Could not refresh instance"/"is not
+    persistent within this Session"). Ambas son la misma condición real de
+    fondo ("la fila ya no está") — las cubrimos las dos aquí para no
+    depender de en qué punto exacto del código se dispara.
+    """
+    try:
+        db.refresh(rem)
+    except (ObjectDeletedError, InvalidRequestError):
+        raise HTTPException(404, "Remisión no encontrada (eliminada por otra operación)")
 
 
 def _armar_linea(item: DetalleRemisionInput, det_orden: dict) -> models.DetalleRemision:
@@ -148,8 +174,14 @@ def actualizar_borrador(db, remision_id: int, payload: RemisionUpdate, user) -> 
     return rem
 
 
-def eliminar_borrador(db, remision_id: int, user) -> None:
+def eliminar_borrador(db, remision_id: int, user, *, locker=folio_service.pg_locker) -> None:
     rem = _get_or_404(db, remision_id)
+    # Misma familia que emitir/cancelar/registrar_recepcion: lock por
+    # remisión ANTES de refrescar/verificar estado, para que dos
+    # eliminaciones concurrentes (o una eliminación concurrente con
+    # cualquier otra transición de estado) no pisen datos obsoletos.
+    locker(db, f"remision:{remision_id}")
+    _refresh_or_404(db, rem)
     if rem.estado != EstadoRemision.BORRADOR:
         raise HTTPException(409, "Solo un borrador puede eliminarse")
     db.delete(rem)
@@ -158,22 +190,28 @@ def eliminar_borrador(db, remision_id: int, user) -> None:
 
 def emitir(db, remision_id, user, locker=folio_service.pg_locker):
     rem = _get_or_404(db, remision_id)
-    # Lock ANTES de refrescar/verificar estado: serializa la doble-emisión de
-    # la MISMA remisión (doble-submit) y, si aplica, emisiones concurrentes
-    # de la MISMA orden (el cálculo de excesos lee acumulados de todas las
-    # remisiones de la orden). Orden fijo remisión→orden SIEMPRE, para no
-    # arriesgar deadlock si algún otro flujo tomara esos locks al revés.
-    locker(db, f"remision:{rem.id}")
-    if rem.orden_venta_id:
-        locker(db, f"remision-emitir:orden:{rem.orden_venta_id}")
-    # Re-check tras el lock: otra transacción pudo emitir/cancelar esta
-    # remisión mientras esperábamos el lock.
-    db.refresh(rem)
+    # Lock por remisión ANTES de tocar cualquier atributo de `rem` — usamos
+    # el parámetro `remision_id` (no `rem.id`) para construir la llave, así
+    # no leemos nada del objeto todavía. Refrescamos INMEDIATAMENTE después
+    # del lock, antes de cualquier otro acceso: si el lock tuvo que esperar
+    # a que otra transacción borrara/emitiera/canceló esta remisión, `rem`
+    # queda expirado por el commit ajeno, y CUALQUIER acceso a un atributo
+    # (incluido `rem.orden_venta_id`) dispararía una recarga implícita que
+    # revienta con `ObjectDeletedError` si la fila ya no existe — por eso
+    # el refresh (con su try/except) va primero, antes de leer nada más.
+    locker(db, f"remision:{remision_id}")
+    _refresh_or_404(db, rem)
     if rem.estado != models.EstadoRemision.BORRADOR:
         raise HTTPException(409, "Solo un borrador puede emitirse")
     if not rem.detalles:
         raise HTTPException(400, "La remisión no tiene líneas")
     if rem.orden_venta_id:
+        # Lock por orden ANTES de leer acumulados (pendientes): serializa
+        # emisiones concurrentes de remisiones distintas sobre la MISMA
+        # orden. Orden fijo remisión→orden SIEMPRE (el de remisión ya se
+        # tomó arriba), para no arriesgar deadlock con otro flujo que
+        # tomara estos locks al revés.
+        locker(db, f"remision-emitir:orden:{rem.orden_venta_id}")
         pend = repository.pendientes_por_detalle(db, rem.orden_venta)
         cotizado_por_detalle = {d.id: Decimal(str(d.cantidad)) for d in rem.orden_venta.detalles}
         excesos = [
@@ -230,8 +268,14 @@ def _descontar_stock(db, rem, user) -> int:
     return movimientos
 
 
-def registrar_recepcion(db, remision_id: int, recibido_por: str, user) -> models.Remision:
+def registrar_recepcion(db, remision_id: int, recibido_por: str, user, *,
+                         locker=folio_service.pg_locker) -> models.Remision:
     rem = _get_or_404(db, remision_id)
+    # Misma familia que emitir/cancelar/eliminar_borrador: sin este lock,
+    # una recepción concurrente con una cancelación podía escribir RECIBIDA
+    # encima de una CANCELADA (o viceversa).
+    locker(db, f"remision:{remision_id}")
+    _refresh_or_404(db, rem)
     if rem.estado != EstadoRemision.EMITIDA:
         raise HTTPException(409, "Solo una remisión emitida puede recibirse")
     if not (recibido_por or "").strip():
@@ -250,8 +294,8 @@ def cancelar(db, remision_id, motivo, user, *, locker=folio_service.pg_locker):
     # Mismo patrón que `emitir`: lock por remisión ANTES de refrescar/
     # verificar estado, para que una segunda cancelación concurrente no pase
     # la verificación con el objeto todavía en memoria como EMITIDA/RECIBIDA.
-    locker(db, f"remision:{rem.id}")
-    db.refresh(rem)
+    locker(db, f"remision:{remision_id}")
+    _refresh_or_404(db, rem)
     if rem.estado not in (models.EstadoRemision.EMITIDA, models.EstadoRemision.RECIBIDA):
         raise HTTPException(409, "Solo una remisión emitida o recibida puede cancelarse")
     if not (motivo or "").strip():
@@ -310,11 +354,36 @@ def crear_cotizacion_desde(db, remision_id: int, user, *, locker=folio_service.p
     db.flush()
     for det in rem.detalles:
         base = det.detalle_orden if det.detalle_orden_id else None
-        producto_id = base.producto_id if base is not None else None
-        tipo_linea = "producto_catalogo" if producto_id else "producto_fantasma"
+        es_servicio = base is not None and (
+            base.servicio_id is not None or base.tipo_linea in ("servicio", "servicio_catalogo")
+        )
+        if es_servicio:
+            # Los servicios no mueven stock — es seguro preservar su
+            # clasificación (auto_oc_service.py:35 y
+            # reportes_servicio_docs.py:147 ramifican sobre tipo_linea/
+            # servicio_id, y ambos ya excluyen servicios de sus chequeos).
+            tipo_linea = base.tipo_linea
+            servicio_id = base.servicio_id
+        else:
+            # La mercancía de esta línea YA se entregó (la remisión está
+            # emitida/recibida) — la cotización derivada NO debe re-reservar
+            # ni re-descontar stock. Copiar producto_id haría que
+            # ventas.py::convertir_cotizacion (~1375-1390) vuelva a validar
+            # disponible y reservar contra esa línea, y corrompería
+            # stock_service._neto_reservas_por_producto: una cotización
+            # nacida de remisión nunca tiene movimientos RESERVA propios,
+            # así que la fórmula le restaría una "reserva propia"
+            # inexistente a las reservas de OTRAS cotizaciones sobre el
+            # mismo producto. Por eso, para CUALQUIER línea de producto
+            # (con o sin producto_id en el origen) y para las ad-hoc:
+            # siempre producto_fantasma, sin producto_id — con el snapshot
+            # completo de la línea (sku, descripción, cantidad, unidad,
+            # clave SAT, observaciones) que ya copiamos abajo.
+            tipo_linea = "producto_fantasma"
+            servicio_id = None
         db.add(models.DetalleOrden(
             orden_id=cot.id,
-            producto_id=producto_id,
+            servicio_id=servicio_id,
             sku_libre=det.sku,
             descripcion_libre=det.descripcion,
             cantidad=det.cantidad,

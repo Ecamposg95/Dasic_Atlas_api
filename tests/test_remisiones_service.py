@@ -168,10 +168,13 @@ def test_remision_create_modo_libre_requiere_moneda():
 
 
 def test_crear_cotizacion_desde_copia_snapshot_completo(db, orden):
-    """Minor (c): la conversión copia clave_unidad_sat/observaciones_linea, y
-    si la línea viene de un DetalleOrden con producto de catálogo, copia
-    producto_id + tipo_linea='producto_catalogo'; si no hay producto de
-    catálogo (línea libre/ad-hoc), tipo_linea='producto_fantasma'."""
+    """Minor (c) + fix round 2 (B): la conversión copia
+    clave_unidad_sat/observaciones_linea siempre. La mercancía de una
+    remisión YA se entregó, así que NINGUNA línea de producto (con o sin
+    producto_id en el origen) debe re-reservar/re-descontar stock al
+    convertir — siempre queda `tipo_linea='producto_fantasma'` y SIN
+    `producto_id`, aunque haya nacido de un DetalleOrden con producto de
+    catálogo."""
     o, d, admin = orden
     prod = models.Producto(sku="SKU-CAT", nombre="Producto catálogo",
                             stock_actual=50, es_servicio=False, clave_unidad_sat="H87")
@@ -187,11 +190,11 @@ def test_crear_cotizacion_desde_copia_snapshot_completo(db, orden):
     rem = service.emitir(db, rem.id, admin, locker=_noop_locker)
     cot = service.crear_cotizacion_desde(db, rem.id, admin, locker=_noop_locker)
 
-    linea_catalogo = cot.detalles[0]
-    assert linea_catalogo.producto_id == prod.id
-    assert linea_catalogo.tipo_linea == "producto_catalogo"
-    assert linea_catalogo.clave_unidad_sat == "H87"
-    assert linea_catalogo.observaciones_linea == "Nota de línea"
+    linea = cot.detalles[0]
+    assert linea.producto_id is None
+    assert linea.tipo_linea == "producto_fantasma"
+    assert linea.clave_unidad_sat == "H87"
+    assert linea.observaciones_linea == "Nota de línea"
 
     # Línea ad-hoc (sin producto de catálogo) desde otra remisión libre.
     cli = models.Cliente(nombre_empresa="Libre SA")
@@ -204,3 +207,123 @@ def test_crear_cotizacion_desde_copia_snapshot_completo(db, orden):
     linea_fantasma = cot_libre.detalles[0]
     assert linea_fantasma.producto_id is None
     assert linea_fantasma.tipo_linea == "producto_fantasma"
+
+
+def test_crear_cotizacion_desde_preserva_servicio(db, orden):
+    """Fix round 2 (B): una línea cuyo DetalleOrden origen es un servicio
+    de catálogo (servicio_id no nulo, tipo_linea='servicio_catalogo') SÍ
+    conserva tipo_linea + servicio_id en la conversión — los servicios no
+    mueven stock, así que no hay riesgo de re-reserva/re-descuento, y
+    preservar la clasificación es lo que esperan auto_oc_service.py y
+    reportes_servicio_docs.py."""
+    o, d, admin = orden
+    servicio = models.Servicio(codigo="SRV-1", nombre="Instalación", costo=Decimal("100"))
+    db.add(servicio); db.flush()
+    d.servicio_id = servicio.id
+    d.tipo_linea = "servicio_catalogo"
+    db.commit()
+
+    payload = RemisionCreate(orden_venta_id=o.id, detalles=[
+        DetalleRemisionInput(detalle_orden_id=d.id, descripcion="Instalación",
+                             cantidad=Decimal("1"))])
+    rem = service.crear_borrador(db, payload, admin)
+    rem = service.emitir(db, rem.id, admin, locker=_noop_locker)
+    cot = service.crear_cotizacion_desde(db, rem.id, admin, locker=_noop_locker)
+
+    linea = cot.detalles[0]
+    assert linea.producto_id is None
+    assert linea.tipo_linea == "servicio_catalogo"
+    assert linea.servicio_id == servicio.id
+
+
+def test_registrar_recepcion_sobre_cancelada_da_409(db, orden):
+    """Guard C: registrar_recepcion también re-verifica estado tras el
+    lock — recibir una remisión que ya fue cancelada (por otra transacción,
+    mientras esta esperaba el lock) debe dar 409, no pisar la cancelación."""
+    o, d, admin = orden
+    rem = _borrador(db, o, d, admin, "8")
+    service.emitir(db, rem.id, admin, locker=_noop_locker)
+    service.cancelar(db, rem.id, "motivo", admin, locker=_noop_locker)
+
+    with pytest.raises(HTTPException) as exc:
+        service.registrar_recepcion(db, rem.id, "Juan Pérez", admin, locker=_noop_locker)
+    assert exc.value.status_code == 409
+
+
+def test_emitir_404_si_borrador_fue_eliminado_durante_el_lock(db, orden):
+    """Fix A: si otra transacción borró la remisión mientras esta esperaba
+    el lock, el refresh post-lock debe traducirse a 404, no a un 500 con la
+    excepción interna de SQLAlchemy sin envolver."""
+    o, d, admin = orden
+    rem = _borrador(db, o, d, admin)
+
+    def _locker_que_elimina_a_medio_camino(db, key):
+        db.execute(text("DELETE FROM remisiones WHERE id = :id"), {"id": rem.id})
+        db.commit()
+
+    with pytest.raises(HTTPException) as exc:
+        service.emitir(db, rem.id, admin, locker=_locker_que_elimina_a_medio_camino)
+    assert exc.value.status_code == 404
+
+
+def test_eliminar_borrador_serializa_con_lock(db, orden):
+    """Fix A: eliminar_borrador también toma el lock por remisión antes de
+    refrescar/verificar — si otra transacción ya la eliminó mientras esta
+    esperaba el lock, 404 en vez de un delete duplicado silencioso."""
+    o, d, admin = orden
+    rem = _borrador(db, o, d, admin)
+
+    def _locker_que_elimina_a_medio_camino(db, key):
+        db.execute(text("DELETE FROM remisiones WHERE id = :id"), {"id": rem.id})
+        db.commit()
+
+    with pytest.raises(HTTPException) as exc:
+        service.eliminar_borrador(db, rem.id, admin, locker=_locker_que_elimina_a_medio_camino)
+    assert exc.value.status_code == 404
+
+
+def test_lock_antes_de_refresh_spy(db, orden):
+    """Cobertura D: prueba de orden de llamadas (spy) — emitir, cancelar y
+    registrar_recepcion deben invocar el `locker` ANTES de `db.refresh()`,
+    no al revés (ese es exactamente el defecto TOCTOU de los dos criticals
+    del round 1). Envolvemos `db.refresh` para registrar cada llamada en una
+    lista compartida de eventos junto con las llamadas al locker, y
+    verificamos que el primer "lock" siempre precede al primer "refresh".
+
+    Nota: esto prueba el ORDEN de las llamadas dentro del código, no la
+    serialización real entre conexiones concurrentes de Postgres — SQLite
+    en memoria (un solo hilo/conexión aquí) no puede reproducir la
+    interleaving real de READ COMMITTED entre transacciones. Esa parte
+    quedó documentada como pendiente para QA #12 sobre Postgres real (ver
+    también los tests `*_toctou_*` del round 1, que simulan la carrera
+    haciendo que el propio locker mute el estado por SQL crudo).
+    """
+    o, d, admin = orden
+    eventos = []
+
+    orig_refresh = db.refresh
+
+    def spy_refresh(*a, **kw):
+        eventos.append("refresh")
+        return orig_refresh(*a, **kw)
+
+    db.refresh = spy_refresh
+
+    def spy_locker(db_, key):
+        eventos.append("lock")
+
+    try:
+        rem = _borrador(db, o, d, admin)
+        eventos.clear()
+        service.emitir(db, rem.id, admin, locker=spy_locker)
+        assert eventos.index("lock") < eventos.index("refresh")
+
+        eventos.clear()
+        service.registrar_recepcion(db, rem.id, "Juan", admin, locker=spy_locker)
+        assert eventos.index("lock") < eventos.index("refresh")
+
+        eventos.clear()
+        service.cancelar(db, rem.id, "motivo", admin, locker=spy_locker)
+        assert eventos.index("lock") < eventos.index("refresh")
+    finally:
+        db.refresh = orig_refresh
