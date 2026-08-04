@@ -10,42 +10,42 @@
   --sidebar-bottom: #000000;
   --sidebar-text: #b6bdc9;
   --sidebar-dim: #5d6673;
-  --sidebar-border: #262119;
+  --sidebar-border: #1d2925;
   --sidebar-hover: rgba(255, 255, 255, 0.06);
   --sidebar-strong: #f4f6f9;
-  --sidebar-active: #ffb01f;   /* accent glow (FORJA · ámbar industrial) */
-  --sidebar-activebg: rgba(255, 176, 31, 0.12);
+  --sidebar-active: #2ee6a8;   /* accent glow (CIRCUITO · esmeralda técnica) */
+  --sidebar-activebg: rgba(46, 230, 168, 0.12);
 
-  /* Semantic design tokens — FORJA light: acero cálido + tinta */
-  --background: 40 22% 97%;
+  /* Semantic design tokens — CIRCUITO light: neutros verdosos + esmeralda profunda */
+  --background: 150 20% 97%;
   --surface: 0 0% 100%;
-  --surface-2: 40 18% 94%;
-  --foreground: 30 22% 12%;
-  --muted-foreground: 32 9% 44%;
-  --border: 38 16% 88%;
-  --border-strong: 37 13% 79%;
-  --ring: 38 100% 50%;
-  --primary: 33 96% 46%;
-  --primary-foreground: 30 90% 8%;
-  --accent: 38 100% 50%;
-  --shadow-color: 30 22% 12%;
+  --surface-2: 150 15% 94%;
+  --foreground: 160 25% 10%;
+  --muted-foreground: 155 8% 42%;
+  --border: 150 14% 88%;
+  --border-strong: 150 12% 79%;
+  --ring: 160 84% 39%;
+  --primary: 161 90% 30%;
+  --primary-foreground: 150 40% 98%;
+  --accent: 160 84% 39%;
+  --shadow-color: 160 25% 10%;
 }
 .dark {
   /* Sidebar: mismas vars negras de :root (no se sobreescriben). */
 
-  /* Semantic design tokens — FORJA dark: carbón cálido */
-  --background: 40 5% 7%;
-  --surface: 42 5% 10%;
-  --surface-2: 42 7% 13%;
-  --foreground: 38 35% 92%;
-  --muted-foreground: 34 8% 60%;
-  --border: 40 10% 17%;
-  --border-strong: 40 9% 26%;
-  --ring: 38 100% 56%;
-  --primary: 38 100% 56%;
-  --primary-foreground: 35 90% 7%;
-  --accent: 38 100% 56%;
-  --shadow-color: 40 30% 2%;
+  /* Semantic design tokens — CIRCUITO dark: negro absoluto verdoso */
+  --background: 155 12% 5%;
+  --surface: 150 11% 8%;
+  --surface-2: 150 10% 12%;
+  --foreground: 155 26% 93%;
+  --muted-foreground: 155 7% 55%;
+  --border: 153 15% 15%;
+  --border-strong: 153 12% 24%;
+  --ring: 160 79% 54%;
+  --primary: 160 79% 54%;
+  --primary-foreground: 160 60% 5%;
+  --accent: 160 79% 54%;
+  --shadow-color: 160 40% 2%;
 }
 
 @layer base {
@@ -68,6 +68,33 @@
 }
 .modal-in {
   animation: modal-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Animaciones del login (entrada escalonada + ambiente) ── */
+@keyframes login-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.login-fade-up {
+  opacity: 0;
+  animation: login-fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes login-blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(12px, -18px) scale(1.06); }
+}
+.login-blob { animation: login-blob-float 14s ease-in-out infinite; }
+.login-blob-alt { animation: login-blob-float 18s ease-in-out infinite reverse; }
+@keyframes login-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(200%); }
+}
+.login-sweep {
+  animation: login-sweep 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-fade-up { animation: none; opacity: 1; }
+  .login-blob, .login-blob-alt, .login-sweep { animation: none; }
 }
 
 @keyframes drawer-in {

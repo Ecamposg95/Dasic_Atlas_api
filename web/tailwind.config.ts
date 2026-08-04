@@ -19,8 +19,8 @@ export default {
           activebg: 'var(--sidebar-activebg)',
         },
         accent: {
-          glow: '#ffb01f',   // FORJA · ámbar industrial
-          deep: '#ff7a00',
+          glow: '#2ee6a8',   // CIRCUITO · esmeralda técnica
+          deep: '#0d9f6e',
         },
         // Semantic tokens (HSL channel format for alpha support)
         background: 'hsl(var(--background) / <alpha-value>)',
