@@ -14,17 +14,17 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-6">
+        <div className="min-h-screen flex items-center justify-center bg-background px-6">
           <div className="max-w-md text-center">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3">
+            <h1 className="text-2xl font-bold text-foreground mb-3">
               Algo se rompió
             </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               La aplicación encontró un error inesperado. Recarga para intentar de nuevo.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-lg text-sm font-semibold hover:opacity-90"
+              className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-semibold hover:opacity-90"
             >
               Recargar
             </button>

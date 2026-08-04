@@ -66,11 +66,11 @@ const crm = lazyPage(() => import('@/features/crm/pages/CrmKanbanPage'), 'CrmKan
 const recordatorios = lazyPage(() => import('@/features/recordatorios/pages/RecordatoriosPage'), 'RecordatoriosPage');
 const analitica = lazyPage(() => import('@/features/analitica/pages/KpisPage'), 'KpisPage');
 
-// Helper: ruta legacy que envuelve el mismo Layout y mounta el mismo lazy.
-const legacyRoute = (path: string, lazyLoader: ReturnType<typeof lazyPage>) => ({
+// Helper: ruta legacy → redirect a su equivalente /spa/* (normaliza URL,
+// breadcrumbs y bookmarks; antes montaba la página duplicada sin breadcrumb).
+const legacyRedirect = (path: string, to: string) => ({
   path,
-  element: <Layout />,
-  children: [{ index: true, lazy: lazyLoader }],
+  element: <Navigate to={to} replace />,
 });
 
 export const router = createBrowserRouter([
@@ -119,31 +119,27 @@ export const router = createBrowserRouter([
       { path: '*', element: <NotFound /> },
     ],
   },
-  // Rutas legacy — FastAPI sirve el mismo dist/index.html para estas URLs.
-  // React Router las captura y monta el mismo componente que /spa/<x>.
-  {
-    path: '/ventas',
-    element: <Layout />,
-    children: [{ path: 'cotizador', lazy: cotizador }],
-  },
-  legacyRoute('/dashboard', dashboard),
-  legacyRoute('/borradores', borradores),
-  legacyRoute('/seguimiento', seguimiento),
-  legacyRoute('/fantasmas', fantasmas),
-  legacyRoute('/clientes', clientes),
-  legacyRoute('/inventario', inventario),
-  legacyRoute('/catalogos', catalogos),
-  legacyRoute('/compras', compras),
-  legacyRoute('/remisiones', remisiones),
-  legacyRoute('/gastos', gastos),
-  { path: '/reportes', element: <Layout />, children: [{ index: true, element: <Navigate to="/spa/analitica?tab=ventas" replace /> }] },
-  { path: '/reportes-servicio', element: <Layout />, children: [{ index: true, element: <Navigate to="/spa/analitica?tab=operativo" replace /> }] },
-  legacyRoute('/reportes-servicio-docs', reportesServicioDocs),
-  legacyRoute('/cuentas-por-cobrar', cxc),
-  legacyRoute('/fx', fx),
-  legacyRoute('/precios', precios),
-  legacyRoute('/usuarios', usuarios),
-  legacyRoute('/servicios', servicios),
+  // Rutas legacy — FastAPI sirve el mismo dist/index.html para estas URLs;
+  // el router las redirige a su equivalente canónico /spa/*.
+  legacyRedirect('/ventas/cotizador', '/spa/cotizador'),
+  legacyRedirect('/dashboard', '/spa/dashboard'),
+  legacyRedirect('/borradores', '/spa/borradores'),
+  legacyRedirect('/seguimiento', '/spa/seguimiento'),
+  legacyRedirect('/fantasmas', '/spa/fantasmas'),
+  legacyRedirect('/clientes', '/spa/clientes'),
+  legacyRedirect('/inventario', '/spa/inventario'),
+  legacyRedirect('/catalogos', '/spa/catalogos'),
+  legacyRedirect('/compras', '/spa/compras'),
+  legacyRedirect('/remisiones', '/spa/remisiones'),
+  legacyRedirect('/gastos', '/spa/gastos'),
+  legacyRedirect('/reportes', '/spa/analitica?tab=ventas'),
+  legacyRedirect('/reportes-servicio', '/spa/analitica?tab=operativo'),
+  legacyRedirect('/reportes-servicio-docs', '/spa/reportes-servicio-docs'),
+  legacyRedirect('/cuentas-por-cobrar', '/spa/cuentas-por-cobrar'),
+  legacyRedirect('/fx', '/spa/fx'),
+  legacyRedirect('/precios', '/spa/precios'),
+  legacyRedirect('/usuarios', '/spa/usuarios'),
+  legacyRedirect('/servicios', '/spa/servicios'),
   // Catch-all: cualquier URL desconocida cae en el 404 dentro del shell.
   { path: '*', element: <Layout />, children: [{ path: '*', element: <NotFound /> }] },
 ]);
