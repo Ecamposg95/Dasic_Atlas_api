@@ -11,8 +11,10 @@ import { NotasTab } from '../components/tabs/NotasTab';
 import { DealsTab } from '../components/tabs/DealsTab';
 import { ContactosTab } from '../components/tabs/ContactosTab';
 import { EstadoCuentaTab } from '../components/tabs/EstadoCuentaTab';
+import { PlantasTab } from '../components/tabs/PlantasTab';
+import { ActivosTab } from '../components/tabs/ActivosTab';
 
-const TABS = ['Resumen', 'Contactos', 'Estado de cuenta', 'Actividad', 'Notas', 'Deals'] as const;
+const TABS = ['Resumen', 'Contactos', 'Plantas', 'Activos', 'Estado de cuenta', 'Actividad', 'Notas', 'Deals'] as const;
 type Tab = (typeof TABS)[number];
 
 const estatusBadge: Record<string, string> = {
@@ -57,6 +59,8 @@ export function EmpresaDetallePage() {
       />
       {tab === 'Resumen' && <ResumenTab clienteId={clienteId} />}
       {tab === 'Contactos' && <ContactosTab clienteId={clienteId} />}
+      {tab === 'Plantas' && <PlantasTab clienteId={clienteId} />}
+      {tab === 'Activos' && <ActivosTab clienteId={clienteId} />}
       {tab === 'Estado de cuenta' && <EstadoCuentaTab clienteId={clienteId} monedaCredito={empresa?.moneda_credito} />}
       {tab === 'Actividad' && <ActividadTab clienteId={clienteId} />}
       {tab === 'Notas' && <NotasTab clienteId={clienteId} />}

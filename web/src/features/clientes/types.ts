@@ -130,6 +130,59 @@ export type NotaEmpresa = {
   creado_en: string | null;
 };
 
+// ─── Plantas y Activos instalados (instalaciones del cliente) ────────────────
+
+export type Planta = {
+  id: number;
+  cliente_id: number;
+  nombre: string;
+  direccion: string | null;
+  ciudad: string | null;
+  notas: string | null;
+  creado_en: string | null;
+};
+
+export type PlantaInput = {
+  nombre: string;
+  direccion?: string | null;
+  ciudad?: string | null;
+  notas?: string | null;
+};
+
+export type EstadoActivo = 'operativo' | 'mantenimiento' | 'fuera_servicio' | 'baja';
+
+export type Activo = {
+  id: number;
+  cliente_id: number;
+  planta_id: number | null;
+  planta_nombre: string | null;
+  nombre: string;
+  tipo: string | null;
+  fabricante: string | null;
+  modelo: string | null;
+  serie: string | null;
+  ubicacion: string | null;
+  fecha_instalacion: string | null;
+  garantia_hasta: string | null;
+  estado: EstadoActivo;
+  notas: string | null;
+  creado_en: string | null;
+};
+
+export type ActivoInput = {
+  nombre: string;
+  planta_id?: number | null;
+  tipo?: string | null;
+  fabricante?: string | null;
+  modelo?: string | null;
+  serie?: string | null;
+  ubicacion?: string | null;
+  fecha_instalacion?: string | null;
+  garantia_hasta?: string | null;
+  estado?: EstadoActivo;
+  notas?: string | null;
+};
+
 export type DealEnlazado = {
   id: number;
   titulo: string;
