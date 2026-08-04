@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronDown, LogOut, Menu, Settings, User as UserIcon } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ChevronDown, ChevronRight, LogOut, Menu } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { useAuth, type User } from '@/stores/auth';
 import { branding } from '@/lib/branding';
+import { breadcrumbFor } from './nav-config';
 import { ThemeToggle } from './ThemeToggle';
 
 function initialsOf(u: User): string {
@@ -18,9 +19,12 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const user = useAuth((s) => s.user);
   const setUser = useAuth((s) => s.setUser);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const crumb = breadcrumbFor(pathname);
 
   useEffect(() => {
     if (!open) return;
@@ -54,8 +58,8 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   }
 
   return (
-    <header className="h-16 border-b border-border px-6 flex items-center justify-between bg-card/70 backdrop-blur-xl shrink-0">
-      <div className="flex items-center gap-2">
+    <header className="h-14 border-b border-border px-4 md:px-6 flex items-center justify-between bg-card/70 backdrop-blur-xl shrink-0">
+      <div className="flex items-center gap-2 min-w-0">
         <button
           type="button"
           onClick={onMenuClick}
@@ -64,25 +68,21 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <h2 className="text-sm uppercase tracking-wider text-muted-foreground font-semibold">
-          {branding.organizationName} <span className="text-accent-glow">·</span> {branding.productName}
-        </h2>
+        {/* Breadcrumbs: Sección › Página */}
+        {crumb ? (
+          <nav aria-label="Ruta actual" className="flex items-center gap-1.5 text-sm min-w-0">
+            <span className="text-muted-foreground hidden sm:inline">{crumb[0]}</span>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60 hidden sm:inline" />
+            <span className="font-semibold text-foreground truncate">{crumb[1]}</span>
+          </nav>
+        ) : (
+          <span className="text-sm font-semibold text-foreground truncate">{branding.productName}</span>
+        )}
       </div>
 
       {user && (
         <div className="flex items-center gap-1">
           <ThemeToggle />
-
-          <button
-            type="button"
-            onClick={onLogout}
-            disabled={busy}
-            title="Cerrar sesión"
-            aria-label="Cerrar sesión"
-            className="h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-rose-500 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition disabled:opacity-50"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
 
           <div className="relative" ref={menuRef}>
             <button
@@ -92,7 +92,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               aria-haspopup="menu"
               aria-expanded={open}
             >
-              <span className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-xs font-bold flex items-center justify-center shadow">
+              <span className="h-8 w-8 rounded-full bg-gradient-to-br from-accent-glow to-accent-deep text-slate-950 text-xs font-bold flex items-center justify-center shadow">
                 {initialsOf(user)}
               </span>
               <div className="hidden sm:flex flex-col items-start leading-tight">
@@ -110,30 +110,14 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                 className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-elev-2 overflow-hidden z-50"
               >
                 <div className="px-3 py-2 border-b border-border">
+                  <div className="text-sm text-foreground truncate">{user.nombre || '—'}</div>
                   <div className="text-xs text-muted-foreground truncate">{user.email}</div>
                 </div>
                 <button
                   type="button"
-                  disabled
-                  title="Próximamente"
-                  className="w-full text-left px-3 py-2 text-sm text-muted-foreground flex items-center gap-2 cursor-not-allowed"
-                >
-                  <UserIcon className="h-3.5 w-3.5" /> Mi perfil
-                </button>
-                <button
-                  type="button"
-                  disabled
-                  title="Próximamente"
-                  className="w-full text-left px-3 py-2 text-sm text-muted-foreground flex items-center gap-2 cursor-not-allowed"
-                >
-                  <Settings className="h-3.5 w-3.5" /> Configuración
-                </button>
-                <div className="border-t border-border" />
-                <button
-                  type="button"
                   onClick={onLogout}
                   disabled={busy}
-                  className="w-full text-left px-3 py-2 text-sm text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/30 flex items-center gap-2 transition disabled:opacity-50"
+                  className="w-full text-left px-3 py-2.5 text-sm text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/30 flex items-center gap-2 transition disabled:opacity-50"
                 >
                   <LogOut className="h-3.5 w-3.5" />
                   {busy ? 'Cerrando…' : 'Cerrar sesión'}

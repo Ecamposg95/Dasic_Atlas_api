@@ -1,81 +1,9 @@
 import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import type { LucideIcon } from 'lucide-react';
-import {
-  BarChart3, BellRing, BookMarked, ChevronsLeft, ChevronsRight, ClipboardCheck, Coins, Contact,
-  FileClock, FileText, Ghost, KanbanSquare, LayoutDashboard, ListChecks, Package, Receipt,
-  ShoppingCart, ShieldCheck, Tags, Truck, UserCog, Users, Wallet, Wrench,
-} from 'lucide-react';
+import { ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useIsSuperadmin } from '@/lib/permissions';
 import { branding } from '@/lib/branding';
-
-type NavItem = { to: string; label: string; Icon: LucideIcon };
-type NavSection = { title: string; items: NavItem[] };
-
-const SECTIONS: NavSection[] = [
-  {
-    title: 'Comercial',
-    items: [
-      { to: '/spa/dashboard', label: 'Dashboard', Icon: LayoutDashboard },
-      { to: '/spa/crm', label: 'CRM Pipeline', Icon: KanbanSquare },
-      { to: '/spa/cotizador', label: 'Cotizador', Icon: FileText },
-      { to: '/spa/borradores', label: 'Borradores', Icon: FileClock },
-      { to: '/spa/seguimiento', label: 'Seguimiento', Icon: ListChecks },
-      { to: '/spa/recordatorios', label: 'Recordatorios', Icon: BellRing },
-    ],
-  },
-  {
-    title: 'Clientes',
-    items: [
-      { to: '/spa/clientes', label: 'Empresas', Icon: Users },
-      { to: '/spa/contactos', label: 'Contactos', Icon: Contact },
-    ],
-  },
-  {
-    title: 'Operación',
-    items: [
-      { to: '/spa/compras', label: 'Compras', Icon: ShoppingCart },
-      { to: '/spa/remisiones', label: 'Remisiones', Icon: Truck },
-      { to: '/spa/reportes-servicio-docs', label: 'Reportes de servicio', Icon: ClipboardCheck },
-    ],
-  },
-  {
-    title: 'Catálogo',
-    items: [
-      { to: '/spa/inventario', label: 'Catálogo de productos', Icon: Package },
-      { to: '/spa/servicios', label: 'Servicios', Icon: Wrench },
-      { to: '/spa/precios', label: 'Precios', Icon: Tags },
-      { to: '/spa/fantasmas', label: 'Fantasmas', Icon: Ghost },
-      { to: '/spa/catalogos', label: 'Diccionarios', Icon: BookMarked },
-    ],
-  },
-  {
-    title: 'Finanzas',
-    items: [
-      { to: '/spa/cuentas-por-cobrar', label: 'Cuentas por cobrar', Icon: Wallet },
-      { to: '/spa/gastos', label: 'Gastos', Icon: Receipt },
-      { to: '/spa/fx', label: 'Tipo de cambio', Icon: Coins },
-    ],
-  },
-  {
-    title: 'Analítica',
-    items: [
-      { to: '/spa/analitica', label: 'KPIs', Icon: BarChart3 },
-    ],
-  },
-  {
-    title: 'Sistema',
-    items: [
-      { to: '/spa/usuarios', label: 'Usuarios', Icon: UserCog },
-    ],
-  },
-  {
-    title: 'Plataforma',
-    items: [
-      { to: '/spa/superadmin', label: 'Consola', Icon: ShieldCheck },
-    ],
-  },
-];
+import { SECTIONS } from './nav-config';
 
 export function Sidebar({
   open,
@@ -112,28 +40,40 @@ export function Sidebar({
           open ? 'translate-x-0' : '-translate-x-full'
         } ${collapsed ? 'md:w-[68px]' : 'md:w-64'}`}
       >
-        <div className={`px-4 pt-4 pb-3 shrink-0 border-b border-sidebar-border ${collapsed ? 'md:px-0 md:text-center' : ''}`}>
-          <div className="text-xl font-bold leading-tight" title={`${branding.organizationName} · ${branding.productName}`}>
-            {collapsed ? (
-              <>
-                <span className="hidden md:inline">{branding.organizationName.charAt(0)}</span>
-                <span className="md:hidden">{branding.organizationName}</span>
-              </>
-            ) : (
-              branding.organizationName
-            )}
+        {/* Marca: badge de acento + wordmark */}
+        <div
+          className={`flex items-center gap-3 px-4 pt-5 pb-4 shrink-0 border-b border-sidebar-border ${
+            collapsed ? 'md:px-0 md:justify-center' : ''
+          }`}
+          title={`${branding.organizationName} · ${branding.productName}`}
+        >
+          <div className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-accent-glow to-accent-deep flex items-center justify-center shadow-glow-accent">
+            <span className="text-sm font-black text-slate-950 leading-none">
+              {branding.organizationName.charAt(0)}
+            </span>
           </div>
-          <div className={`text-[10px] uppercase tracking-[0.2em] text-sidebar-dim mt-0.5 ${collapsed ? 'md:hidden' : ''}`}>
-            {branding.productName} <span className="text-accent-glow">·</span> {branding.tagline}
+          <div className={`min-w-0 leading-tight ${collapsed ? 'md:hidden' : ''}`}>
+            <div className="text-[15px] font-bold tracking-tight text-sidebar-strong truncate">
+              {branding.organizationName}
+            </div>
+            <div className="text-[9.5px] uppercase tracking-[0.22em] text-sidebar-dim truncate">
+              {branding.productName} <span className="text-accent-glow">·</span> {branding.tagline}
+            </div>
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
           {secciones.map((section) => (
             <div key={section.title}>
-              <div className={`px-2 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-sidebar-dim ${collapsed ? 'md:hidden' : ''}`}>
+              <div
+                className={`px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-sidebar-dim ${
+                  collapsed ? 'md:hidden' : ''
+                }`}
+              >
                 {section.title}
               </div>
+              {/* Separador visual entre grupos en modo colapsado */}
+              <div className={`hidden ${collapsed ? 'md:block' : ''} mx-3 mb-2 border-t border-sidebar-border`} />
               <div className="space-y-0.5">
                 {section.items.map(({ to, label, Icon }) => (
                   <NavLink
@@ -142,17 +82,32 @@ export function Sidebar({
                     onClick={onClose}
                     title={collapsed ? label : undefined}
                     className={({ isActive }) =>
-                      `flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[13px] transition ${
+                      `group relative flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] transition-colors duration-150 ${
                         collapsed ? 'md:justify-center md:px-0' : ''
                       } ${
                         isActive
-                          ? 'bg-sidebar-activebg text-sidebar-active font-medium'
+                          ? 'bg-sidebar-activebg text-sidebar-active font-semibold'
                           : 'text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-strong'
                       }`
                     }
                   >
-                    <Icon className={`shrink-0 ${collapsed ? 'h-3.5 w-3.5 md:h-4 md:w-4' : 'h-3.5 w-3.5'}`} />
-                    <span className={`truncate ${collapsed ? 'md:hidden' : ''}`}>{label}</span>
+                    {({ isActive }) => (
+                      <>
+                        {/* Rail de acento del ítem activo */}
+                        <span
+                          className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-sidebar-active transition-opacity ${
+                            isActive ? 'opacity-100' : 'opacity-0'
+                          } ${collapsed ? 'md:hidden' : ''}`}
+                          aria-hidden="true"
+                        />
+                        <Icon
+                          className={`h-4 w-4 shrink-0 transition-colors ${
+                            isActive ? 'text-sidebar-active' : 'text-sidebar-dim group-hover:text-sidebar-strong'
+                          }`}
+                        />
+                        <span className={`truncate ${collapsed ? 'md:hidden' : ''}`}>{label}</span>
+                      </>
+                    )}
                   </NavLink>
                 ))}
               </div>

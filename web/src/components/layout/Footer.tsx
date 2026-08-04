@@ -6,8 +6,12 @@ export function Footer() {
       <span>
         Powered by <strong className="text-foreground">{branding.poweredBy}</strong>
       </span>
-      <span className="font-mono hidden sm:inline">
-        {branding.organizationName} <span className="text-muted-foreground/50">·</span> {branding.productName} {branding.productVersion}
+      <span className="font-mono hidden sm:flex items-center gap-2">
+        <span>{branding.organizationName}</span>
+        <span className="h-1 w-1 rounded-full bg-accent-glow/70" aria-hidden="true" />
+        <span>
+          {branding.productName} {branding.productVersion}
+        </span>
       </span>
     </footer>
   );
