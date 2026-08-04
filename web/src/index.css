@@ -2,18 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Paleta del sidebar como CSS vars para que responda al tema.
-   :root = light (default); .dark = preserva el look Atlas ONE oscuro actual. */
+/* Paleta del sidebar como CSS vars. Decisión de producto (2026-08-04):
+   el sidebar es NEGRO ABSOLUTO en ambos temas — identidad industrial fija;
+   solo el área de contenido responde al tema claro/oscuro. */
 :root {
-  --sidebar-bg: #f8fafc;       /* slate-50 */
-  --sidebar-bottom: #f1f5f9;   /* slate-100 */
-  --sidebar-text: #334155;     /* slate-700 */
-  --sidebar-dim: #94a3b8;      /* slate-400 (titulares de sección) */
-  --sidebar-border: #e2e8f0;   /* slate-200 */
-  --sidebar-hover: #e2e8f0;    /* slate-200 */
-  --sidebar-strong: #0f172a;   /* slate-900 (texto en hover) */
-  --sidebar-active: #2563eb;   /* blue-600 */
-  --sidebar-activebg: rgba(37, 99, 235, 0.1);
+  --sidebar-bg: #000000;
+  --sidebar-bottom: #000000;
+  --sidebar-text: #b6bdc9;
+  --sidebar-dim: #5d6673;
+  --sidebar-border: #1a1f28;
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-strong: #f4f6f9;
+  --sidebar-active: #00d4e0;   /* accent glow */
+  --sidebar-activebg: rgba(0, 212, 224, 0.12);
 
   /* Semantic design tokens */
   --background: 210 40% 98%;
@@ -30,15 +31,7 @@
   --shadow-color: 222 47% 11%;
 }
 .dark {
-  --sidebar-bg: #0a1429;
-  --sidebar-bottom: #050a1a;
-  --sidebar-text: #cbd5e1;
-  --sidebar-dim: #64748b;
-  --sidebar-border: #1e293b;   /* slate-800 */
-  --sidebar-hover: rgba(30, 41, 59, 0.6);
-  --sidebar-strong: #f1f5f9;
-  --sidebar-active: #00d4e0;    /* accent glow */
-  --sidebar-activebg: rgba(0, 212, 224, 0.1);
+  /* Sidebar: mismas vars negras de :root (no se sobreescriben). */
 
   /* Semantic design tokens — near-black azulado */
   --background: 222 47% 5%;
