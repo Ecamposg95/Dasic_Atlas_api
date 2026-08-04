@@ -1,59 +1,62 @@
-# Remisiones — Gap analysis del spec Scrum vs implementación actual
+# Remisiones — Estado vs spec Scrum (versión post-integración)
 
-> 2026-08-04. Insumo: spec de refinamiento (reunión Vania/Axel/Emmanuel) vs auditoría factual del módulo en `main`. Referencias archivo:línea verificadas.
+> **v2 · 2026-08-04** — actualizado tras el merge de `feat/remisiones-v2` a `main` (`ad5b796`, **en producción**). Sustituye al análisis previo (que describía el estado anterior al merge). Insumo para la sesión de refinamiento con Vania (PO) y Axel (key user).
 
-## ⚠️ Hallazgo previo a todo
+## Resumen para la reunión
 
-Existe un worktree `.worktrees/remisiones-v2` (rama `feat/remisiones-v2`) con una v2 **ya iniciada**: migraciones `20260803_01_remision_estados` y `20260803_03_remision_origen` y un `app/domains/remisiones/`. **Antes de planear el sprint hay que revisar esa rama** — parte del trabajo del spec puede estar avanzado ahí. Este análisis describe `main`.
+**El Sprint Goal 01 del spec está sustancialmente entregado y en producción.** Las 8 historias recomendadas para el sprint están hechas o casi hechas; el sistema ya soporta el flujo completo: borrador → selección de partidas con pendientes → emisión con folio → recepción → cancelación con reversa, más la conversión remisión→cotización. Quedan 5 detalles de cierre (abajo) y 4 decisiones de producto que el equipo debe validar porque el código ya tomó postura.
 
-## Resumen ejecutivo
+## Mapa historia por historia (estado actual)
 
-El spec asume un módulo por construir; en `main` ya existe ~60% del alcance P0: remisiones manuales y desde orden, folio automático transaccional, edición de cantidades con tope, PDF + Word con precios opcionales, historial con filtros y recepción. **El valor real del sprint está en 4 huecos**: (1) contabilidad de entregas parciales (cotizada/entregada/pendiente — hoy se puede sobre-entregar repitiendo remisiones), (2) estados del documento (borrador/emitida/cancelada — hoy no existen), (3) remisión→cotización (no existe), (4) visibilidad de remisiones desde la cotización/seguimiento (no existe).
-
-## Mapa historia por historia
-
-| Historia | Estado en `main` | Evidencia / gap |
+| Historia | Estado | Detalle |
 |---|---|---|
-| US-REM-001 manual | ✅ **Hecha** (modo "libre" con cliente_id; líneas catálogo/servicio/fantasma; PDF; historial) | `schemas/remisiones.py:29-33`. Gap menor: no hay borrador persistente. |
-| US-REM-002 folio | ✅ **Hecha** — formato real `R-YYMM####` (ej. `R-26080001`), advisory lock, reinicio mensual | `routers/remisiones.py:25-51`. El spec propone `R-26-08-0001`: solo difiere en guiones — **decidir con DASIC si se cambia** (hay folios vivos con el formato actual). |
-| US-REM-003 unidades | 🟡 **Parcial** — usa **clave SAT** (catálogo de 2.4K, no administrable desde el form); líneas ad-hoc quedan sin unidad; el catálogo comercial administrable (`/catalogos/unidades`) NO se usa en remisiones | `models/remisiones.py:43`, `store.ts:132,155,175`. Gap: selector de unidad en el form + conectar catálogo comercial (las unidades del spec: pieza/metro/caja/kit/mes/servicio son comerciales, no SAT). |
-| US-REM-004 desde cotización | 🟡 **Parcial** — existe desde **orden de venta** (cotización convertida); remisionar una cotización sin convertir está prohibido (400) | `routers/remisiones.py:62-63`. **Decisión de modelo**: el spec pide desde cotización; hoy el paso es convertir→remisionar. Opciones: (a) permitir desde estatus COTIZACION, (b) mantener el paso por orden y mejorar el atajo. La rama v2 (`remision_origen`) parece atacar esto. |
-| US-REM-005 seleccionar partidas | 🟡 **Parcial** — el draft precarga todo; se excluye eliminando la línea o poniendo cantidad 0 (solo viajan cantidades >0); no hay checkboxes ni "seleccionar todas" | `store.ts:77-101`, `CrearRemisionPage.tsx:118,133`. El tipo `incluir` existe sin uso (`types.ts:74`). Gap de UX, no de modelo. |
-| US-REM-006 cantidad entregada | 🔴 **El hueco crítico** — se valida contra la cantidad TOTAL de la orden, **sin restar entregas previas**: dos remisiones pueden entregar 2× lo cotizado (viola BR-05) | `routers/remisiones.py:210-211`. Requiere: cálculo de entregado acumulado por `detalle_orden_id` + validación server-side + mostrar cotizada/entregada/pendiente en el draft. |
-| US-REM-007 avance de entrega | 🔴 **No existe** — la cotización/seguimiento no muestra remisiones asociadas (grep vacío en cotizador/seguimiento); el filtro backend `?orden_venta_id=` existe pero sin consumidor | `routers/remisiones.py:101`. Además bug real: las remisiones desde orden **no aparecen en la actividad del cliente** (filtra por `cliente_id`, que es NULL en modo orden — `clientes.py:528-536`). |
-| US-REM-008 borrador editable | 🔴 **No existe** — el "borrador" es un GET en memoria; no hay estados ni edición post-creación ni cancelación | Sin columna de estatus; solo binario `recibido_at`. La rama v2 (`remision_estados`) parece atacar esto. |
-| US-REM-009 remisión→cotización | 🔴 **No existe** (grep vacío) | Nuevo desarrollo; simétrico al deal→cotización recién construido (patrón reutilizable: navegar al cotizador con prefill + vínculo de vuelta). |
-| US-REM-010 historial | ✅ **Hecha** con matices — filtros reales: búsqueda (folio/cliente), recibida/pendiente, paginación; **faltan**: rango de fechas, usuario creador | `routers/remisiones.py:89-158`, `RemisionesPage.tsx:298-357`. |
-| US-COM-001 estados cotización (12) | 🟡 P2 — `EstatusOrden` actual es más corto; los estados de entrega (parcial/entregada) dependen de US-REM-006/007 | Refinar después. |
-| US-OC-001 OC desde cotización | ✅ **Ya existe** (el spec no lo sabe): borrador de OC desde cotización, agrupación por proveedor, confirmación | `compras.py` + `auto_oc_service.py`. Solo refinar contra las reglas nuevas. |
+| US-REM-001 remisión manual | ✅ | Modo libre con cliente; **borrador persistente** que no consume folio |
+| US-REM-002 folio automático | ✅ | `R-YYMM####`, transaccional, reinicio mensual, **asignado al emitir** (los borradores imprimen "SIN FOLIO" con marca de agua BORRADOR) |
+| US-REM-003 unidades | 🟡 casi | Catálogo comercial administrable (Pieza/Metro/Caja/Kit/Mes/Servicio…) sembrado y con selector en UI. **Detalle abierto:** en partidas provenientes de orden el selector no persiste (el backend conserva la unidad de la orden) — funciona en líneas ad-hoc |
+| US-REM-004 desde cotización | 🟡 decisión | El flujo sigue siendo cotización → **convertir a venta** → remisionar (remisionar una cotización sin convertir da 400). Decidir con el PO si ese paso intermedio es aceptable (hoy da control) o se pide el atajo directo |
+| US-REM-005 selección de partidas | ✅ | **Checkboxes reales** + "Seleccionar todas"/"Limpiar"; las partidas ya entregadas arrancan desmarcadas |
+| US-REM-006 cantidades / BR-05 | ✅ | Contabilidad **cotizado/entregado/pendiente** por partida, validación transaccional con lock; sobre-entrega bloqueada salvo permiso (admin/gerencia) y **queda auditado quién autorizó**; el error muestra el desglose de excesos |
+| US-REM-007 avance de entrega | 🟡 casi | Endpoint de avance + card en el detalle de la venta (por partida: NO_ENTREGADA/PARCIAL/ENTREGADA + lista de remisiones + botón "Nueva remisión", navegación bidireccional). **Faltan:** columna/chip en el listado de Seguimiento y el fix del timeline del cliente |
+| US-REM-008 borrador/estados | ✅ | BORRADOR/EMITIDA/RECIBIDA/CANCELADA con ciclo completo; emitida no editable (409 y la UI no abre el editor); cancelar exige motivo y revierte stock si se descontó |
+| US-REM-009 remisión→cotización | ✅ | Desde emitida/recibida; la cotización nace en borrador con **precios en 0** (fuerza re-precio, como pedía el spec) y guarda `remision_origen_id`; repetible a propósito. Pendiente menor: mostrar la referencia de origen en la UI de la cotización (pregunta 15) |
+| US-REM-010 historial | 🟡 casi | Filtros de búsqueda, estado y **fechas** en UI; el backend también acepta creador pero falta el selector en pantalla |
+| US-OC-001 | ✅ ya existía | OC desde cotización con agrupación por proveedor |
+| BR-05 | ✅ | Cerrada (antes se podía sobre-entregar) |
+| BR-06 precios | 🟡 decisión | Se conservó el **toggle** mostrar/ocultar (default oculto). El spec pedía "nunca" — validar con el PO |
+| BR-09 folios | ✅ | Advisory lock, servicio centralizado |
+| BR-10 permisos | ✅ | Matriz por rol: gerencia gestiona todo; ventas crea/emite/convierte **lo suyo** (no cancela ni sobre-entrega); operativo solo lee y registra recepción de emitidas |
 
-## Reglas de negocio: cumplimiento actual
+## Preguntas abiertas del spec: ya decididas por el código
 
-- BR-01 (remisión sin cotización) ✅ · BR-02 (una cotización origen) ✅ (FK única) · BR-03 (N remisiones por cotización) ✅ permitido · **BR-05 ❌ violada** (sin acumulado — el hueco crítico) · BR-06 🟡 (los precios son toggle `mostrar_precios`, default oculto; el spec dice "nunca" — **decidir**: el toggle ya existe y se usa) · BR-07 ✅ (trazabilidad por FK + folio inmutable) · BR-08 (conversión crea documento nuevo) — aplicable al construir US-REM-009 · BR-09 ✅ (advisory lock) · BR-10 🟡 (hoy todo es `allow_all_staff` plano; la matriz de permisos del spec §9 requiere diferenciar crear/emitir/cancelar/aprobar).
+| # | Pregunta | Decisión vigente |
+|---|---|---|
+| 1-2 | Formato/reinicio de folio | `R-YYMM####`, reinicio mensual (NO se adoptó `R-YY-MM-####`) — **validar** |
+| 4 | ¿Entregar más de lo cotizado? | Bloqueado; override con permiso y auditoría |
+| 5 | ¿Quién cancela? | Admin y gerencia; motivo obligatorio; solo emitida/recibida |
+| 6 | ¿Editar emitida? | No (borrador sí) |
+| 11 | ¿Estado cancelada? | Sí, con motivo visible |
+| 12 | ¿Quién recibió? | Sí (`recibido_por` + fecha) |
+| 13 | ¿Decimales? | **Sí** — cantidades a 3 decimales (con guarda: el stock exige enteros y avisa en vez de truncar) |
+| 15 | ¿Referencia visible al convertir? | Se guarda; falta mostrarla en UI |
+| 7-8 | Firma / evidencia foto | Siguen sin existir (fase posterior; requiere almacenamiento de archivos) |
+| 14 | Almacenes | Fuera de alcance (correcto) |
 
-## Respuestas a las 15 preguntas abiertas (lo que el código ya decide)
+## Pendientes de cierre detectados en la verificación (mini-sprint de remate)
 
-1. **Folio**: hoy `R-YYMM####` sin guiones. Cambiarlo es trivial técnicamente; el costo es consistencia histórica. 2. **Reinicio**: mensual (implícito en el prefijo YYMM). 3. **¿Varias cotizaciones por remisión?**: hoy no (FK única) — mantener en v1 como dice BR-02. 4. **¿Entregar más de lo cotizado?**: hoy SÍ se puede por accidente (el bug); con el fix, proponer bloqueo + override con permiso de supervisor. 5. **¿Quién cancela?**: hoy nadie (no existe cancelar) — construir con rol admin/supervisora. 6. **¿Editar emitida?**: hoy no hay emisión formal; con estados, emitida = solo lectura + eventos de cambio. 7. **Firma**: hoy solo texto `recibido_por` + líneas de firma impresas. 8. **Evidencia foto**: no existe (fase posterior, requiere storage de archivos — no hay hoy). 9. **Unidades iniciales**: el catálogo comercial administrable ya existe; falta conectarlo. 10. **PDF**: ya imprime folio, fecha, cliente, tabla con unidad, observaciones, firmas, precios condicionales; falta `recibido_por` impreso y RFC en el PDF (el Word sí trae RFC). 11. **Estado cancelada**: no existe — incluir en el modelo de estados. 12. **Quién recibió**: sí se registra (`recibido_por`/`recibido_at`), no reversible, vía query string (mejorable a body). 13. **¿Decimales?**: **hoy NO** — `cantidad` es Integer (`models/remisiones.py:41`); si DASIC entrega metros/kg parciales hay que migrar a DECIMAL (⚠️ pregunta importante para Vania). 14. **Almacenes**: no existen (fuera de alcance, correcto). 15. **Referencia visible en conversión**: sí, diseñarla como el vínculo deal↔cotización ya construido.
+1. **Reporte "pendientes de remisionar" desactualizado por los estados**: cuenta cualquier remisión (incluso borradores o canceladas) como entrega — debe contar solo emitidas/recibidas. *(bug de datos en reporte)*
+2. **Timeline/conteos del cliente ciegos a remisiones desde orden** (filtran por cliente directo, que es nulo en modo orden) — también afecta el unificador de empresas.
+3. **Selector de unidad no-op en partidas de orden** (control visible sin efecto — confunde al usuario).
+4. **Link roto en el listado**: la fila navega vía la ruta legacy y pierde el `?edit=` (el modal de detalle sí navega bien).
+5. **La impresión de una CANCELADA no lleva sello/marca** (se imprime como documento normal).
+6. Avance de entrega en el listado de **Seguimiento** + filtro por creador en historial (los "casi" de arriba).
 
-## Conflictos spec ↔ realidad que requieren decisión del PO
+## Decisiones que llevar a la sesión con DASIC
 
-1. **Origen de la remisión**: ¿desde cotización directa o mantener el paso por orden de venta? (afecta modelo y reportes de venta).
-2. **Formato de folio**: conservar `R-YYMM####` vs cambiar a `R-YY-MM-####`.
-3. **Precios**: ¿eliminar el toggle (nunca mostrar, BR-06) o conservarlo? Hoy DASIC lo tiene disponible.
-4. **Cantidades decimales** (pregunta 13) — decisión de datos con migración.
-5. **DoD del spec** exige multi-tenant y staging: el sistema es **mono-tenant por decisión** (documentado) y no hay staging — ajustar la DoD o crear entorno staging en Railway (factible, ~1h).
+1. **Folio**: ¿se queda `R-26080001` o quieren `R-26-08-0001`? (cosmético; costo: consistencia histórica).
+2. **Precios en remisión**: ¿mantener el toggle (flexibilidad) o forzar "nunca" (BR-06)?
+3. **Origen**: ¿basta cotización→convertir→remisionar o necesitan remisionar la cotización sin convertirla?
+4. **Firma/evidencia** (preguntas 7-8): ¿entra en el siguiente sprint? — implica infraestructura de archivos nueva.
 
-## Propuesta de sprint realista (mapeada al repo)
+## Nota de arquitectura
 
-**Ya no consumen sprint** (existen): US-REM-001, 002, 010 base, US-OC-001 base.
-
-**Sprint 01 propuesto** (en orden de dependencia):
-1. **Estados de remisión** (borrador persistente/emitida/cancelada) + restricciones de edición — retomar `feat/remisiones-v2` si su avance sirve. [US-REM-008, BR-07]
-2. **Contabilidad de entregas parciales**: entregado acumulado por partida server-side, validación BR-05, draft con cotizada/entregada/pendiente. [US-REM-006, el corazón]
-3. **Selección de partidas con checkboxes** + "todas"/"limpiar" en el draft. [US-REM-005]
-4. **Avance de entrega visible**: chip/summary en seguimiento + lista de remisiones asociadas en el detalle de la orden + fix del timeline de cliente. [US-REM-007]
-5. **Selector de unidad comercial** conectado al catálogo administrable. [US-REM-003]
-6. **Remisión→cotización** (patrón deal→cotización). [US-REM-009]
-7. Filtros de fecha/creador en historial. [US-REM-010 cierre]
-
-Estimación honesta: 1 y 2 son el 60% del esfuerzo (modelo + migración + backfill + validaciones); 3-7 son incrementos de ~½ día cada uno sobre esa base. El rango "1-2 semanas" del spec es alcanzable **si** las 5 decisiones del PO llegan al inicio.
+El módulo estrenó el patrón **dominio** (`app/domains/remisiones/`: router + service + repository + documentos con plantillas y autoescape) que el roadmap del repo pedía — es la referencia para futuras extracciones (ventas, compras). Trae suite pytest propia (≈50 tests del módulo, sobre SQLite con shims — la fidelidad de locks/migraciones de Postgres queda para un entorno CI con DB real).
