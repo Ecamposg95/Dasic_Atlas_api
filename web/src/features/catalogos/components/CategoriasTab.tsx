@@ -120,8 +120,8 @@ export function CategoriasTab() {
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">{items.length} categoría(s) de producto en uso</p>
 
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="24rem">
+        <DataTableHead sticky>
           <tr>
             <th className="p-3 text-left">Nombre</th>
             <th className="p-3 text-center"># Productos</th>

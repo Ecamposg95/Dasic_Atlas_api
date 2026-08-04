@@ -252,7 +252,7 @@ export function CotizadorPage() {
   const noEditable = !!editingEstatus && editingEstatus.toUpperCase() !== 'COTIZACION';
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+    <div className="flex flex-col min-h-full">
       <div className="flex-1 p-4 w-full space-y-3">
         <PageHeader
           className="mb-0"

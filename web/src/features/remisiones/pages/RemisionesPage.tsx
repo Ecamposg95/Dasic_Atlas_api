@@ -320,7 +320,7 @@ export function RemisionesPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
+    <div className="p-6 max-w-7xl mx-auto w-full space-y-4">
       {/* Header */}
       <PageHeader
         title={
@@ -357,8 +357,8 @@ export function RemisionesPage() {
       />
 
       {/* Tabla */}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="calc(100vh - 22rem)">
+        <DataTableHead sticky>
           <tr>
             <th className="px-4 py-3 text-left">Folio</th>
             <th className="px-4 py-3 text-left">Orden venta</th>

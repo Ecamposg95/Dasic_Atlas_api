@@ -332,19 +332,19 @@ export function InventarioPage() {
       </div>
 
       {/* Tabla */}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="calc(100vh - 22rem)">
+        <DataTableHead sticky>
           <tr>
-            <th className="p-3 text-left">SKU</th>
-            <th className="p-3 text-left">SKU comercial</th>
-            <th className="p-3 text-left">Nombre</th>
-            <th className="p-3 text-left">Marca</th>
-            <th className="p-3 text-left">Categoría</th>
-            <th className="p-3 text-left">SAT</th>
-            <th className="p-3 text-right">Stock</th>
-            {isAdmin && <th className="p-3 text-right">Costo</th>}
-            <th className="p-3 text-right">Precio público</th>
-            <th className="p-3 text-right">Acciones</th>
+            <th className="px-3 py-2 text-left">SKU</th>
+            <th className="px-3 py-2 text-left">SKU comercial</th>
+            <th className="px-3 py-2 text-left">Nombre</th>
+            <th className="px-3 py-2 text-left">Marca</th>
+            <th className="px-3 py-2 text-left">Categoría</th>
+            <th className="px-3 py-2 text-left">SAT</th>
+            <th className="px-3 py-2 text-right">Stock</th>
+            {isAdmin && <th className="px-3 py-2 text-right">Costo</th>}
+            <th className="px-3 py-2 text-right">Precio público</th>
+            <th className="px-3 py-2 text-right">Acciones</th>
           </tr>
         </DataTableHead>
         <DataTableBody>
@@ -361,16 +361,16 @@ export function InventarioPage() {
           )}
           {filtrados.map((p) => (
             <DataTableRow key={p.id}>
-              <td className="p-3 font-mono text-xs text-muted-foreground">{p.sku ?? '—'}</td>
-              <td className="p-3 font-mono text-xs text-muted-foreground">{p.sku_comercial ?? '—'}</td>
-              <td className="p-3 max-w-xs">
+              <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{p.sku ?? '—'}</td>
+              <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{p.sku_comercial ?? '—'}</td>
+              <td className="px-3 py-2 max-w-xs">
                 <div className="truncate text-foreground font-medium" title={p.nombre}>
                   {p.nombre}
                 </div>
               </td>
-              <td className="p-3 text-xs text-foreground">{p.marca ?? '—'}</td>
-              <td className="p-3 text-xs text-foreground">{p.categoria ?? '—'}</td>
-              <td className="p-3 text-xs font-mono">
+              <td className="px-3 py-2 text-xs text-foreground">{p.marca ?? '—'}</td>
+              <td className="px-3 py-2 text-xs text-foreground">{p.categoria ?? '—'}</td>
+              <td className="px-3 py-2 text-xs font-mono">
                 {p.clave_prod_serv ? (
                   <span className="text-foreground">
                     {p.clave_prod_serv}
@@ -382,16 +382,16 @@ export function InventarioPage() {
                   <span className="text-muted-foreground/70">—</span>
                 )}
               </td>
-              <td className="p-3 text-right">{stockBadge(p)}</td>
+              <td className="px-3 py-2 text-right">{stockBadge(p)}</td>
               {isAdmin && (
-                <td className="p-3 text-right font-mono text-xs text-foreground">
+                <td className="px-3 py-2 text-right font-mono text-xs text-foreground">
                   {fmtMoney(p.costo_compra, p.moneda_compra)}
                 </td>
               )}
-              <td className="p-3 text-right font-mono text-xs text-foreground">
+              <td className="px-3 py-2 text-right font-mono text-xs text-foreground">
                 {fmtMoney(p.precio_publico)}
               </td>
-              <td className="p-3 text-right whitespace-nowrap">
+              <td className="px-3 py-2 text-right whitespace-nowrap">
                 <button
                   onClick={() => setModalEditar(p)}
                   title="Editar"

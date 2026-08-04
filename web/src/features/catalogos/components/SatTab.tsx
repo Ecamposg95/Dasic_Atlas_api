@@ -247,8 +247,8 @@ export function SatTab() {
       </div>
 
       {/* Table */}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="24rem">
+        <DataTableHead sticky>
           <tr>
             <th className="p-3 text-left w-32">Código</th>
             <th className="p-3 text-left">Descripción</th>

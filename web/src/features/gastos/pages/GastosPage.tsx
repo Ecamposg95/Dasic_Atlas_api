@@ -212,7 +212,7 @@ export function GastosPage() {
   const busy = crear.isPending || editar.isPending;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
+    <div className="p-6 max-w-7xl mx-auto w-full space-y-4">
       {/* Header */}
       <PageHeader
         title={
@@ -270,8 +270,8 @@ export function GastosPage() {
       </div>
 
       {/* Tabla */}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="calc(100vh - 22rem)">
+        <DataTableHead sticky>
           <tr>
             <th className="px-4 py-3 text-left">Fecha</th>
             <th className="px-4 py-3 text-left">Concepto</th>

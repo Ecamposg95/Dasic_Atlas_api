@@ -165,16 +165,16 @@ export function ComprasPage() {
       </div>
 
       {/* Tabla */}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="calc(100vh - 22rem)">
+        <DataTableHead sticky>
           <tr>
-            <th className="p-3 text-left">Folio</th>
-            <th className="p-3 text-left">Proveedor</th>
-            <th className="p-3 text-left">Fecha</th>
-            <th className="p-3 text-right">Total</th>
-            <th className="p-3 text-center">Estatus</th>
-            <th className="p-3 text-left">Cotización</th>
-            <th className="p-3 text-right">Acciones</th>
+            <th className="px-3 py-2 text-left">Folio</th>
+            <th className="px-3 py-2 text-left">Proveedor</th>
+            <th className="px-3 py-2 text-left">Fecha</th>
+            <th className="px-3 py-2 text-right">Total</th>
+            <th className="px-3 py-2 text-center">Estatus</th>
+            <th className="px-3 py-2 text-left">Cotización</th>
+            <th className="px-3 py-2 text-right">Acciones</th>
           </tr>
         </DataTableHead>
         <DataTableBody>
@@ -190,17 +190,17 @@ export function ComprasPage() {
           )}
           {filtradas.map((o) => (
             <DataTableRow key={o.id}>
-              <td className="p-3 font-mono text-xs text-accent-deep dark:text-accent-glow">
+              <td className="px-3 py-2 font-mono text-xs text-accent-deep dark:text-accent-glow">
                 {o.folio ?? `#${o.id}`}
               </td>
-              <td className="p-3 text-sm">{o.proveedor}</td>
-              <td className="p-3 text-xs text-muted-foreground">{fmtDate(o.fecha)}</td>
-              <td className="p-3 text-right font-mono text-sm">
+              <td className="px-3 py-2 text-sm">{o.proveedor}</td>
+              <td className="px-3 py-2 text-xs text-muted-foreground">{fmtDate(o.fecha)}</td>
+              <td className="px-3 py-2 text-right font-mono text-sm">
                 {fmtMoney(o.total, o.moneda)}{' '}
                 <span className="text-xs text-muted-foreground">{o.moneda}</span>
               </td>
-              <td className="p-3 text-center">{badgeEstatus(o.estatus)}</td>
-              <td className="p-3 text-xs">
+              <td className="px-3 py-2 text-center">{badgeEstatus(o.estatus)}</td>
+              <td className="px-3 py-2 text-xs">
                 {o.cotizacion_id ? (
                   <button
                     type="button"
@@ -213,7 +213,7 @@ export function ComprasPage() {
                   <span className="text-muted-foreground/70">—</span>
                 )}
               </td>
-              <td className="p-3 text-right whitespace-nowrap">
+              <td className="px-3 py-2 text-right whitespace-nowrap">
                 {/* Ver detalle */}
                 <button
                   onClick={() => setModalDetalle(o.id)}

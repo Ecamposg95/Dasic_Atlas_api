@@ -156,7 +156,7 @@ export function CrearRemisionPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+    <div className="flex flex-col min-h-full">
       <div className="flex-1 p-4 max-w-7xl mx-auto w-full space-y-3">
         <PageHeader
           backTo="/spa/remisiones"

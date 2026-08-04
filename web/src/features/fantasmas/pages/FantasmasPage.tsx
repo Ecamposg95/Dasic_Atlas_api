@@ -328,24 +328,24 @@ export function FantasmasPage() {
       )}
 
       {/* Tabla */}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="calc(100vh - 22rem)">
+        <DataTableHead sticky>
           <tr>
-            <th className="p-3 w-8 text-center">
+            <th className="px-3 py-2 w-8 text-center">
               <input
                 type="checkbox"
                 checked={seleccionados.size === filtrados.length && filtrados.length > 0}
                 onChange={toggleAll}
               />
             </th>
-            <th className="p-3 text-left">Descripción</th>
-            <th className="p-3 text-left">SKU</th>
-            <th className="p-3 text-left">Proveedor</th>
-            <th className="p-3 text-right">Veces</th>
-            <th className="p-3 text-right">Costo</th>
-            <th className="p-3 text-center">Estado</th>
-            <th className="p-3 text-left">Actividad</th>
-            <th className="p-3 text-right">Acciones</th>
+            <th className="px-3 py-2 text-left">Descripción</th>
+            <th className="px-3 py-2 text-left">SKU</th>
+            <th className="px-3 py-2 text-left">Proveedor</th>
+            <th className="px-3 py-2 text-right">Veces</th>
+            <th className="px-3 py-2 text-right">Costo</th>
+            <th className="px-3 py-2 text-center">Estado</th>
+            <th className="px-3 py-2 text-left">Actividad</th>
+            <th className="px-3 py-2 text-right">Acciones</th>
           </tr>
         </DataTableHead>
         <DataTableBody>
@@ -361,14 +361,14 @@ export function FantasmasPage() {
           )}
           {filtrados.map((f) => (
             <DataTableRow key={f.id}>
-              <td className="p-3 text-center">
+              <td className="px-3 py-2 text-center">
                 <input
                   type="checkbox"
                   checked={seleccionados.has(f.id)}
                   onChange={() => toggleSel(f.id)}
                 />
               </td>
-              <td className="p-3 max-w-xs">
+              <td className="px-3 py-2 max-w-xs">
                 <div className="truncate text-foreground" title={f.descripcion}>{f.descripcion}</div>
                 {(f.marca || f.clave_prod_serv || f.clave_unidad_sat) && (
                   <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
@@ -378,19 +378,19 @@ export function FantasmasPage() {
                   </div>
                 )}
               </td>
-              <td className="p-3 font-mono text-xs text-muted-foreground">{f.sku_libre || '—'}</td>
-              <td className="p-3 text-xs">
+              <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{f.sku_libre || '—'}</td>
+              <td className="px-3 py-2 text-xs">
                 {f.proveedor_sugerido_nombre || <span className="text-muted-foreground/70">Sin asignar</span>}
               </td>
-              <td className="p-3 text-right">
+              <td className="px-3 py-2 text-right">
                 <span className="inline-block min-w-[28px] px-1.5 py-0.5 rounded bg-surface-2 text-xs font-bold">
                   {f.veces_solicitado}
                 </span>
               </td>
-              <td className="p-3 text-right font-mono text-xs">{fmtMoney(f.costo_referencia, f.moneda)}</td>
-              <td className="p-3 text-center">{badgeEstado(f.estado)}</td>
-              <td className="p-3 text-xs text-muted-foreground">{fmtDate(f.ultimo_visto_en)}</td>
-              <td className="p-3 text-right whitespace-nowrap">
+              <td className="px-3 py-2 text-right font-mono text-xs">{fmtMoney(f.costo_referencia, f.moneda)}</td>
+              <td className="px-3 py-2 text-center">{badgeEstado(f.estado)}</td>
+              <td className="px-3 py-2 text-xs text-muted-foreground">{fmtDate(f.ultimo_visto_en)}</td>
+              <td className="px-3 py-2 text-right whitespace-nowrap">
                 <button onClick={() => setModalDetalle(f.id)} title="Ver detalle"
                         className="text-accent-deep hover:text-accent-deep/80 dark:text-accent-glow dark:hover:text-accent-glow/80 px-1">
                   <Eye className="h-4 w-4 inline" />

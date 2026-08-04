@@ -335,7 +335,7 @@ export function SeguimientoPage() {
   const showError = !!error && apiError?.status !== 401;
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+    <div className="flex flex-col">
       <div className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-4">
         {/* Header */}
         <PageHeader
@@ -403,8 +403,8 @@ export function SeguimientoPage() {
 
         {/* Tabla */}
         {!isLoading && !showError && (
-          <DataTable>
-            <DataTableHead>
+          <DataTable maxBodyHeight="calc(100vh - 22rem)">
+            <DataTableHead sticky>
               <tr>
                 <th className="px-4 py-3 text-left">Folio</th>
                 <th className="px-4 py-3 text-left">Cliente</th>

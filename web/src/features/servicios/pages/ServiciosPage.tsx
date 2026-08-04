@@ -196,15 +196,15 @@ export function ServiciosPage() {
       </div>
 
       {/* Tabla */}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="calc(100vh - 22rem)">
+        <DataTableHead sticky>
           <tr>
-            <th className="p-3 text-left">Código</th>
-            <th className="p-3 text-left">Nombre</th>
-            <th className="p-3 text-left">Categoría</th>
-            <th className="p-3 text-right">Costo</th>
-            <th className="p-3 text-left">Estado</th>
-            <th className="p-3 text-right">Acciones</th>
+            <th className="px-3 py-2 text-left">Código</th>
+            <th className="px-3 py-2 text-left">Nombre</th>
+            <th className="px-3 py-2 text-left">Categoría</th>
+            <th className="px-3 py-2 text-right">Costo</th>
+            <th className="px-3 py-2 text-left">Estado</th>
+            <th className="px-3 py-2 text-right">Acciones</th>
           </tr>
         </DataTableHead>
         <DataTableBody>
@@ -221,26 +221,26 @@ export function ServiciosPage() {
           )}
           {items.map((s) => (
             <DataTableRow key={s.id}>
-              <td className="p-3 font-mono text-xs text-accent-deep dark:text-accent-glow">{s.codigo}</td>
-              <td className="p-3 font-medium text-foreground">{s.nombre}</td>
-              <td className="p-3">
+              <td className="px-3 py-2 font-mono text-xs text-accent-deep dark:text-accent-glow">{s.codigo}</td>
+              <td className="px-3 py-2 font-medium text-foreground">{s.nombre}</td>
+              <td className="px-3 py-2">
                 {s.categoria_servicio ? (
                   <Badge variant="violet">{s.categoria_servicio}</Badge>
                 ) : (
                   <span className="text-muted-foreground/70 text-xs">—</span>
                 )}
               </td>
-              <td className="p-3 text-right whitespace-nowrap">
+              <td className="px-3 py-2 text-right whitespace-nowrap">
                 <Badge variant="amber">{fmtCosto(s.moneda, s.costo)}</Badge>
               </td>
-              <td className="p-3">
+              <td className="px-3 py-2">
                 {s.activo ? (
                   <Badge variant="emerald">Activo</Badge>
                 ) : (
                   <Badge variant="slate">Inactivo</Badge>
                 )}
               </td>
-              <td className="p-3 text-right whitespace-nowrap space-x-1">
+              <td className="px-3 py-2 text-right whitespace-nowrap space-x-1">
                 {isAdminOrAsistente && (
                   <button
                     onClick={() => setModalEditar(s)}

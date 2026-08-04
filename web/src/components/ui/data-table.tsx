@@ -62,7 +62,7 @@ export function DataTableRow({
 export function DataTableEmpty({ children, colSpan }: { children: React.ReactNode; colSpan: number }) {
   return (
     <tr>
-      <td colSpan={colSpan} className="p-12 text-center text-sm text-muted-foreground">
+      <td colSpan={colSpan} className="p-8 text-center text-sm text-muted-foreground">
         {children}
       </td>
     </tr>

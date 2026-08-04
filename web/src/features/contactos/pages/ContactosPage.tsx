@@ -117,8 +117,8 @@ export function ContactosPage() {
         </select>
       </div>
 
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="calc(100vh - 22rem)">
+        <DataTableHead sticky>
           <tr>
             <th
               className="p-2 text-left cursor-pointer select-none hover:text-foreground"

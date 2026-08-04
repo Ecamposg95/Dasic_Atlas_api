@@ -100,8 +100,8 @@ export function UnidadesTab() {
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">{enUso.length} unidad(es) en uso</p>
 
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="24rem">
+        <DataTableHead sticky>
           <tr>
             <th className="p-3 text-left">Unidad</th>
             <th className="p-3 text-center"># Productos</th>

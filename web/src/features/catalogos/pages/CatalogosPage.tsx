@@ -50,21 +50,21 @@ export function CatalogosPage() {
       {/* KPIs */}
       {resumen && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <div className="bg-card border border-border rounded-lg p-3">
+          <div className="bg-card border border-border rounded-lg px-3 py-2">
             <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Marcas</div>
-            <div className="text-2xl font-bold">{resumen.total_marcas}</div>
+            <div className="text-xl font-bold">{resumen.total_marcas}</div>
           </div>
-          <div className="bg-card border border-border rounded-lg p-3">
+          <div className="bg-card border border-border rounded-lg px-3 py-2">
             <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Productos</div>
-            <div className="text-2xl font-bold">{resumen.total_productos}</div>
+            <div className="text-xl font-bold">{resumen.total_productos}</div>
           </div>
-          <div className="bg-card border border-border rounded-lg p-3">
+          <div className="bg-card border border-border rounded-lg px-3 py-2">
             <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Categorías</div>
-            <div className="text-2xl font-bold">{resumen.total_categorias_producto}</div>
+            <div className="text-xl font-bold">{resumen.total_categorias_producto}</div>
           </div>
-          <div className="bg-card border border-border rounded-lg p-3">
+          <div className="bg-card border border-border rounded-lg px-3 py-2">
             <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Unidades</div>
-            <div className="text-2xl font-bold">{resumen.total_unidades}</div>
+            <div className="text-xl font-bold">{resumen.total_unidades}</div>
           </div>
         </div>
       )}

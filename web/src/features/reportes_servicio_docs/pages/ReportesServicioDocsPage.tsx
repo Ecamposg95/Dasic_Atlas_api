@@ -243,8 +243,8 @@ export function ReportesServicioDocsPage() {
         searchPlaceholder="Buscar por folio, cliente o técnico…"
       />
 
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="calc(100vh - 22rem)">
+        <DataTableHead sticky>
           <tr>
             <th className="px-4 py-3 text-left">Folio</th>
             <th className="px-4 py-3 text-left">Orden venta</th>

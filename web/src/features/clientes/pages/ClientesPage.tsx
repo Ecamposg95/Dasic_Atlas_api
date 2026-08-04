@@ -263,10 +263,10 @@ export function ClientesPage() {
       <BulkActionBar selectedIds={selected} onClear={() => setSelected([])} />
 
       {/* Tabla */}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="calc(100vh - 22rem)">
+        <DataTableHead sticky>
           <tr>
-            <th className="p-3 w-8">
+            <th className="px-3 py-2 w-8">
               <input
                 type="checkbox"
                 checked={allSelected}
@@ -276,23 +276,23 @@ export function ClientesPage() {
               />
             </th>
             <th
-              className="p-3 text-left cursor-pointer select-none hover:text-foreground"
+              className="px-3 py-2 text-left cursor-pointer select-none hover:text-foreground"
               onClick={() => toggleSort('nombre')}
             >
               Empresa <SortIndicator active={sort === 'nombre'} dir={dir} />
             </th>
-            <th className="p-3 text-left">Contacto</th>
-            <th className="p-3 text-left">RFC</th>
+            <th className="px-3 py-2 text-left">Contacto</th>
+            <th className="px-3 py-2 text-left">RFC</th>
             <th className="p-2 text-center">Contactos</th>
-            <th className="p-3 text-left">Estatus</th>
-            <th className="p-3 text-left">Última compra</th>
+            <th className="px-3 py-2 text-left">Estatus</th>
+            <th className="px-3 py-2 text-left">Última compra</th>
             <th
-              className="p-3 text-right cursor-pointer select-none hover:text-foreground"
+              className="px-3 py-2 text-right cursor-pointer select-none hover:text-foreground"
               onClick={() => toggleSort('saldo')}
             >
               Saldo <SortIndicator active={sort === 'saldo'} dir={dir} />
             </th>
-            <th className="p-3 text-right">Acciones</th>
+            <th className="px-3 py-2 text-right">Acciones</th>
           </tr>
         </DataTableHead>
         <DataTableBody>
@@ -310,7 +310,7 @@ export function ClientesPage() {
             const isSelected = selected.includes(c.id);
             return (
               <DataTableRow key={c.id} className={isSelected ? 'bg-accent-glow/5' : undefined}>
-                <td className="p-3 w-8">
+                <td className="px-3 py-2 w-8">
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -318,23 +318,23 @@ export function ClientesPage() {
                     className="rounded"
                   />
                 </td>
-                <td className="p-3">
+                <td className="px-3 py-2">
                   <div className="font-medium text-foreground truncate max-w-[180px]" title={c.nombre_empresa}>
                     {c.nombre_empresa}
                   </div>
                 </td>
-                <td className="p-3 text-muted-foreground text-xs">
+                <td className="px-3 py-2 text-muted-foreground text-xs">
                   {c.contacto_nombre || <span className="text-muted-foreground/70">—</span>}
                 </td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">
+                <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
                   {c.rfc_tax_id || <span className="text-muted-foreground/70">—</span>}
                 </td>
                 <td className="p-2 text-center"><Badge variant="slate">{c.n_contactos ?? 0}</Badge></td>
-                <td className="p-3">{estatusBadge(c.estatus)}</td>
-                <td className="p-3 text-xs text-muted-foreground whitespace-nowrap">
+                <td className="px-3 py-2">{estatusBadge(c.estatus)}</td>
+                <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
                   {fmtDate(c.ultima_compra)}
                 </td>
-                <td className="p-3 text-right whitespace-nowrap">
+                <td className="px-3 py-2 text-right whitespace-nowrap">
                   {saldo > 0 ? (
                     <Badge variant="rose">{fmtMoney(c.moneda_credito, c.saldo_actual)}</Badge>
                   ) : (
@@ -343,7 +343,7 @@ export function ClientesPage() {
                     </span>
                   )}
                 </td>
-                <td className="p-3 text-right whitespace-nowrap">
+                <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button
                     onClick={() => navigate(`/spa/empresas/${c.id}`)}
                     className="text-accent-deep hover:text-accent-deep/80 dark:text-accent-glow dark:hover:text-accent-glow/80 px-1.5 text-xs"

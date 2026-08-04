@@ -26,8 +26,8 @@ export function CategoriasServicioTab() {
         </p>
       </div>
 
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="24rem">
+        <DataTableHead sticky>
           <tr>
             <th className="p-3 text-left">Categoría</th>
             <th className="p-3 text-center"># Servicios</th>
