@@ -82,7 +82,11 @@ export function SatCombobox({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
-        onKeyDown={(e) => { if (e.key === 'Escape') { e.nativeEvent.stopImmediatePropagation(); setOpen(false); } }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') { e.nativeEvent.stopImmediatePropagation(); setOpen(false); }
+          // Con el dropdown abierto, Enter no debe enviar el <form> contenedor.
+          if (e.key === 'Enter' && open) e.preventDefault();
+        }}
         placeholder={placeholder}
         maxLength={maxLength}
         className={className}
