@@ -72,7 +72,7 @@ export function CancelarRemisionModal({ remisionId, folio, onClose, onCancelada 
         <Button variant="ghost" size="sm" onClick={onClose} disabled={cancelar.isPending}>
           Volver
         </Button>
-        <Button variant="destructive" size="sm" onClick={onSubmit} disabled={cancelar.isPending}>
+        <Button variant="destructive" size="sm" onClick={onSubmit} disabled={cancelar.isPending || !motivo.trim()}>
           {cancelar.isPending ? 'Cancelando…' : 'Cancelar remisión'}
         </Button>
       </ModalFooter>

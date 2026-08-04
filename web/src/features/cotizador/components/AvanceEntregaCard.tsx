@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Truck } from 'lucide-react';
 import { CollapsibleCard } from '@/components/ui/CollapsibleCard';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
+import type { ApiError } from '@/lib/api';
 import { useAvanceEntrega } from '@/features/remisiones/hooks/useRemisiones';
 import { avancePartidaLabel, avancePartidaTone, remisionEstadoLabel, remisionEstadoTone } from '@/features/remisiones/lib/estado';
 import { useCotizador } from '../store';
@@ -23,16 +25,31 @@ function fmtFecha(iso: string | null) {
 // caller (`CotizadorPage`) la renderiza condicionado a `noEditable`.
 export function AvanceEntregaCard({ ordenId }: { ordenId: number }) {
   const navigate = useNavigate();
-  const { data, isLoading } = useAvanceEntrega(ordenId);
+  const { data, isLoading, error } = useAvanceEntrega(ordenId);
   // El cart del cotizador trae `detalle_id` (id de DetalleOrden) para las
   // líneas ya persistidas — lo cruzamos con `detalle_orden_id` de cada
   // partida del avance para mostrar SKU/descripción en vez de solo el id.
   const cart = useCotizador((s) => s.cart);
   const porPartida = new Map(cart.filter((c) => c.detalle_id != null).map((c) => [c.detalle_id as number, c]));
 
+  // Auth error → bounce a login, mismo patrón que `HistorialTab.tsx:93-97`
+  // (hermano de esta tarjeta dentro de `CotizadorPage`).
+  useEffect(() => {
+    const status = (error as unknown as ApiError | undefined)?.status;
+    if (status === 401) window.location.href = '/spa/login';
+  }, [error]);
+
   return (
     <CollapsibleCard title="Avance de entrega" icon={<Truck className="h-3.5 w-3.5 text-muted-foreground" />} defaultOpen>
-      {isLoading || !data ? (
+      {error ? (
+        (error as unknown as ApiError)?.status === 401 ? (
+          <div className="text-xs text-muted-foreground py-2">Redirigiendo a inicio de sesión…</div>
+        ) : (
+          <div className="text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border border-rose-300 dark:border-rose-900 rounded-md px-3 py-2">
+            No se pudo cargar el avance de entrega.
+          </div>
+        )
+      ) : isLoading || !data ? (
         <div className="text-xs text-muted-foreground py-2">Cargando avance de entrega…</div>
       ) : (
         <div className="space-y-4">

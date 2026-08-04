@@ -238,19 +238,6 @@ export function CrearRemisionPage() {
   const incluidas = s.lineas.filter((l) => l.incluir && l.cantidad > 0);
   const subtotal = incluidas.reduce((acc, l) => acc + l.precio_unitario * l.cantidad, 0);
 
-  function buildDetalles(): RemisionDetalleInput[] {
-    return incluidas.map((l) => ({
-      detalle_orden_id: l.detalle_orden_id,
-      descripcion: l.descripcion,
-      sku: l.sku,
-      cantidad: l.cantidad,
-      unidad: l.unidad,
-      observaciones_linea: l.observaciones_linea || null,
-      clave_unidad_sat: l.clave_unidad_sat,
-      precio_unitario: l.detalle_orden_id == null ? l.precio_unitario : null,
-    }));
-  }
-
   // Snapshot del estado actual del store — comparado contra el último
   // guardado (`savedSnapshotRef`) para saber si "Emitir" debe deshabilitarse.
   const currentSnapshot = snapshotOf(s);
@@ -276,7 +263,7 @@ export function CrearRemisionPage() {
           transportista: s.transportista.trim() || null,
           observaciones: s.observaciones.trim() || null,
           mostrar_precios: s.mostrarPrecios,
-          detalles: buildDetalles(),
+          detalles: buildDetallesFromLineas(s.lineas),
         },
         {
           onSuccess: (r) => {
@@ -305,7 +292,7 @@ export function CrearRemisionPage() {
           observaciones: s.observaciones.trim() || null,
           mostrar_precios: s.mostrarPrecios,
           moneda: s.moneda,
-          detalles: buildDetalles(),
+          detalles: buildDetallesFromLineas(s.lineas),
         },
       },
       {
