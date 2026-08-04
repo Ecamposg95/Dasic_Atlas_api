@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, type ReactNode } from 'react';
-import { Tag, Hash, DollarSign, Percent, Truck, Calculator, Minus } from 'lucide-react';
+import { Tag, Hash, DollarSign, Percent, Truck, Calculator, Minus, Ruler } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -82,6 +82,13 @@ export function DocumentCartTable({
                   <Hash className="h-3 w-3" /> Cant
                 </span>
               </th>
+              {caps.showUnidad && (
+                <th className="p-2.5 text-center w-24">
+                  <span className="inline-flex items-center gap-1 justify-center">
+                    <Ruler className="h-3 w-3" /> Unidad
+                  </span>
+                </th>
+              )}
               {caps.showCosto && (
                 <th className="p-2.5 text-right w-28">
                   <span className="inline-flex items-center gap-1 justify-end">

@@ -190,3 +190,27 @@ export type AvanceEntregaResponse = {
   partidas: AvancePartida[];
   remisiones: AvanceRemisionItem[];
 };
+
+// POST /api/remisiones/{id}/emitir → 400 estructurado cuando hay partidas
+// que exceden lo pendiente y el usuario no tiene permiso de sobre-entrega
+// (`service.emitir`, app/domains/remisiones/service.py). Los campos
+// numéricos llegan como string (Decimal serializado con `str()`).
+export type ExcesoPartida = {
+  detalle_orden_id: number;
+  cotizado: string;
+  pendiente: string;
+  solicitado: string;
+};
+
+export type EmitirErrorDetail = {
+  mensaje: string;
+  excesos: ExcesoPartida[];
+};
+
+// Error tipado de `useEmitir` — a diferencia de `ApiError` (lib/api.ts), NO
+// pasa `detail` por `normalizeDetail`: preserva el objeto {mensaje, excesos}
+// para que la UI muestre el desglose por partida en vez de un string opaco.
+export type RemisionEmitirError = {
+  status: number;
+  detail: EmitirErrorDetail | string;
+};

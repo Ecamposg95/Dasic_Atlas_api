@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, normalizeDetail } from '@/lib/api';
 import type {
   RemisionEstado,
   RemisionDetalle,
@@ -14,6 +14,8 @@ import type {
   RemisionCancelarPayload,
   OrdenHistorialItem,
   AvanceEntregaResponse,
+  EmitirErrorDetail,
+  RemisionEmitirError,
 } from '../types';
 
 // Nota general de errores: ninguna de estas mutaciones atrapa el rechazo del
@@ -120,12 +122,46 @@ export function useEliminarBorrador() {
   });
 }
 
+function esEmitirErrorDetail(d: unknown): d is EmitirErrorDetail {
+  return (
+    !!d &&
+    typeof d === 'object' &&
+    typeof (d as { mensaje?: unknown }).mensaje === 'string' &&
+    Array.isArray((d as { excesos?: unknown }).excesos)
+  );
+}
+
+// Fetch local (NO usa `api.post`): el 400 de sobre-entrega manda
+// `detail = {mensaje, excesos: [...]}` (service.emitir), y `api.ts::request`
+// pasa TODO `detail` por `normalizeDetail`, que solo desempaqueta `msg` — un
+// objeto sin esa key cae al `JSON.stringify` genérico. Repetimos aquí la
+// forma de `request()` pero preservando el detail estructurado para que la
+// UI muestre el desglose por partida en vez de un JSON crudo. No se toca
+// `normalizeDetail` global — sigue igual para el resto de features que sí
+// esperan un string.
+async function postEmitir(id: number): Promise<RemisionEmitirResponse> {
+  const r = await fetch(`/api/remisiones/${id}/emitir`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!r.ok) {
+    const body = await r.json().catch(() => ({}));
+    const rawDetail = (body as { detail?: unknown }).detail;
+    const err: RemisionEmitirError = {
+      status: r.status,
+      detail: esEmitirErrorDetail(rawDetail) ? rawDetail : normalizeDetail(rawDetail, r.statusText),
+    };
+    throw err;
+  }
+  return r.json() as Promise<RemisionEmitirResponse>;
+}
+
 // POST /api/remisiones/{id}/emitir → asigna folio y pasa a EMITIDA.
 export function useEmitir() {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) =>
-      api.post<RemisionEmitirResponse>(`/api/remisiones/${id}/emitir`),
+  return useMutation<RemisionEmitirResponse, RemisionEmitirError, number>({
+    mutationFn: (id: number) => postEmitir(id),
     onSuccess: (_data, id) => {
       void qc.invalidateQueries({ queryKey: ['remisiones'] });
       void qc.invalidateQueries({ queryKey: ['remision', id] });

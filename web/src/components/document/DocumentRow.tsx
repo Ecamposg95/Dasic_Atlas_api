@@ -134,12 +134,15 @@ export function DocumentRow({
       <td className="p-2.5 align-top text-center w-20">
         <Input
           type="number"
-          min="1"
+          min={caps.decimalQty ? '0.001' : '1'}
+          step={caps.decimalQty ? '0.001' : undefined}
           max={vm.qtyMax ?? undefined}
           value={vm.qty}
           disabled={!caps.editableQty}
           onChange={(e) => {
-            const v = Math.max(1, parseInt(e.target.value) || 1);
+            const min = caps.decimalQty ? 0.001 : 1;
+            const raw = caps.decimalQty ? parseFloat(e.target.value) : parseInt(e.target.value, 10);
+            const v = Math.max(min, raw || min);
             const capped = vm.qtyMax != null ? Math.min(v, vm.qtyMax) : v;
             cb.onQty(vm.uid, capped);
           }}
@@ -147,6 +150,26 @@ export function DocumentRow({
         />
         {vm.qtyMax != null && <div className="text-[10px] text-muted-foreground/70">de {vm.qtyMax}</div>}
       </td>
+
+      {/* Unidad */}
+      {caps.showUnidad && (
+        <td className="p-2.5 align-top text-center w-24">
+          <select
+            value={vm.unidad ?? ''}
+            disabled={!caps.editableQty}
+            onChange={(e) => cb.onUnidad?.(vm.uid, e.target.value)}
+            className="h-7 text-[11px] rounded border border-border bg-card px-1 w-full"
+          >
+            <option value="">—</option>
+            {vm.unidad && !(caps.unidadOptions ?? []).includes(vm.unidad) && (
+              <option value={vm.unidad}>{vm.unidad}</option>
+            )}
+            {(caps.unidadOptions ?? []).map((u) => (
+              <option key={u} value={u}>{u}</option>
+            ))}
+          </select>
+        </td>
+      )}
 
       {/* Costo */}
       {caps.showCosto && (
@@ -389,18 +412,40 @@ export function DocumentRowCard({
           <span className="text-muted-foreground">Cant</span>
           <input
             type="number"
-            min={1}
+            min={caps.decimalQty ? 0.001 : 1}
+            step={caps.decimalQty ? 0.001 : undefined}
             max={vm.qtyMax ?? undefined}
             value={vm.qty}
             disabled={!caps.editableQty}
             onChange={(e) => {
-              const v = Math.max(1, parseInt(e.target.value) || 1);
+              const min = caps.decimalQty ? 0.001 : 1;
+              const raw = caps.decimalQty ? parseFloat(e.target.value) : parseInt(e.target.value, 10);
+              const v = Math.max(min, raw || min);
               cb.onQty(vm.uid, vm.qtyMax != null ? Math.min(v, vm.qtyMax) : v);
             }}
             className="h-7 w-16 text-center text-xs px-1 rounded border border-border bg-card"
           />
           {vm.qtyMax != null && <span className="text-[10px] text-muted-foreground/70">de {vm.qtyMax}</span>}
         </label>
+        {caps.showUnidad && (
+          <label className="flex items-center gap-1">
+            <span className="text-muted-foreground">Unidad</span>
+            <select
+              value={vm.unidad ?? ''}
+              disabled={!caps.editableQty}
+              onChange={(e) => cb.onUnidad?.(vm.uid, e.target.value)}
+              className="h-7 text-[11px] rounded border border-border bg-card px-1"
+            >
+              <option value="">—</option>
+              {vm.unidad && !(caps.unidadOptions ?? []).includes(vm.unidad) && (
+                <option value={vm.unidad}>{vm.unidad}</option>
+              )}
+              {(caps.unidadOptions ?? []).map((u) => (
+                <option key={u} value={u}>{u}</option>
+              ))}
+            </select>
+          </label>
+        )}
         {caps.showImporte && caps.editablePrecio && (
           <label className="flex items-center gap-1 ml-auto text-xs">
             <span className="text-muted-foreground">P.U.</span>
