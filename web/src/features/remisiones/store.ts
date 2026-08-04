@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Producto, Servicio } from '@/features/cotizador/types';
 import type { FantasmaPrevio } from '@/features/cotizador/hooks/useFantasmasSearch';
-import type { RemisionBorrador, RemisionDetalle } from './types';
+import type { RemisionBorrador, RemisionDetalle, RemisionEstado } from './types';
 
 export type RemisionLinea = {
   uid: string;
@@ -38,7 +38,21 @@ type RemisionState = {
   mostrarPrecios: boolean;
   transportista: string;
   observaciones: string;
+  // Documento en edición: id del borrador persistido en backend (null =
+  // aún no guardado) y su estado. Solo los borradores son editables, así
+  // que `estadoDoc` es 'borrador' mientras haya `editingId`.
+  editingId: number | null;
+  estadoDoc: RemisionEstado | null;
 
+  // Conmuta orden ⇄ libre en runtime. Cambiar de modo limpia el documento
+  // (líneas, orden/cliente, borrador cargado); mismo modo = no-op.
+  setModo: (modo: 'orden' | 'libre') => void;
+  // Carga la orden seleccionada usando el borrador que devuelve
+  // GET /api/remisiones/orden/{id}/borrador (alias claro de
+  // hydrateFromBorrador — el draft ya trae orden_venta_id).
+  cargarOrden: (draft: RemisionBorrador) => void;
+  // Marca el borrador persistido (tras POST /api/remisiones/) o lo limpia.
+  setEditingId: (id: number | null) => void;
   hydrateFromBorrador: (b: RemisionBorrador, ordenId: number) => void;
   // Reabre un borrador existente para editarlo (GET /api/remisiones/{id}).
   // `borrador` es el contexto de acumulados de la orden (GET /orden/{id}/
@@ -79,14 +93,26 @@ const initial = {
   mostrarPrecios: false,
   transportista: '',
   observaciones: '',
+  editingId: null as number | null,
+  estadoDoc: null as RemisionEstado | null,
 };
 
-export const useRemision = create<RemisionState>((set) => ({
+export const useRemision = create<RemisionState>((set, get) => ({
   ...initial,
+
+  setModo: (modo) =>
+    set((s) => (s.modo === modo ? {} : { ...initial, modo, lineas: [] })),
+
+  cargarOrden: (draft) => get().hydrateFromBorrador(draft, draft.orden_venta_id),
+
+  setEditingId: (id) =>
+    set({ editingId: id, estadoDoc: id != null ? ('borrador' as const) : null }),
 
   hydrateFromBorrador: (b, ordenId) =>
     set({
       ordenId,
+      editingId: null,
+      estadoDoc: null,
       modo: 'orden' as const,
       clienteId: null,
       ordenFolio: b.orden_folio,
@@ -172,6 +198,8 @@ export const useRemision = create<RemisionState>((set) => ({
       }));
 
       return {
+        editingId: detalle.id,
+        estadoDoc: detalle.estado,
         ordenId: detalle.orden_venta_id,
         ordenFolio: detalle.orden_folio,
         clienteNombre: detalle.cliente_nombre,
@@ -218,6 +246,8 @@ export const useRemision = create<RemisionState>((set) => ({
   hydrateLibre: (cliente) =>
     set({
       modo: 'libre',
+      editingId: null,
+      estadoDoc: null,
       ordenId: null,
       ordenFolio: null,
       clienteId: cliente.id,

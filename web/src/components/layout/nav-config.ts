@@ -82,6 +82,8 @@ const EXTRA_ROUTES: Array<{ prefix: string; section: string; label: string }> = 
   { prefix: '/spa/empresas-unificar', section: 'Clientes', label: 'Empresas' },
   { prefix: '/spa/empresas/', section: 'Clientes', label: 'Empresas' },
   { prefix: '/spa/remisiones-nueva', section: 'Operación', label: 'Remisiones' },
+  // Cubre /spa/remisiones/historial y /spa/remisiones/:id/editar.
+  { prefix: '/spa/remisiones/', section: 'Operación', label: 'Remisiones' },
   { prefix: '/spa/superadmin/', section: 'Plataforma', label: 'Consola' },
 ];
 

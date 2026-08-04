@@ -8,13 +8,20 @@ export function AgregarLineaFantasmaModal({
   open,
   onClose,
   onAdd,
+  initialDescripcion,
+  initialSku,
 }: {
   open: boolean;
   onClose: () => void;
   onAdd: (linea: RemisionLineaEdit) => void;
+  /** Prefill desde el buscador (ProductSearchPanel.onOpenAddFantasma). Solo
+   * aplica al montar — el editor monta el modal condicionalmente para que
+   * cada apertura tome el prefill fresco. */
+  initialDescripcion?: string;
+  initialSku?: string;
 }) {
-  const [descripcion, setDescripcion] = useState('');
-  const [sku, setSku] = useState('');
+  const [descripcion, setDescripcion] = useState(initialDescripcion ?? '');
+  const [sku, setSku] = useState(initialSku ?? '');
   const [claveUnidad, setClaveUnidad] = useState('');
   const [cantidad, setCantidad] = useState('1');
   const [precio, setPrecio] = useState('0');

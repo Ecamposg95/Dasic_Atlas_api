@@ -503,7 +503,7 @@ export function SeguimientoPage() {
                           onCancelar={handleCancelar}
                           onEditar={(id) => navigate(`/spa/cotizador?edit=${id}`)}
                           onRecordar={handleRecordar}
-                          onVerEntregas={(id) => navigate(`/spa/remisiones?orden_venta_id=${id}`)}
+                          onVerEntregas={(id) => navigate(`/spa/remisiones/historial?orden_venta_id=${id}`)}
                           loadingId={loadingId}
                         />
                       </td>

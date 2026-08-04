@@ -532,7 +532,7 @@ export function RemisionesPage() {
         }
         description={!isLoading ? `(${total} ${total === 1 ? 'remisión' : 'remisiones'})` : undefined}
         actions={
-          <Button size="sm" onClick={() => navigate('/spa/remisiones-nueva')}>
+          <Button size="sm" onClick={() => navigate('/spa/remisiones')}>
             <Plus className="h-4 w-4 mr-1" />
             Nueva remisión
           </Button>

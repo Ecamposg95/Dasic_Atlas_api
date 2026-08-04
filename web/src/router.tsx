@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { NotFound } from '@/components/NotFound';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
@@ -44,8 +44,11 @@ const contactos = lazyPage(() => import('@/features/contactos/pages/ContactosPag
 const inventario = lazyPage(() => import('@/features/inventario/pages/InventarioPage'), 'InventarioPage');
 const catalogos = lazyPage(() => import('@/features/catalogos/pages/CatalogosPage'), 'CatalogosPage');
 const compras = lazyPage(() => import('@/features/compras/pages/ComprasPage'), 'ComprasPage');
-const remisiones = lazyPage(() => import('@/features/remisiones/pages/RemisionesPage'), 'RemisionesPage');
-const crearRemision = lazyPage(() => import('@/features/remisiones/pages/CrearRemisionPage'), 'CrearRemisionPage');
+// Editor híbrido (spec 2026-08-04): /spa/remisiones ES el editor; el listado
+// vive en /spa/remisiones/historial. CrearRemisionPage quedó sin ruta
+// (código muerto temporal — se retira tras validar el editor).
+const remisionEditor = lazyPage(() => import('@/features/remisiones/pages/RemisionEditorPage'), 'RemisionEditorPage');
+const remisionesHistorial = lazyPage(() => import('@/features/remisiones/pages/RemisionesPage'), 'RemisionesPage');
 const gastos = lazyPage(() => import('@/features/gastos/pages/GastosPage'), 'GastosPage');
 const reportesServicioDocs = lazyPage(
   () => import('@/features/reportes_servicio_docs/pages/ReportesServicioDocsPage'),
@@ -74,6 +77,13 @@ const legacyRedirect = (path: string, to: string) => ({
   element: <Navigate to={to} replace />,
 });
 
+// Redirect que conserva el query string (p.ej. /spa/remisiones-nueva?orden=7
+// → /spa/remisiones?orden=7 — el editor lee ?orden= y precarga esa orden).
+function RedirectConQuery({ to }: { to: string }) {
+  const { search } = useLocation();
+  return <Navigate to={`${to}${search}`} replace />;
+}
+
 export const router = createBrowserRouter([
   // Login (público) — fuera del Layout (sin sidebar/header).
   // Sirve también la URL `/` (matching el flujo previo de Jinja).
@@ -97,9 +107,10 @@ export const router = createBrowserRouter([
       { path: 'inventario', lazy: inventario },
       { path: 'catalogos', lazy: catalogos },
       { path: 'compras', lazy: compras },
-      { path: 'remisiones', lazy: remisiones },
-      { path: 'remisiones-nueva', lazy: crearRemision },
-      { path: 'remisiones/:id/editar', lazy: crearRemision },
+      { path: 'remisiones', lazy: remisionEditor },
+      { path: 'remisiones/historial', lazy: remisionesHistorial },
+      { path: 'remisiones-nueva', element: <RedirectConQuery to="/spa/remisiones" /> },
+      { path: 'remisiones/:id/editar', lazy: remisionEditor },
       { path: 'gastos', lazy: gastos },
       { path: 'analitica', lazy: analitica },
       { path: 'reportes', element: <Navigate to="/spa/analitica?tab=ventas" replace /> },
