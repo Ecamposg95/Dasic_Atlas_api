@@ -5,13 +5,15 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 # Configurar variables de entorno ANTES de importar app (que carga config)
-os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+# DATABASE_URL es una URL Postgres dummy (engine lazy, nunca se conecta en tests)
+os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://test:test@localhost:5432/test_dummy")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-32-chars-minimum!")
 os.environ.setdefault("SMTP_HOST", "localhost")
 os.environ.setdefault("SMTP_PORT", "25")
 
 from app.db import Base
 from app import models
+from app.models.enums import RolUsuario
 
 
 @pytest.fixture()
@@ -30,13 +32,17 @@ def db():
 
 @pytest.fixture()
 def usuario(db):
-    """Factory: usuario(rol='administrador') -> models.Usuario persistido."""
+    """Factory: usuario(rol='administrador') -> models.Usuario persistido.
+
+    Coacciona rol con RolUsuario.from_input() para tolerancia case-insensitive
+    sin modificar el modelo de producción (que usa Enum nativo en Postgres).
+    """
     def _make(rol="administrador", email=None):
         u = models.Usuario(
             nombre=f"Test {rol}",
             email=email or f"{rol}@test.local",
             password_hash="x",
-            rol=rol,
+            rol=RolUsuario.from_input(rol),
             activo=True,
         )
         db.add(u)
