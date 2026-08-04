@@ -141,6 +141,15 @@ from app.schemas.recordatorios import (  # noqa: F401
     RecordatorioOut,
 )
 
+from app.schemas.instalaciones import (  # noqa: F401
+    PlantaCreate,
+    PlantaUpdate,
+    PlantaOut,
+    ActivoCreate,
+    ActivoUpdate,
+    ActivoOut,
+)
+
 __all__ = [
     # auth
     "Token", "TokenData", "LoginRequest",
@@ -187,4 +196,7 @@ __all__ = [
     "MetricasEtapaOut", "MetricasTotalesOut", "MetricasPipelineOut",
     # recordatorios
     "RecordatorioCreate", "RecordatorioPosponer", "RecordatorioOut",
+    # base instalada (plantas y activos)
+    "PlantaCreate", "PlantaUpdate", "PlantaOut",
+    "ActivoCreate", "ActivoUpdate", "ActivoOut",
 ]
