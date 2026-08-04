@@ -21,6 +21,7 @@ from app.security import allow_admin_asistente, get_current_user
 from app.services.stock_service import aplicar_movimiento
 from pydantic import BaseModel
 from app.core.runtime_config import get_iva_rate
+from app.services.formato import fmt_cantidad
 
 
 def _iva_rate() -> Decimal:
@@ -133,7 +134,7 @@ PDF_TEMPLATE_COMPRA = """
                 <tr>
                     <td style="font-weight:bold; color:#555;">{{ item.producto.sku }}</td>
                     <td>{{ item.producto.nombre }}</td>
-                    <td class="text-center">{{ item.cantidad }}</td>
+                    <td class="text-center">{{ fmt_cantidad(item.cantidad) }}</td>
                     <td class="text-right">${{ "{:,.2f}".format(item.costo_unitario) }}</td>
                     <td class="text-right font-bold">${{ "{:,.2f}".format(item.costo_unitario * item.cantidad) }}</td>
                 </tr>
@@ -836,6 +837,7 @@ def imprimir_oc(id: int, db: Session = Depends(get_db)):
         iva=iva,
         gran_total=gran_total,
         iva_pct_label=_iva_pct_label(),
+        fmt_cantidad=fmt_cantidad,
     )
 
 

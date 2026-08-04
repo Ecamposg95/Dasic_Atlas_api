@@ -44,7 +44,7 @@
       <tr>
         <td class="center">{{ loop.index }}</td>
         <td>{{ d.descripcion }}{% if d.sku %} <span style="color:#64748b;font-family:monospace">({{ d.sku }})</span>{% endif %}{% if d.observaciones_linea %}<div class="nota">{{ d.observaciones_linea }}</div>{% endif %}</td>
-        <td class="center">{{ d.cantidad }} ({{ d.unidad or d.clave_unidad_sat or 'PZA' }})</td>
+        <td class="center">{{ d.cantidad | fmt_cantidad }} ({{ d.unidad or d.clave_unidad_sat or 'PZA' }})</td>
         {% if rem.mostrar_precios %}<td class="right">{{ rem.moneda or '' }} {{ "{:,.2f}".format(d.precio_unitario or 0) }}</td><td class="right">{{ rem.moneda or '' }} {{ "{:,.2f}".format(d.subtotal or 0) }}</td>{% endif %}
       </tr>
       {% endfor %}

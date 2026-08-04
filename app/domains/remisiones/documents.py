@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.services import config_service
+from app.services.formato import fmt_cantidad
 from app.services.word_service import build_remision_docx
 
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -35,6 +36,8 @@ _env = Environment(
     loader=FileSystemLoader(_TEMPLATES_DIR),
     autoescape=select_autoescape(enabled_extensions=("html", "j2"), default_for_string=True),
 )
+# `cantidad` es Numeric(12,3) — sin este filtro un Decimal se imprime "20.000".
+_env.filters["fmt_cantidad"] = fmt_cantidad
 
 _MESES_ES = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",

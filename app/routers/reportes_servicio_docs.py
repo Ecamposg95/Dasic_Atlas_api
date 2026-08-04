@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 from app import models, schemas
 from app.db import get_db
 from app.security import allow_all_staff, get_current_user
+from app.services.formato import fmt_cantidad
 
 logger = logging.getLogger(__name__)
 
@@ -314,7 +315,7 @@ def _render_reporte_servicio_pdf(r: models.ReporteServicio, db: Session) -> byte
             )
             row_h = max(6.0, 5.0 * max(1, len(desc_lines)))
             x0, y0 = pdf.get_x(), pdf.get_y()
-            pdf.cell(col_cant, row_h, _txt(str(d.cantidad or 0)), border=1, align="C")
+            pdf.cell(col_cant, row_h, _txt(fmt_cantidad(d.cantidad or 0)), border=1, align="C")
             pdf.cell(col_cod, row_h, _txt(codigo)[:28], border=1, align="L")
             pdf.set_xy(x0 + col_cant + col_cod, y0)
             pdf.multi_cell(col_desc, 5, _txt(descripcion), border=1, align="L")

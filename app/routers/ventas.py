@@ -37,6 +37,7 @@ from app.services.stock_service import (
     reservas_activas,
 )
 from app.services.fantasmas_service import upsert_from_detalle
+from app.services.formato import fmt_cantidad
 from app.services.word_service import build_cotizacion_docx
 from app.core.runtime_config import get_iva_rate, get_quote_validity_days
 
@@ -513,7 +514,7 @@ PDF_TEMPLATE_VENTA = """
           {% if item.observaciones_linea %}<div class="item-nota">{{ item.observaciones_linea }}</div>{% endif %}
         </td>
         {% endif %}
-        <td class="center">{{ item.cantidad }}</td>
+        <td class="center">{{ fmt_cantidad(item.cantidad) }}</td>
         {% if ns.has_entrega %}<td class="center">{% if item.entrega_min is not none and item.entrega_max is not none and item.entrega_unidad %}{% if item.entrega_min == item.entrega_max %}{{ item.entrega_min }} {{ item.entrega_unidad }} <span class="tespv-tag">T.E.S.P.V.</span>{% else %}{{ item.entrega_min }}–{{ item.entrega_max }} {{ item.entrega_unidad }} <span class="tespv-tag">T.E.S.P.V.</span>{% endif %}{% else %}—{% endif %}</td>{% endif %}
         <td class="right">{{ simbolo_moneda }} {{ "{:,.2f}".format(item.precio_unitario) }}</td>
         {% if ns.has_desc %}<td class="center">{% if (item.descuento_aplicado or 0) > 0 %}{{ "{:g}".format(item.descuento_aplicado|float) }}%{% else %}—{% endif %}</td>{% endif %}
@@ -1719,7 +1720,7 @@ def generar_pdf(
                 or (d.servicio.clave_prod_serv if d.servicio else None)
             )
             prefijo = f"[{clave_sat}] " if clave_sat else ""
-            lineas_resumen.append(f"• {prefijo}{desc} (x{d.cantidad})")
+            lineas_resumen.append(f"• {prefijo}{desc} (x{fmt_cantidad(d.cantidad)})")
         descripcion_unificada = concepto_titulo + "\n\n" + "\n".join(lineas_resumen)
         view_detalles = [{
             "es_unificado": True,
@@ -1752,6 +1753,7 @@ def generar_pdf(
         iva_pct_label=_iva_pct_label(db),
         qr_data_uri=qr_data_uri,
         view_detalles=view_detalles,
+        fmt_cantidad=fmt_cantidad,
     )
 
 
@@ -1824,7 +1826,7 @@ def _quote_summary(orden: "models.OrdenVenta") -> dict:
         (orden.fecha_vencimiento.date() - ahora).days if orden.fecha_vencimiento else None
     )
     detalles_resumen = "; ".join(
-        f"{(d.producto.sku_comercial if d.producto else (d.sku_libre or 'FANTASMA'))} x{d.cantidad}"
+        f"{(d.producto.sku_comercial if d.producto else (d.sku_libre or 'FANTASMA'))} x{fmt_cantidad(d.cantidad)}"
         for d in (orden.detalles or [])[:8]
     )
     return {

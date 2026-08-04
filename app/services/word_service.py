@@ -9,6 +9,8 @@ from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
+from app.services.formato import fmt_cantidad
+
 
 def _fmt(simbolo: str, valor) -> str:
     return f"{simbolo} {Decimal(valor or 0):,.2f}"
@@ -107,7 +109,7 @@ def build_cotizacion_docx(
             orun.italic = True
             orun.font.size = Pt(8)
 
-        row[3].text = str(d.cantidad)
+        row[3].text = fmt_cantidad(d.cantidad)
         row[4].text = _fmt(simbolo, d.precio_unitario)
         row[5].text = _fmt(simbolo, d.subtotal)
 
@@ -253,7 +255,7 @@ def build_remision_docx(
             orun.font.size = Pt(8)
 
         unidad = d.unidad or d.clave_unidad_sat or "PZA"
-        row[3].text = f"{d.cantidad} ({unidad})"
+        row[3].text = f"{fmt_cantidad(d.cantidad)} ({unidad})"
 
         if mostrar:
             precio = d.precio_unitario or Decimal("0")
