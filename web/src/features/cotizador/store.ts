@@ -483,10 +483,19 @@ export const useCotizador = create<CotizadorState>((set) => ({
         contacto_id: orden.contacto_id ?? null,
         moneda: monedaOrden,
         tc: Number(orden.tipo_cambio) || 1,
-        tc_mn_a_usd:
-          orden.tc_mn_a_usd != null ? Number(orden.tc_mn_a_usd) : null,
-        tc_usd_a_mn:
-          orden.tc_usd_a_mn != null ? Number(orden.tc_usd_a_mn) : null,
+        // NO hidratar los TC direccionales persistidos (bug 2026-08: "no se
+        // considera la tolerancia al cambiar moneda"). Desde 55f48ae (2026-05-23)
+        // la tasa de venta es AUTOMÁTICA (DOF + tolerancia) y no hay UI para
+        // capturar un override; los valores no-null en DB son residuos de la
+        // era V_03 (ef64407 persistía el resuelto y backfilleó tipo_cambio±1 en
+        // TODAS las filas). Si se hidratan, `resolveDirectionalTcs` los confía
+        // (banda ±50% del DOF) y CONGELA la tasa de venta: el input Tolerancia
+        // y el propio DOF dejan de tener efecto al convertir moneda, y el
+        // guardado re-persiste el veneno (serialize manda el valor hidratado).
+        // Con null, preview y backend derivan DOF + tolerancia_tc y el
+        // siguiente guardado limpia el override congelado en DB.
+        tc_mn_a_usd: null,
+        tc_usd_a_mn: null,
         tolerancia_tc:
           orden.tolerancia_tc != null ? Number(orden.tolerancia_tc) : 1,
         fecha_creacion: orden.fecha_creacion?.slice(0, 10) ?? null,
