@@ -18,8 +18,18 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.db import get_db
-from app.models.crm import Deal, Pipeline, PipelineStage
-from app.schemas.crm import DealCreate, DealMove, DealOut, DealUpdate, PipelineOut, StageOut
+from app.models.crm import Deal, DealActividad, Pipeline, PipelineStage
+from app.schemas.crm import (
+    ActividadCreate,
+    ActividadOut,
+    DealCreate,
+    DealDetalleOut,
+    DealMove,
+    DealOut,
+    DealUpdate,
+    PipelineOut,
+    StageOut,
+)
 from app.security import allow_all_staff, get_current_user
 
 router = APIRouter(prefix="/api/crm", tags=["CRM"])
@@ -52,6 +62,23 @@ def _deal_or_404(
     if not d:
         raise HTTPException(status_code=404, detail="Deal no encontrado")
     return d
+
+
+def _actividad_out(
+    actividad: DealActividad, nombres_usuarios: dict[int, str]
+) -> ActividadOut:
+    return ActividadOut(
+        id=actividad.id,
+        tipo=actividad.tipo,
+        descripcion=actividad.descripcion,
+        usuario_id=actividad.usuario_id,
+        usuario_nombre=(
+            nombres_usuarios.get(actividad.usuario_id)
+            if actividad.usuario_id is not None
+            else None
+        ),
+        creado_en=actividad.creado_en,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -165,11 +192,112 @@ def crear_deal(
         moneda=payload.moneda,
         owner_user_id=payload.owner_user_id,
         orden_en_stage=orden_en_stage,
+        probabilidad=payload.probabilidad,
+        fecha_cierre_estimada=payload.fecha_cierre_estimada,
+        proximo_paso=payload.proximo_paso,
+        notas=payload.notas,
     )
     db.add(deal)
+    db.flush()  # asigna deal.id sin cerrar la transacción
+
+    # Timeline automático (mismo commit que la creación)
+    db.add(
+        DealActividad(
+            organization_id=org_id,
+            deal_id=deal.id,
+            tipo="sistema",
+            descripcion="Deal creado",
+            usuario_id=current_user.id,
+        )
+    )
     db.commit()
     db.refresh(deal)
     return deal
+
+
+# ---------------------------------------------------------------------------
+# GET /deals/{deal_id}
+# ---------------------------------------------------------------------------
+@router.get("/deals/{deal_id}", response_model=DealDetalleOut, dependencies=[Depends(allow_all_staff)])
+def detalle_deal(
+    deal_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    org_id = _org_id(current_user)
+    deal = _deal_or_404(db, deal_id, org_id)
+
+    actividades = (
+        db.query(DealActividad)
+        .filter(DealActividad.deal_id == deal.id)
+        .order_by(DealActividad.creado_en.desc(), DealActividad.id.desc())
+        .all()
+    )
+
+    # Resolver nombres de usuario en un solo query (actividades + owner)
+    usuario_ids = {a.usuario_id for a in actividades if a.usuario_id is not None}
+    if deal.owner_user_id is not None:
+        usuario_ids.add(deal.owner_user_id)
+    nombres_usuarios: dict[int, str] = {}
+    if usuario_ids:
+        rows = (
+            db.query(models.Usuario.id, models.Usuario.nombre)
+            .filter(models.Usuario.id.in_(usuario_ids))
+            .all()
+        )
+        nombres_usuarios = {uid: nombre for uid, nombre in rows}
+
+    orden_estatus = None
+    if deal.orden is not None and deal.orden.estatus is not None:
+        est = deal.orden.estatus
+        orden_estatus = est.value if hasattr(est, "value") else str(est)
+
+    base = DealOut.model_validate(deal)
+    return DealDetalleOut(
+        **base.model_dump(),
+        stage_nombre=deal.stage.nombre if deal.stage else None,
+        cliente_nombre=deal.cliente.nombre_empresa if deal.cliente else None,
+        orden_folio=deal.orden.folio if deal.orden else None,
+        orden_estatus=orden_estatus,
+        orden_total=deal.orden.total if deal.orden else None,
+        owner_nombre=(
+            nombres_usuarios.get(deal.owner_user_id)
+            if deal.owner_user_id is not None
+            else None
+        ),
+        actividades=[_actividad_out(a, nombres_usuarios) for a in actividades],
+    )
+
+
+# ---------------------------------------------------------------------------
+# POST /deals/{deal_id}/actividades
+# ---------------------------------------------------------------------------
+@router.post(
+    "/deals/{deal_id}/actividades",
+    response_model=ActividadOut,
+    status_code=201,
+    dependencies=[Depends(allow_all_staff)],
+)
+def crear_actividad(
+    deal_id: int,
+    payload: ActividadCreate,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    org_id = _org_id(current_user)
+    deal = _deal_or_404(db, deal_id, org_id)
+
+    actividad = DealActividad(
+        organization_id=deal.organization_id,
+        deal_id=deal.id,
+        tipo=payload.tipo,
+        descripcion=payload.descripcion,
+        usuario_id=current_user.id,
+    )
+    db.add(actividad)
+    db.commit()
+    db.refresh(actividad)
+    return _actividad_out(actividad, {current_user.id: current_user.nombre})
 
 
 # ---------------------------------------------------------------------------
@@ -218,10 +346,23 @@ def mover_deal(
     if not target_stage:
         raise HTTPException(status_code=404, detail="Stage destino no encontrado")
 
+    cambio_stage = deal.stage_id != payload.stage_id
     deal.stage_id = payload.stage_id
 
     if payload.orden_en_stage is not None:
         deal.orden_en_stage = payload.orden_en_stage
+
+    # Timeline automático (mismo commit que el movimiento)
+    if cambio_stage:
+        db.add(
+            DealActividad(
+                organization_id=deal.organization_id,
+                deal_id=deal.id,
+                tipo="sistema",
+                descripcion=f"Movido a {target_stage.nombre}",
+                usuario_id=current_user.id,
+            )
+        )
 
     # Cerrar si llega a etapa terminal
     if target_stage.es_ganado or target_stage.es_perdido:

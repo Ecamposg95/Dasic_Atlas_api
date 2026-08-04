@@ -64,7 +64,7 @@ from app.models.precios import PrecioProveedor  # noqa: F401
 from app.models.remisiones import Remision, DetalleRemision  # noqa: F401
 from app.models.reportes_servicio import ReporteServicio  # noqa: F401
 from app.models.platform import PlatformConfig  # noqa: F401
-from app.models.crm import Pipeline, PipelineStage, Deal  # noqa: F401
+from app.models.crm import Pipeline, PipelineStage, Deal, DealActividad  # noqa: F401
 from app.models.recordatorios import Recordatorio  # noqa: F401
 
 __all__ = [
@@ -94,6 +94,6 @@ __all__ = [
     "Remision", "DetalleRemision",
     "ReporteServicio",
     "PlatformConfig",
-    "Pipeline", "PipelineStage", "Deal",
+    "Pipeline", "PipelineStage", "Deal", "DealActividad",
     "Recordatorio",
 ]

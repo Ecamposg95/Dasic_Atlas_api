@@ -507,6 +507,13 @@ _BACKFILL_DDL = [
     "ALTER TABLE IF EXISTS recordatorios ALTER COLUMN orden_id DROP NOT NULL",
     "ALTER TABLE IF EXISTS recordatorios ADD COLUMN IF NOT EXISTS cliente_id INTEGER REFERENCES clientes(id)",
     "CREATE INDEX IF NOT EXISTS ix_recordatorios_cliente_id ON recordatorios (cliente_id)",
+
+    # 20260804_01 — CRM v2 detalle de oportunidad: campos extra en deals.
+    # (deal_actividades es tabla nueva → la crea create_all, sin backfill.)
+    "ALTER TABLE IF EXISTS deals ADD COLUMN IF NOT EXISTS probabilidad INTEGER",
+    "ALTER TABLE IF EXISTS deals ADD COLUMN IF NOT EXISTS fecha_cierre_estimada DATE",
+    "ALTER TABLE IF EXISTS deals ADD COLUMN IF NOT EXISTS proximo_paso VARCHAR(300)",
+    "ALTER TABLE IF EXISTS deals ADD COLUMN IF NOT EXISTS notas TEXT",
 ]
 
 
