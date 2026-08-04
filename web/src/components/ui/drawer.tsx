@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 
 // Panel lateral (derecha) para vistas rápidas y edición de datos simples.
 // Mismo contrato que Modal: cierra con Esc + click fuera; el consumidor
@@ -15,6 +16,9 @@ export function Drawer({
   size?: 'sm' | 'md' | 'lg' | 'xl';
   footer?: React.ReactNode;
 }) {
+  const panelRef = useRef<HTMLElement>(null);
+  useFocusTrap(panelRef as React.RefObject<HTMLElement>, true);
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
@@ -36,6 +40,7 @@ export function Drawer({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <aside
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         className={cn(
