@@ -51,7 +51,7 @@ export function DocumentRow({
     ? 'bg-emerald-950/30 border-l-4 border-l-emerald-500 hover:bg-emerald-950/45'
     : esFantasma
       ? 'bg-amber-950/30 border-l-4 border-l-amber-500 hover:bg-amber-950/45'
-      : 'hover:bg-slate-100 dark:hover:bg-slate-800/30';
+      : 'hover:bg-surface-2/60';
   const skuClass = esServicio
     ? 'text-emerald-300'
     : esFantasma
@@ -65,7 +65,7 @@ export function DocumentRow({
         drag?.setNodeRef(el);
       }}
       style={drag?.style}
-      className={`border-b border-slate-200 dark:border-slate-800 transition cursor-pointer ${rowClass}`}
+      className={`border-b border-border transition cursor-pointer ${rowClass}`}
       onClick={(e) => {
         const target = e.target as HTMLElement;
         if (target.closest('input, select, button, textarea, a')) return;
@@ -104,7 +104,7 @@ export function DocumentRow({
             <StockBadge stock={vm.stockMax} qty={vm.qty} />
           )}
         </div>
-        <div className="text-[13px] text-slate-700 dark:text-slate-300 mt-0.5">{vm.nom}</div>
+        <div className="text-[13px] text-muted-foreground mt-0.5">{vm.nom}</div>
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
           {caps.showEntrega && (
             <EntregaChip min={vm.entrega_min} max={vm.entrega_max} unidad={vm.entrega_unidad} />
@@ -123,7 +123,7 @@ export function DocumentRow({
               <MessageSquare className="h-3.5 w-3.5" />
             </button>
           )}
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-0.5">
+          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
             {vm.expanded ? <ChevronUp className="h-2.5 w-2.5" /> : <ChevronDown className="h-2.5 w-2.5" />}
             {vm.expanded ? 'Cerrar' : 'Detalles'}
           </span>
@@ -145,21 +145,21 @@ export function DocumentRow({
           }}
           className="h-7 text-center text-xs px-1"
         />
-        {vm.qtyMax != null && <div className="text-[10px] text-slate-400">de {vm.qtyMax}</div>}
+        {vm.qtyMax != null && <div className="text-[10px] text-muted-foreground/70">de {vm.qtyMax}</div>}
       </td>
 
       {/* Costo */}
       {caps.showCosto && (
         <td className="p-2.5 align-top text-right font-mono w-28">
-          <div className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-            <span className="text-slate-600">Orig</span> {vm.productCurrency} ${fmt(vm.costOrigen)}
+          <div className="text-[10px] text-muted-foreground leading-tight">
+            <span className="text-muted-foreground">Orig</span> {vm.productCurrency} ${fmt(vm.costOrigen)}
           </div>
           <div
-            className="text-[13px] text-slate-700 dark:text-slate-300 leading-tight"
+            className="text-[13px] text-muted-foreground leading-tight"
             title="Precio unitario = costo convertido al TC de venta (DOF + tolerancia) × (1 + utilidad). El IMPORTE es este PU × cantidad. El costo OC real al proveedor (DOF puro) está en el detalle."
           >
             ${fmt(vm.costoOc)}
-            <span className="ml-1 text-[9px] uppercase tracking-wider text-slate-500 dark:text-slate-400">PU</span>
+            <span className="ml-1 text-[9px] uppercase tracking-wider text-muted-foreground">PU</span>
           </div>
         </td>
       )}
@@ -212,7 +212,7 @@ export function DocumentRow({
               }
               className="h-7 text-center text-xs px-1 w-12"
             />
-            <span className="text-slate-500 dark:text-slate-400 text-xs">–</span>
+            <span className="text-muted-foreground text-xs">–</span>
             <Input
               type="number"
               placeholder="max"
@@ -234,7 +234,7 @@ export function DocumentRow({
                   ...(u == null ? { entrega_min: null, entrega_max: null } : {}),
                 });
               }}
-              className="h-7 text-[11px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1"
+              className="h-7 text-[11px] rounded border border-border bg-card px-1"
             >
               <option value="">—</option>
               <option value="dias">días</option>
@@ -257,7 +257,7 @@ export function DocumentRow({
                 onChange={(e) => cb.onPrecio?.(vm.uid, Math.max(0, parseFloat(e.target.value) || 0))}
                 className="h-7 text-right text-xs px-1"
               />
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">${fmt(vm.importe)}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">${fmt(vm.importe)}</div>
             </>
           ) : (
             <span className="font-bold text-[13px]">${fmt(vm.importe)}</span>
@@ -273,7 +273,7 @@ export function DocumentRow({
             e.stopPropagation();
             setMenuOpen((v) => !v);
           }}
-          className="w-7 h-7 inline-flex items-center justify-center rounded-full text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+          className="w-7 h-7 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-surface-2/60 transition"
           aria-label="Acciones de la línea"
         >
           <MoreVertical className="h-3.5 w-3.5" />
@@ -281,7 +281,7 @@ export function DocumentRow({
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-1 top-8 z-20 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[150px] text-left">
+            <div className="absolute right-1 top-8 z-20 bg-card border border-border rounded-lg shadow-xl py-1 min-w-[150px] text-left">
               {cb.onEdit && (
                 <button
                   type="button"
@@ -289,7 +289,7 @@ export function DocumentRow({
                     cb.onEdit?.(vm.uid);
                     setMenuOpen(false);
                   }}
-                  className="w-full text-left text-[11px] px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2"
+                  className="w-full text-left text-[11px] px-2 py-1.5 hover:bg-surface-2/60 text-foreground flex items-center gap-2"
                 >
                   <Pen className="h-3 w-3" /> Editar línea
                 </button>
@@ -360,7 +360,7 @@ export function DocumentRowCard({
   const esFantasma = vm.tipo === 'producto_fantasma';
   const esServicio = vm.tipo === 'servicio_catalogo';
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 space-y-2">
+    <div className="rounded-xl border border-border bg-card p-3 space-y-2">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -377,7 +377,7 @@ export function DocumentRowCard({
               </span>
             )}
           </div>
-          <div className="text-[13px] text-slate-700 dark:text-slate-300 mt-0.5">{vm.nom}</div>
+          <div className="text-[13px] text-muted-foreground mt-0.5">{vm.nom}</div>
         </div>
         <button type="button" onClick={() => cb.onRemove(vm.uid)} className="text-rose-400 text-[11px] shrink-0 hover:underline">
           Eliminar
@@ -386,7 +386,7 @@ export function DocumentRowCard({
 
       <div className="flex items-center gap-3 flex-wrap text-xs">
         <label className="flex items-center gap-1">
-          <span className="text-slate-500">Cant</span>
+          <span className="text-muted-foreground">Cant</span>
           <input
             type="number"
             min={1}
@@ -397,20 +397,20 @@ export function DocumentRowCard({
               const v = Math.max(1, parseInt(e.target.value) || 1);
               cb.onQty(vm.uid, vm.qtyMax != null ? Math.min(v, vm.qtyMax) : v);
             }}
-            className="h-7 w-16 text-center text-xs px-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+            className="h-7 w-16 text-center text-xs px-1 rounded border border-border bg-card"
           />
-          {vm.qtyMax != null && <span className="text-[10px] text-slate-400">de {vm.qtyMax}</span>}
+          {vm.qtyMax != null && <span className="text-[10px] text-muted-foreground/70">de {vm.qtyMax}</span>}
         </label>
         {caps.showImporte && caps.editablePrecio && (
           <label className="flex items-center gap-1 ml-auto text-xs">
-            <span className="text-slate-500">P.U.</span>
+            <span className="text-muted-foreground">P.U.</span>
             <input
               type="number"
               min={0}
               step={0.01}
               value={vm.precioUnitario ?? 0}
               onChange={(e) => cb.onPrecio?.(vm.uid, Math.max(0, parseFloat(e.target.value) || 0))}
-              className="h-7 w-24 text-right text-xs px-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+              className="h-7 w-24 text-right text-xs px-1 rounded border border-border bg-card"
             />
           </label>
         )}
@@ -422,7 +422,7 @@ export function DocumentRowCard({
       </div>
 
       {caps.showCosto && (
-        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+        <div className="text-[11px] text-muted-foreground">
           PU:{' '}
           <span className="font-mono">
             ${vm.costoOc.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -435,21 +435,21 @@ export function DocumentRowCard({
 
       {caps.showUtilidad && (
         <label className="flex items-center gap-2 text-xs">
-          <span className="text-slate-500 w-20">Util %</span>
+          <span className="text-muted-foreground w-20">Util %</span>
           <input
             type="number"
             min={0}
             max={99}
             value={vm.utilidad}
             onChange={(e) => cb.onUtilidad?.(vm.uid, Math.min(99, Math.max(0, parseFloat(e.target.value) || 0)))}
-            className="h-7 w-20 text-center text-xs px-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+            className="h-7 w-20 text-center text-xs px-1 rounded border border-border bg-card"
           />
         </label>
       )}
 
       {caps.showDescuento && (
         <label className="flex items-center gap-2 text-xs">
-          <span className="text-slate-500 w-20">Desc %</span>
+          <span className="text-muted-foreground w-20">Desc %</span>
           <input
             type="number"
             min={0}
@@ -457,14 +457,14 @@ export function DocumentRowCard({
             step={0.5}
             value={vm.descuento}
             onChange={(e) => cb.onDescuento?.(vm.uid, Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))}
-            className="h-7 w-20 text-center text-xs px-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+            className="h-7 w-20 text-center text-xs px-1 rounded border border-border bg-card"
           />
         </label>
       )}
 
       {caps.showEntrega && (
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-500 w-20">Entrega</span>
+          <span className="text-muted-foreground w-20">Entrega</span>
           <input
             type="number"
             placeholder="min"
@@ -472,9 +472,9 @@ export function DocumentRowCard({
             onChange={(e) =>
               cb.onEntrega?.(vm.uid, { entrega_min: e.target.value === '' ? null : Math.max(0, parseInt(e.target.value) || 0) })
             }
-            className="h-7 w-14 text-center text-xs px-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+            className="h-7 w-14 text-center text-xs px-1 rounded border border-border bg-card"
           />
-          <span className="text-slate-500">–</span>
+          <span className="text-muted-foreground">–</span>
           <input
             type="number"
             placeholder="max"
@@ -482,7 +482,7 @@ export function DocumentRowCard({
             onChange={(e) =>
               cb.onEntrega?.(vm.uid, { entrega_max: e.target.value === '' ? null : Math.max(0, parseInt(e.target.value) || 0) })
             }
-            className="h-7 w-14 text-center text-xs px-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+            className="h-7 w-14 text-center text-xs px-1 rounded border border-border bg-card"
           />
           <select
             value={vm.entrega_unidad ?? ''}
@@ -491,7 +491,7 @@ export function DocumentRowCard({
               const u = v === 'dias' || v === 'semanas' ? v : null;
               cb.onEntrega?.(vm.uid, { entrega_unidad: u, ...(u == null ? { entrega_min: null, entrega_max: null } : {}) });
             }}
-            className="h-7 text-[11px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1"
+            className="h-7 text-[11px] rounded border border-border bg-card px-1"
           >
             <option value="">—</option>
             <option value="dias">días</option>

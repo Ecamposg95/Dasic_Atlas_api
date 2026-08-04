@@ -68,9 +68,9 @@ export function DocumentCartTable({
   );
 
   const desktopTable = (
-    <div className="hidden md:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-x-auto">
+    <div className="hidden md:block bg-card border border-border rounded-xl overflow-x-auto">
       <table className="w-full text-[13px] min-w-[680px]">
-          <thead className="bg-slate-100 dark:bg-slate-800/50 text-[11px] text-slate-600 dark:text-slate-400 uppercase tracking-[0.15em] sticky top-0 z-10">
+          <thead className="bg-surface-2 text-[11px] text-muted-foreground uppercase tracking-[0.15em] sticky top-0 z-10">
             <tr>
               <th className="p-2.5 text-left">
                 <span className="inline-flex items-center gap-1">
