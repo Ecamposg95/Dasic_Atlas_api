@@ -2,7 +2,7 @@
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session, aliased
 
 from app import models
@@ -60,7 +60,20 @@ def listar(db: Session, *, q: Optional[str] = None, orden_venta_id: Optional[int
     if creado_por_id:
         query = query.filter(models.Remision.creado_por_id == creado_por_id)
     if owner_id is not None:
-        query = query.filter(models.Remision.creado_por_id == owner_id)
+        # Visibilidad de LECTURA ampliada para VENTAS (decisión de producto,
+        # fix round 1 de Task 7): VENTAS puede crear remisiones sobre
+        # órdenes ajenas (cartera compartida B2B), así que el DUEÑO DE LA
+        # ORDEN también necesita ver esas remisiones para dar seguimiento a
+        # su venta, aunque no las haya creado él. `owner_id` filtra por
+        # "propia O de una orden propia" — nunca por MUTAR (write/emitir/
+        # convertir siguen estrictos vía `_check_owner` en el router, que
+        # solo compara `creado_por_id`).
+        query = query.filter(
+            or_(
+                models.Remision.creado_por_id == owner_id,
+                models.Remision.orden_venta.has(models.OrdenVenta.vendedor_id == owner_id),
+            )
+        )
     if q and q.strip():
         like = f"%{q.strip()}%"
         cli_directo = aliased(models.Cliente)

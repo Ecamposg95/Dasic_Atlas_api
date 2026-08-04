@@ -55,20 +55,74 @@ def _get_or_404(db: Session, remision_id: int) -> models.Remision:
     return rem
 
 
+def _es_visible_para_lectura(rem: models.Remision, user) -> bool:
+    """Regla de visibilidad de LECTURA para VENTAS (`read:own` ampliado,
+    decisión de producto — fix round 1 de Task 7): la remisión es visible
+    si es propia (`creado_por_id`) O si está ligada a una orden propia
+    (`orden_venta.vendedor_id`). VENTAS puede crear remisiones sobre
+    órdenes ajenas (cartera compartida B2B — el repo ya da lectura completa
+    de clientes), así que el dueño de la ORDEN necesita ver esas remisiones
+    para dar seguimiento a su venta, aunque no las haya creado él.
+
+    Esta regla ampliada es SOLO para lectura. Mutar (write/emitir/
+    convertir) se queda estricto — ver `_check_owner`."""
+    if rem.creado_por_id == user.id:
+        return True
+    return bool(rem.orden_venta_id and rem.orden_venta and rem.orden_venta.vendedor_id == user.id)
+
+
 def _check_owner(db: Session, remision_id: int, user, action: str) -> None:
     """Si el permiso efectivo del user es la versión `:own` de `action`,
     verifica que la remisión sea suya — 403 si no. Si el user tiene el
     permiso amplio (o ninguno — eso ya lo filtró `require()`), no toca la
-    base de datos."""
+    base de datos.
+
+    `action == "read"` usa `_es_visible_para_lectura` (regla ampliada:
+    propia O de una orden propia). Cualquier otra action (write/emitir/
+    convertir) usa la regla ESTRICTA — solo `creado_por_id == user.id`.
+    Leer lo que afecta tus órdenes no equivale a poder mutar remisiones que
+    no creaste tú."""
     if not is_owner_scoped(user, action, "remision"):
         return
     rem = _get_or_404(db, remision_id)
+    if action == "read":
+        if not _es_visible_para_lectura(rem, user):
+            raise HTTPException(403, "No tienes permiso para leer esta remisión")
+        return
     if rem.creado_por_id != user.id:
         raise HTTPException(403, f"No tienes permiso para {action} esta remisión")
 
 
 def _es_operativo(user) -> bool:
     return _normalize_role(getattr(user, "rol", None)) == RolUsuario.OPERATIVO
+
+
+def _check_operativo_estado(rem: models.Remision, user) -> None:
+    """OPERATIVO nunca ve una remisión en BORRADOR/CANCELADA — ni el
+    detalle (`GET /{id}`), ni el word, ni el imprimir (su permiso es de
+    recepción física de EMITIDA/RECIBIDA, no de gestión del ciclo de vida
+    completo). 404, no 403: no le confirmamos que la remisión existe en un
+    estado que no le corresponde ver.
+
+    Extraído a helper (antes vivía inline solo en `obtener`) porque
+    `/{id}/word` e `/{id}/imprimir` necesitan el MISMO gate — se saltaban
+    esta verificación (fix round 1 de Task 7: OPERATIVO podía imprimir una
+    CANCELADA o descargar el .docx de un BORRADOR)."""
+    if _es_operativo(user) and rem.estado.value not in _ESTADOS_OPERATIVO:
+        raise HTTPException(404, "Remisión no encontrada")
+
+
+_ESTADOS_VALIDOS = {e.value for e in models.EstadoRemision}
+
+
+def _validar_estado(estado: Optional[str]) -> None:
+    """`models.EstadoRemision(estado)` levanta `ValueError` (no
+    `HTTPException`) para un valor inválido — sin este guard, un
+    `?estado=basura` se propaga sin envolver y termina en 500 en vez de un
+    400 explícito."""
+    if estado and estado.lower() not in _ESTADOS_VALIDOS:
+        raise HTTPException(
+            400, f"Estado inválido: {estado!r}. Válidos: {sorted(_ESTADOS_VALIDOS)}")
 
 
 def _aplicar_filtro_operativo(user, estado: Optional[str]):
@@ -150,6 +204,7 @@ def listar(
     require(current_user, "read", "remision")
     if page < 1 or page_size < 1 or page_size > 500:
         raise HTTPException(400, "page o page_size inválido")
+    _validar_estado(estado)
 
     estado_filtrado = _aplicar_filtro_operativo(current_user, estado)
     owner_id = current_user.id if is_owner_scoped(current_user, "read", "remision") else None
@@ -224,8 +279,7 @@ def obtener(
     require(current_user, "read", "remision")
     _check_owner(db, id, current_user, "read")
     rem = _get_or_404(db, id)
-    if _es_operativo(current_user) and rem.estado.value not in _ESTADOS_OPERATIVO:
-        raise HTTPException(404, "Remisión no encontrada")
+    _check_operativo_estado(rem, current_user)
     return _detalle(rem)
 
 
@@ -296,8 +350,11 @@ def recepcion(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # "recibir" no tiene variante :own en la matriz (OPERATIVO la tiene
-    # plana, GERENTE_COMERCIAL/ADMIN tienen wildcard) — sin owner-scoping.
+    # "recibir" no tiene variante :own en la matriz — solo lo tienen
+    # OPERATIVO (plano) y ADMIN/SUPERADMIN (wildcard `*.*`). GERENTE_
+    # COMERCIAL NO tiene wildcard NI "recibir" en su lista de permisos (§6
+    # de la matriz) — recibe 403 aquí, y es INTENCIONAL, no un bug. Sin
+    # variante :own → sin owner-scoping que aplicar.
     require(current_user, "recibir", "remision")
     rem = service.registrar_recepcion(db, id, payload.recibido_por, current_user)
     return {
@@ -319,9 +376,11 @@ def cancelar(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # El service YA aplica require(user, "cancel", "remision") — sin
-    # variante :own en la matriz, así que tampoco hay owner-scoping que
-    # agregar aquí. El router delega directo.
+    # El service YA aplica require(user, "cancel", "remision") como primera
+    # línea — lo repetimos aquí (defensa en profundidad: sobrevive si algún
+    # día el service cambia de orden/firma interno). Sin variante :own en
+    # la matriz, así que tampoco hay owner-scoping que agregar.
+    require(current_user, "cancel", "remision")
     rem = service.cancelar(db, id, payload.motivo, current_user)
     return {"id": rem.id, "estado": rem.estado.value}
 
@@ -332,9 +391,11 @@ def crear_cotizacion(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # El service YA aplica require(user, "convertir", "remision") — pero
-    # NO compara ownership (VENTAS tiene "convertir:own"), así que el
-    # router agrega ese único gate antes de delegar.
+    # El service YA aplica require(user, "convertir", "remision") — lo
+    # repetimos aquí (defensa en profundidad, mismo motivo que en
+    # `cancelar`). Owner-scoping SÍ hace falta agregarlo: el service NO
+    # compara ownership (VENTAS tiene "convertir:own").
+    require(current_user, "convertir", "remision")
     _check_owner(db, id, current_user, "convertir")
     cot = service.crear_cotizacion_desde(db, id, current_user)
     return {"orden_venta_id": cot.id, "folio": cot.folio}
@@ -361,6 +422,7 @@ def generar_word_remision(
     require(current_user, "read", "remision")
     _check_owner(db, id, current_user, "read")
     rem = _get_or_404(db, id)
+    _check_operativo_estado(rem, current_user)
 
     fecha_base = rem.fecha_remision or getattr(rem, "creado_en", None)
     if fecha_base:
@@ -449,5 +511,6 @@ def imprimir_remision(
     require(current_user, "read", "remision")
     _check_owner(db, id, current_user, "read")
     rem = _get_or_404(db, id)
+    _check_operativo_estado(rem, current_user)
     env = Environment(loader=BaseLoader())
     return env.from_string(PDF_TEMPLATE_REMISION).render(rem=rem)

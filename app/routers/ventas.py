@@ -2066,12 +2066,31 @@ def listar_eventos(
 @router.get("/{id}/avance-entrega", dependencies=[Depends(allow_all_staff)])
 def avance_entrega(
     id: int,
+    current_user: models.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Avance de entrega por partida de una orden de venta, usando el mismo
     `repository` de remisiones (Task 5/7): cuánto se cotizó vs. cuánto ya se
     entregó (remisiones EMITIDA/RECIBIDA) por línea, más el historial de
-    remisiones asociadas a la orden."""
+    remisiones asociadas a la orden.
+
+    `partidas` (el agregado cotizado/entregado/pendiente) se queda SIN
+    owner-scoping — mismo criterio que `obtener_detalle_orden` (línea
+    ~1549, "detalle-json"), que tampoco filtra por `vendedor_id`: el repo ya
+    trata la cartera de cotizaciones/órdenes como de lectura compartida
+    entre VENTAS.
+
+    `remisiones` (el historial con folio/fecha/estado — identifica quién
+    entregó qué) SÍ se filtra (fix round 1 de Task 7, finding reproducido:
+    sin esto, cualquier VENTAS veía el historial de remisiones de una orden
+    ajena, y OPERATIVO veía remisiones en borrador):
+      - OPERATIVO: nunca ve BORRADOR/CANCELADA (mismo "consulta emitidas"
+        que en `domains/remisiones/router.py`).
+      - VENTAS (`read:own` en remision): si la ORDEN es suya, ve todas las
+        remisiones de la orden (igual que en el router de remisiones —
+        dueño de la orden ve remisiones ajenas creadas sobre ella). Si la
+        orden es ajena, solo ve las remisiones que él mismo creó.
+    """
     orden = db.query(models.OrdenVenta).filter(models.OrdenVenta.id == id).first()
     if not orden:
         raise HTTPException(404, "Orden de venta no encontrada")
@@ -2096,12 +2115,17 @@ def avance_entrega(
             "estado": estado_partida,
         })
 
-    remisiones = (
-        db.query(models.Remision)
-        .filter(models.Remision.orden_venta_id == orden.id)
-        .order_by(desc(models.Remision.fecha_remision))
-        .all()
-    )
+    remisiones_query = db.query(models.Remision).filter(models.Remision.orden_venta_id == orden.id)
+
+    rol = _normalize_role(getattr(current_user, "rol", None))
+    if rol == models.RolUsuario.OPERATIVO:
+        remisiones_query = remisiones_query.filter(
+            models.Remision.estado.in_([models.EstadoRemision.EMITIDA, models.EstadoRemision.RECIBIDA])
+        )
+    elif is_owner_scoped(current_user, "read", "remision") and orden.vendedor_id != current_user.id:
+        remisiones_query = remisiones_query.filter(models.Remision.creado_por_id == current_user.id)
+
+    remisiones = remisiones_query.order_by(desc(models.Remision.fecha_remision)).all()
 
     return {
         "partidas": partidas,

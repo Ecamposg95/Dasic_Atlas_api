@@ -33,6 +33,19 @@ def _crear_borrador(client, cliente_id, **kw):
     return client.post("/api/remisiones/", json=payload)
 
 
+def _orden_con_detalle(db, vendedor, cliente, folio, cantidad="10"):
+    orden = models.OrdenVenta(folio=folio, cliente_id=cliente.id, vendedor_id=vendedor.id,
+                               estatus=models.EstatusOrden.PENDIENTE, moneda="MXN", total=0)
+    db.add(orden)
+    db.flush()
+    det = models.DetalleOrden(orden_id=orden.id, descripcion_libre="Cable",
+                               cantidad=Decimal(cantidad), precio_unitario=Decimal("5"),
+                               subtotal=Decimal("50"), unidad="MTS")
+    db.add(det)
+    db.commit()
+    return orden, det
+
+
 # ---------------------------------------------------------------------------
 # Casos mínimos del brief
 # ---------------------------------------------------------------------------
@@ -236,3 +249,151 @@ def test_avance_entrega_por_partida(client_as, db):
     assert partida["pendiente"] == 6.0
     assert partida["estado"] == "PARCIAL"
     assert any(rr["id"] == rem_id and rr["estado"] == "emitida" for rr in body["remisiones"])
+
+
+# ---------------------------------------------------------------------------
+# Fix round 1 (revisión adversarial): OPERATIVO se saltaba el gate de estado
+# en word/imprimir; avance-entrega sin gate de remision; estado inválido
+# daba 500; visibilidad de lectura de VENTAS ampliada (decisión de producto).
+# ---------------------------------------------------------------------------
+
+def test_operativo_no_puede_descargar_word_de_borrador(client_as, db):
+    cli = _cliente(db)
+    admin = client_as("administrador")
+    rem_id = _crear_borrador(admin, cli.id).json()["id"]  # se queda en borrador
+
+    operativo = client_as("operativo")
+    r = operativo.get(f"/api/remisiones/{rem_id}/word")
+    assert r.status_code == 404
+
+
+def test_operativo_no_puede_imprimir_cancelada(client_as, db):
+    cli = _cliente(db)
+    admin = client_as("administrador")
+    rem_id = _crear_borrador(admin, cli.id).json()["id"]
+    admin.post(f"/api/remisiones/{rem_id}/emitir")
+    admin.post(f"/api/remisiones/{rem_id}/cancelar", json={"motivo": "error"})
+
+    operativo = client_as("operativo")
+    r = operativo.get(f"/api/remisiones/{rem_id}/imprimir")
+    assert r.status_code == 404
+
+
+def test_estado_invalido_da_400_no_500(client_as, db):
+    admin = client_as("administrador")
+    r = admin.get("/api/remisiones/", params={"estado": "basura"})
+    assert r.status_code == 400
+
+
+# ---------------------------------------------------------------------------
+# Decisión de producto: VENTAS puede crear remisiones sobre órdenes ajenas
+# (cartera compartida B2B) — pero la visibilidad de LECTURA de read:own se
+# amplía a "propia O de una orden propia": el dueño de la orden ve las
+# remisiones que otro VENTAS creó sobre ella (listado y detalle), aunque NO
+# pueda mutarlas (PUT/emitir siguen estrictos).
+# ---------------------------------------------------------------------------
+
+def test_ventas_ve_remision_de_su_orden_creada_por_otro_pero_no_la_muta(client_as, db):
+    cli = _cliente(db)
+    v1 = client_as("ventas", email="v1@test.local")
+    v2 = client_as("ventas", email="v2@test.local")
+    orden, det = _orden_con_detalle(db, v1.user, cli, "V-26080200")
+
+    creado = v2.post("/api/remisiones/", json={
+        "orden_venta_id": orden.id,
+        "detalles": [{"detalle_orden_id": det.id, "descripcion": "Cable", "cantidad": "3"}],
+    })
+    assert creado.status_code == 200, creado.text
+    rem_id = creado.json()["id"]
+
+    # v1 (dueño de la orden, no de la remisión) la VE en el listado...
+    listado = v1.get("/api/remisiones/")
+    assert listado.status_code == 200
+    assert rem_id in [it["id"] for it in listado.json()["items"]]
+
+    # ...y en el detalle...
+    detalle = v1.get(f"/api/remisiones/{rem_id}")
+    assert detalle.status_code == 200, detalle.text
+
+    # ...pero NO puede mutarla.
+    put = v1.put(f"/api/remisiones/{rem_id}", json={"transportista": "DHL"})
+    assert put.status_code == 403
+    emitir = v1.post(f"/api/remisiones/{rem_id}/emitir")
+    assert emitir.status_code == 403
+
+
+def test_ventas_no_ve_remision_de_orden_ajena_creada_por_otro(client_as, db):
+    cli = _cliente(db)
+    v1 = client_as("ventas", email="v1@test.local")
+    v2 = client_as("ventas", email="v2@test.local")
+    v3 = client_as("ventas", email="v3@test.local")
+    orden, det = _orden_con_detalle(db, v1.user, cli, "V-26080201")
+
+    creado = v2.post("/api/remisiones/", json={
+        "orden_venta_id": orden.id,
+        "detalles": [{"detalle_orden_id": det.id, "descripcion": "Cable", "cantidad": "3"}],
+    })
+    rem_id = creado.json()["id"]
+
+    # v3 no creó la remisión ni es dueño de la orden — no debe verla.
+    listado = v3.get("/api/remisiones/")
+    ids = [it["id"] for it in listado.json()["items"]]
+    assert rem_id not in ids
+
+    detalle = v3.get(f"/api/remisiones/{rem_id}")
+    assert detalle.status_code == 403
+
+
+def test_ventas_avance_entrega_orden_ajena_filtra_remisiones_al_historial_propio(client_as, db):
+    cli = _cliente(db)
+    v1 = client_as("ventas", email="v1@test.local")
+    v2 = client_as("ventas", email="v2@test.local")
+    orden, det = _orden_con_detalle(db, v1.user, cli, "V-26080202")
+
+    # v1 (dueño de la orden) crea y emite una remisión...
+    rem_v1 = v1.post("/api/remisiones/", json={
+        "orden_venta_id": orden.id,
+        "detalles": [{"detalle_orden_id": det.id, "descripcion": "Cable", "cantidad": "2"}],
+    }).json()["id"]
+    v1.post(f"/api/remisiones/{rem_v1}/emitir")
+
+    # ...y v2 (ajeno a la orden) también crea/emite la suya.
+    rem_v2 = v2.post("/api/remisiones/", json={
+        "orden_venta_id": orden.id,
+        "detalles": [{"detalle_orden_id": det.id, "descripcion": "Cable", "cantidad": "3"}],
+    }).json()["id"]
+    v2.post(f"/api/remisiones/{rem_v2}/emitir")
+
+    # v2 pide avance-entrega de la orden AJENA: partidas se quedan (mismo
+    # criterio que detalle-json), pero el historial de remisiones se filtra
+    # a solo las suyas.
+    r = v2.get(f"/api/ventas/{orden.id}/avance-entrega")
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["partidas"]  # el agregado no se gatea
+    remision_ids = [rr["id"] for rr in body["remisiones"]]
+    assert rem_v2 in remision_ids
+    assert rem_v1 not in remision_ids
+
+    # v1 (dueño de la orden) sí ve el historial completo.
+    r1 = v1.get(f"/api/ventas/{orden.id}/avance-entrega")
+    remision_ids_v1 = [rr["id"] for rr in r1.json()["remisiones"]]
+    assert rem_v1 in remision_ids_v1
+    assert rem_v2 in remision_ids_v1
+
+
+def test_operativo_avance_entrega_no_ve_remisiones_en_borrador(client_as, db):
+    cli = _cliente(db)
+    admin = client_as("administrador")
+    orden, det = _orden_con_detalle(db, admin.user, cli, "V-26080203")
+
+    rem_borrador = admin.post("/api/remisiones/", json={
+        "orden_venta_id": orden.id,
+        "detalles": [{"detalle_orden_id": det.id, "descripcion": "Cable", "cantidad": "1"}],
+    }).json()["id"]  # nunca se emite
+
+    operativo = client_as("operativo")
+    r = operativo.get(f"/api/ventas/{orden.id}/avance-entrega")
+    assert r.status_code == 200, r.text
+    remision_ids = [rr["id"] for rr in r.json()["remisiones"]]
+    assert rem_borrador not in remision_ids
