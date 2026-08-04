@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Activity } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { CollapsibleCard } from '@/components/ui/CollapsibleCard';
 import {
   DataTable,
   DataTableHead,
@@ -154,8 +155,8 @@ function TopServiciosSection({ dias }: { dias: number }) {
           ${fmt(data.monto_total_servicios_mxn)} MXN
         </p>
       )}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="20rem">
+        <DataTableHead sticky>
           <tr>
             <th className="px-4 py-3 text-left w-8">#</th>
             <th className="px-4 py-3 text-left">Servicio</th>
@@ -216,12 +217,13 @@ function FantasmasSection() {
   const grupos = data?.grupos ?? [];
 
   return (
-    <Section title="Fantasmas por proveedor">
-      {data && (
-        <p className="text-xs text-muted-foreground">
-          Total pendientes: {data.total_pendientes}
-        </p>
-      )}
+    <CollapsibleCard
+      title={
+        data != null
+          ? `Fantasmas por proveedor (${data.total_pendientes} pendientes)`
+          : 'Fantasmas por proveedor'
+      }
+    >
       {isLoading ? (
         <DataTable>
           <DataTableHead>
@@ -257,8 +259,8 @@ function FantasmasSection() {
                   {grupo.veces_solicitado_total} solicitudes totales
                 </span>
               </div>
-              <DataTable>
-                <DataTableHead>
+              <DataTable maxBodyHeight="20rem">
+                <DataTableHead sticky>
                   <tr>
                     <th className="px-4 py-3 text-left">Descripción</th>
                     <th className="px-4 py-3 text-right">Veces solicitado</th>
@@ -286,7 +288,7 @@ function FantasmasSection() {
           ))}
         </div>
       )}
-    </Section>
+    </CollapsibleCard>
   );
 }
 
@@ -312,8 +314,8 @@ function VencimientosSection({ dias }: { dias: number }) {
           {fmt(data.monto_total_mxn)} MXN en riesgo
         </p>
       )}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="20rem">
+        <DataTableHead sticky>
           <tr>
             <th className="px-4 py-3 text-left">Folio</th>
             <th className="px-4 py-3 text-left">Cliente</th>
@@ -373,8 +375,8 @@ function OrdenesPendientesSection() {
           {data.total} órdenes · ${fmt(data.monto_total_mxn)} MXN
         </p>
       )}
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="20rem">
+        <DataTableHead sticky>
           <tr>
             <th className="px-4 py-3 text-left">Folio</th>
             <th className="px-4 py-3 text-left">Cliente</th>
@@ -455,7 +457,7 @@ export function ReportesServicioPage({ embedded = false }: { embedded?: boolean 
   );
 
   return (
-    <div className={embedded ? 'w-full space-y-8' : 'p-6 max-w-7xl mx-auto w-full space-y-8'}>
+    <div className={embedded ? 'w-full space-y-5' : 'p-6 max-w-7xl mx-auto w-full space-y-5'}>
       {/* Header — oculto cuando va embebido (KpisPage ya rinde el título de la pestaña) */}
       {embedded ? (
         <div className="flex justify-end">{rangos}</div>
@@ -469,11 +471,15 @@ export function ReportesServicioPage({ embedded = false }: { embedded?: boolean 
         </header>
       )}
 
-      <ConversionSection dias={dias} />
-      <TopServiciosSection dias={dias} />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        <ConversionSection dias={dias} />
+        <TopServiciosSection dias={dias} />
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        <VencimientosSection dias={dias} />
+        <OrdenesPendientesSection />
+      </div>
       <FantasmasSection />
-      <VencimientosSection dias={dias} />
-      <OrdenesPendientesSection />
     </div>
   );
 }

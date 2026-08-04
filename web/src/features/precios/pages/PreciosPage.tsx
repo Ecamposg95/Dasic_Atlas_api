@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/data-table';
 import { PrecioFormModal } from '../components/PrecioFormModal';
 import { ComparadorRapido } from '../components/ComparadorRapido';
+import { CollapsibleCard } from '@/components/ui/CollapsibleCard';
 import type { PrecioProveedorCreate } from '../types';
 
 // ---------------------------------------------------------------------------
@@ -180,7 +181,7 @@ export function PreciosPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
+    <div className="p-6 max-w-7xl mx-auto w-full space-y-4">
       {/* Header */}
       <PageHeader
         title={
@@ -202,7 +203,9 @@ export function PreciosPage() {
       />
 
       {/* Comparador rápido (restaurado del Jinja viejo) */}
-      <ComparadorRapido />
+      <CollapsibleCard title="Comparador rápido">
+        <ComparadorRapido />
+      </CollapsibleCard>
 
       <div className="flex gap-6 flex-col lg:flex-row">
         {/* Columna principal */}
@@ -239,8 +242,8 @@ export function PreciosPage() {
           </div>
 
           {/* Tabla */}
-          <DataTable>
-            <DataTableHead>
+          <DataTable maxBodyHeight="calc(100vh - 24rem)">
+            <DataTableHead sticky>
               <tr>
                 <th className="px-4 py-3 text-left">Fecha</th>
                 <th className="px-4 py-3 text-left">Producto</th>

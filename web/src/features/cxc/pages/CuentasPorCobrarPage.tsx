@@ -194,7 +194,7 @@ export function CuentasPorCobrarPage() {
   const deudores = topDeudores ?? [];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto w-full space-y-8">
+    <div className="p-6 max-w-7xl mx-auto w-full space-y-5">
       {/* ---------------------------------------------------------------- */}
       {/* 1. Header                                                         */}
       {/* ---------------------------------------------------------------- */}
@@ -261,34 +261,33 @@ export function CuentasPorCobrarPage() {
       </section>
 
       {/* ---------------------------------------------------------------- */}
-      {/* 3. Aging                                                          */}
+      {/* 3. Aging + Top deudores (lado a lado en xl)                       */}
       {/* ---------------------------------------------------------------- */}
-      <section className="space-y-4">
-        <SectionTitle>Antigüedad de saldo (aging)</SectionTitle>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <AgingDonut buckets={agingBuckets} loading={loadingAging} />
-          <div className="flex items-center">
-            <div className="w-full">
-              <AgingBuckets buckets={agingBuckets} loading={loadingAging} />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        <section className="space-y-4">
+          <SectionTitle>Antigüedad de saldo (aging)</SectionTitle>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <AgingDonut buckets={agingBuckets} loading={loadingAging} />
+            <div className="flex items-center">
+              <div className="w-full">
+                <AgingBuckets buckets={agingBuckets} loading={loadingAging} />
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ---------------------------------------------------------------- */}
-      {/* 4. Top deudores                                                   */}
-      {/* ---------------------------------------------------------------- */}
-      <section>
-        <SectionTitle>Top deudores</SectionTitle>
-        <TopDeudoresTable deudores={deudores} loading={loadingTop} />
-      </section>
+        <section>
+          <SectionTitle>Top deudores</SectionTitle>
+          <TopDeudoresTable deudores={deudores} loading={loadingTop} />
+        </section>
+      </div>
 
       {/* ---------------------------------------------------------------- */}
       {/* 5. Vencimientos pendientes                                        */}
       {/* ---------------------------------------------------------------- */}
       <section>
         <SectionTitle>Vencimientos pendientes</SectionTitle>
-        <DataTable maxBodyHeight="calc(100vh - 20rem)">
+        <DataTable maxBodyHeight="24rem">
           <DataTableHead sticky>
             <tr>
               <th className="px-4 py-3 text-left">Folio OV</th>

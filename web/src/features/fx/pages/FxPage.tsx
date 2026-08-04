@@ -192,15 +192,15 @@ export function FxPage() {
 
       {/* Card TC del día */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">TC Hoy</p>
               {loadingHoy ? (
-                <Skeleton className="h-12 w-48" />
+                <Skeleton className="h-9 w-48" />
               ) : (
                 <>
-                  <p className="text-4xl font-bold tabular-nums text-accent-glow">
+                  <p className="text-3xl font-bold tabular-nums text-accent-glow">
                     {tcHoy
                       ? Number(tcHoy.usd_mxn).toLocaleString('es-MX', {
                           minimumFractionDigits: 4,
@@ -247,8 +247,8 @@ export function FxPage() {
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
           Historial últimos 30 días
         </h2>
-        <DataTable>
-          <DataTableHead>
+        <DataTable maxBodyHeight="20rem">
+          <DataTableHead sticky>
             <tr>
               <th className="px-4 py-3 text-left">Fecha</th>
               <th className="px-4 py-3 text-right">TC USD/MXN</th>

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Trophy, Search } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useCompararPorTexto } from '../hooks/usePrecios';
@@ -32,13 +31,9 @@ export function ComparadorRapido() {
     setQueryText(v);
   }
 
+  // Sin Card propio: PreciosPage lo envuelve en <CollapsibleCard title="Comparador rápido">.
   return (
-    <Card>
-      <CardContent className="p-4">
-        <h2 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">
-          Comparador rápido
-        </h2>
-
+    <div>
         <div className="flex flex-wrap gap-2 items-stretch">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -126,7 +121,6 @@ export function ComparadorRapido() {
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 }
