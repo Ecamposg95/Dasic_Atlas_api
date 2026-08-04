@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { branding } from '@/lib/branding';
 import type { Usuario, UsuarioCreate, UsuarioUpdate, RolUsuario } from '@/features/usuarios/types';
@@ -88,25 +89,25 @@ export function UsuarioPlataformaModal({ mode, usuario, onSave, onClose, busy }:
       title={mode === 'create' ? 'Nuevo usuario de plataforma' : `Editar: ${usuario?.nombre ?? ''}`}
       onClose={onClose}
     >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
       <div className="space-y-3">
         {/* Nombre */}
-        <div>
-          <label className="block font-mono text-[11px] text-emerald-500/80 mb-1">
-            Nombre <span className="text-rose-400">*</span>
-          </label>
+        <FormField label="Nombre" required>
           <Input
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Nombre completo"
             className="font-mono text-sm"
           />
-        </div>
+        </FormField>
 
         {/* Email */}
-        <div>
-          <label className="block font-mono text-[11px] text-emerald-500/80 mb-1">
-            Correo electrónico <span className="text-rose-400">*</span>
-          </label>
+        <FormField label="Correo electrónico" required>
           <Input
             type="email"
             value={email}
@@ -114,22 +115,23 @@ export function UsuarioPlataformaModal({ mode, usuario, onSave, onClose, busy }:
             placeholder={branding.emailPlaceholder}
             className="font-mono text-sm"
           />
-        </div>
+        </FormField>
 
         {/* Rol */}
         <div>
-          <label className="block font-mono text-[11px] text-emerald-500/80 mb-1">Rol</label>
-          <select
-            value={rol}
-            onChange={(e) => setRol(e.target.value as RolUsuario)}
-            className="h-10 w-full rounded-md border border-emerald-500/30 bg-card px-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500"
-          >
-            {ROL_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+          <FormField label="Rol">
+            <select
+              value={rol}
+              onChange={(e) => setRol(e.target.value as RolUsuario)}
+              className="h-10 w-full rounded-md border border-emerald-500/30 bg-card px-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              {ROL_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </FormField>
           {rol === 'superadmin' && (
             <p className="font-mono text-[10px] text-amber-400 mt-1">
               Superadmin tiene acceso total a la consola de plataforma.
@@ -154,10 +156,7 @@ export function UsuarioPlataformaModal({ mode, usuario, onSave, onClose, busy }:
         {/* Password (solo en create) */}
         {mode === 'create' && (
           <>
-            <div>
-              <label className="block font-mono text-[11px] text-emerald-500/80 mb-1">
-                Contraseña <span className="text-rose-400">*</span>
-              </label>
+            <FormField label="Contraseña" required>
               <Input
                 type="password"
                 value={password}
@@ -165,11 +164,8 @@ export function UsuarioPlataformaModal({ mode, usuario, onSave, onClose, busy }:
                 placeholder="Mínimo 6 caracteres"
                 className="font-mono text-sm"
               />
-            </div>
-            <div>
-              <label className="block font-mono text-[11px] text-emerald-500/80 mb-1">
-                Confirmar contraseña <span className="text-rose-400">*</span>
-              </label>
+            </FormField>
+            <FormField label="Confirmar contraseña" required>
               <Input
                 type="password"
                 value={confirmPassword}
@@ -177,7 +173,7 @@ export function UsuarioPlataformaModal({ mode, usuario, onSave, onClose, busy }:
                 placeholder="Repetir contraseña"
                 className="font-mono text-sm"
               />
-            </div>
+            </FormField>
           </>
         )}
 
@@ -190,10 +186,10 @@ export function UsuarioPlataformaModal({ mode, usuario, onSave, onClose, busy }:
       </div>
 
       <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={busy}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={onSubmit} disabled={busy}>
+        <Button type="submit" size="sm" disabled={busy}>
           {busy
             ? 'Guardando…'
             : mode === 'create'
@@ -201,6 +197,7 @@ export function UsuarioPlataformaModal({ mode, usuario, onSave, onClose, busy }:
             : 'Guardar cambios'}
         </Button>
       </ModalFooter>
+      </form>
     </Modal>
   );
 }

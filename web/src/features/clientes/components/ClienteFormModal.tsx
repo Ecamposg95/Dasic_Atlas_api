@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { FormField } from '@/components/ui/form-field';
 import type { Cliente, ClienteCreate, MonedaCredito } from '../types';
 
 type Props = {
@@ -78,134 +79,121 @@ export function ClienteFormModal({ mode, cliente, onSave, onClose, busy }: Props
       onClose={onClose}
       size="lg"
     >
-      <div className="space-y-3">
-        {/* Nombre empresa */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">
-            Empresa <span className="text-rose-400">*</span>
-          </label>
-          <Input
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            placeholder="Nombre de empresa"
-          />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
+        <div className="space-y-3">
+          <FormField label="Empresa" required>
+            <Input
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              placeholder="Nombre de empresa"
+            />
+          </FormField>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormField label="Contacto">
+              <Input
+                value={contacto}
+                onChange={(e) => setContacto(e.target.value)}
+                placeholder="Nombre contacto"
+              />
+            </FormField>
+            <FormField label="RFC / Tax ID">
+              <Input
+                value={rfc}
+                onChange={(e) => setRfc(e.target.value)}
+                placeholder="XAXX010101000"
+              />
+            </FormField>
+            <FormField label="Email">
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="correo@ejemplo.com"
+              />
+            </FormField>
+            <FormField label="Teléfono">
+              <Input
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                placeholder="+52 800 000 0000"
+              />
+            </FormField>
+          </div>
+
+          <FormField label="Dirección">
+            <textarea
+              value={direccion}
+              onChange={(e) => setDireccion(e.target.value)}
+              rows={2}
+              placeholder="Calle, colonia, ciudad, estado, CP"
+              className="w-full text-sm rounded-md border border-border-strong bg-card px-3 py-2 placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-accent-glow/40"
+            />
+          </FormField>
+
+          {/* Crédito */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <FormField label="Límite crédito" hint={limiteDisplay}>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={limiteCredito}
+                onChange={(e) => setLimiteCredito(e.target.value)}
+              />
+            </FormField>
+            <FormField label="Días crédito">
+              <Input
+                type="number"
+                min="0"
+                value={diasCredito}
+                onChange={(e) => setDiasCredito(e.target.value)}
+              />
+            </FormField>
+            <FormField label="Día de corte (1-31)">
+              <Input
+                type="number"
+                min="1"
+                max="31"
+                value={diaCorte}
+                onChange={(e) => setDiaCorte(e.target.value)}
+                placeholder="Opcional"
+              />
+            </FormField>
+          </div>
+
+          <FormField label="Moneda crédito">
+            <select
+              value={moneda}
+              onChange={(e) => setMoneda(e.target.value as MonedaCredito)}
+              className="h-10 w-full rounded-md border border-border-strong bg-card px-3 text-sm"
+            >
+              <option value="MXN">MXN</option>
+              <option value="USD">USD</option>
+            </select>
+          </FormField>
+
+          {err && (
+            <div className="text-xs bg-rose-100 border border-rose-300 text-rose-700 dark:bg-rose-900/30 dark:border-rose-700/50 dark:text-rose-300 rounded p-2">
+              {err}
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Contacto */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Contacto</label>
-            <Input
-              value={contacto}
-              onChange={(e) => setContacto(e.target.value)}
-              placeholder="Nombre contacto"
-            />
-          </div>
-          {/* RFC */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">RFC / Tax ID</label>
-            <Input
-              value={rfc}
-              onChange={(e) => setRfc(e.target.value)}
-              placeholder="XAXX010101000"
-            />
-          </div>
-          {/* Email */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Email</label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="correo@ejemplo.com"
-            />
-          </div>
-          {/* Teléfono */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Teléfono</label>
-            <Input
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              placeholder="+52 800 000 0000"
-            />
-          </div>
-        </div>
-
-        {/* Dirección */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">Dirección</label>
-          <textarea
-            value={direccion}
-            onChange={(e) => setDireccion(e.target.value)}
-            rows={2}
-            placeholder="Calle, colonia, ciudad, estado, CP"
-            className="w-full text-sm rounded-md border border-border-strong bg-card px-3 py-2 placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-accent-glow/40"
-          />
-        </div>
-
-        {/* Crédito */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Límite crédito</label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={limiteCredito}
-              onChange={(e) => setLimiteCredito(e.target.value)}
-            />
-            <div className="text-[10px] text-muted-foreground mt-0.5">{limiteDisplay}</div>
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Días crédito</label>
-            <Input
-              type="number"
-              min="0"
-              value={diasCredito}
-              onChange={(e) => setDiasCredito(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Día de corte (1-31)</label>
-            <Input
-              type="number"
-              min="1"
-              max="31"
-              value={diaCorte}
-              onChange={(e) => setDiaCorte(e.target.value)}
-              placeholder="Opcional"
-            />
-          </div>
-        </div>
-
-        {/* Moneda crédito */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">Moneda crédito</label>
-          <select
-            value={moneda}
-            onChange={(e) => setMoneda(e.target.value as MonedaCredito)}
-            className="h-10 w-full rounded-md border border-border-strong bg-card px-3 text-sm"
-          >
-            <option value="MXN">MXN</option>
-            <option value="USD">USD</option>
-          </select>
-        </div>
-
-        {err && (
-          <div className="text-xs bg-rose-100 border border-rose-300 text-rose-700 dark:bg-rose-900/30 dark:border-rose-700/50 dark:text-rose-300 rounded p-2">
-            {err}
-          </div>
-        )}
-      </div>
-
-      <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>
-          Cancelar
-        </Button>
-        <Button size="sm" onClick={onSubmit} disabled={busy}>
-          {busy ? 'Guardando…' : mode === 'create' ? 'Crear cliente' : 'Guardar cambios'}
-        </Button>
-      </ModalFooter>
+        <ModalFooter>
+          <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={busy}>
+            Cancelar
+          </Button>
+          <Button type="submit" size="sm" disabled={busy}>
+            {busy ? 'Guardando…' : mode === 'create' ? 'Crear cliente' : 'Guardar cambios'}
+          </Button>
+        </ModalFooter>
+      </form>
     </Modal>
   );
 }

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
 import { useCategoriasServicio } from '../hooks/useCategoriasServicio';
@@ -95,11 +96,16 @@ export function ServicioFormModal({ mode, servicio, onSave, onClose, busy }: Pro
       onClose={onClose}
       size="lg"
     >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
       <div className="space-y-3">
         {/* Categoría primero (en create dispara sugerencia de código) */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Categoría</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label="Categoría">
             <select
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
@@ -113,45 +119,37 @@ export function ServicioFormModal({ mode, servicio, onSave, onClose, busy }: Pro
               ))}
               <option value="__custom__">Otra…</option>
             </select>
-          </div>
+          </FormField>
           {categoria === '__custom__' && (
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Nueva categoría</label>
+            <FormField label="Nueva categoría">
               <Input
                 value={categoriaCustom}
                 onChange={(e) => setCategoriaCustom(e.target.value)}
                 placeholder="ej. mantenimiento"
               />
-            </div>
+            </FormField>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Código <span className="text-rose-600 dark:text-rose-400">*</span>
-            </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label="Código" required>
             <Input
               value={codigo}
               onChange={(e) => setCodigo(e.target.value.toUpperCase())}
               placeholder="SRV-0001"
               className="font-mono"
             />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Nombre <span className="text-rose-600 dark:text-rose-400">*</span>
-            </label>
+          </FormField>
+          <FormField label="Nombre" required>
             <Input
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Nombre del servicio"
             />
-          </div>
+          </FormField>
         </div>
 
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">Descripción</label>
+        <FormField label="Descripción">
           <textarea
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
@@ -159,13 +157,10 @@ export function ServicioFormModal({ mode, servicio, onSave, onClose, busy }: Pro
             placeholder="Descripción detallada del servicio"
             className="w-full text-sm rounded-md border border-border-strong bg-card text-foreground px-3 py-2 placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-accent-glow/40"
           />
-        </div>
+        </FormField>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Costo <span className="text-rose-600 dark:text-rose-400">*</span>
-            </label>
+          <FormField label="Costo" required>
             <Input
               type="number"
               step="0.01"
@@ -173,9 +168,8 @@ export function ServicioFormModal({ mode, servicio, onSave, onClose, busy }: Pro
               value={costo}
               onChange={(e) => setCosto(e.target.value)}
             />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Moneda</label>
+          </FormField>
+          <FormField label="Moneda">
             <select
               value={moneda}
               onChange={(e) => setMoneda(e.target.value)}
@@ -184,7 +178,7 @@ export function ServicioFormModal({ mode, servicio, onSave, onClose, busy }: Pro
               <option value="MXN">MXN</option>
               <option value="USD">USD</option>
             </select>
-          </div>
+          </FormField>
           <div className="flex items-end pb-1">
             <label className="flex items-center gap-2 text-sm text-foreground">
               <input
@@ -206,13 +200,14 @@ export function ServicioFormModal({ mode, servicio, onSave, onClose, busy }: Pro
       </div>
 
       <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={busy}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={onSubmit} disabled={busy}>
+        <Button type="submit" size="sm" disabled={busy}>
           {busy ? 'Guardando…' : mode === 'create' ? 'Crear servicio' : 'Guardar cambios'}
         </Button>
       </ModalFooter>
+      </form>
     </Modal>
   );
 }

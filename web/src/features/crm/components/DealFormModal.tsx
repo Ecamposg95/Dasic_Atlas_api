@@ -3,6 +3,7 @@ import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { FormField } from '@/components/ui/form-field';
 import { toast } from '@/lib/toast';
 import { normalizeDetail } from '@/lib/api';
 import { useClientes } from '@/features/clientes/hooks/useClientes';
@@ -113,11 +114,7 @@ export function DealFormModal({ pipelineId, stages, deal, defaultStageId, onClos
   return (
     <Modal title={isEdit ? 'Editar deal' : 'Nuevo deal'} onClose={onClose} size="md">
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Título */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">
-            Título <span className="text-rose-500">*</span>
-          </label>
+        <FormField label="Título" required>
           <Input
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
@@ -125,11 +122,9 @@ export function DealFormModal({ pipelineId, stages, deal, defaultStageId, onClos
             required
             disabled={isPending}
           />
-        </div>
+        </FormField>
 
-        {/* Stage */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">Etapa</label>
+        <FormField label="Etapa">
           <Select value={stageId} onChange={(e) => setStageId(e.target.value)} disabled={isPending}>
             {stages.map((s) => (
               <option key={s.id} value={String(s.id)}>
@@ -137,11 +132,9 @@ export function DealFormModal({ pipelineId, stages, deal, defaultStageId, onClos
               </option>
             ))}
           </Select>
-        </div>
+        </FormField>
 
-        {/* Cliente */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">Cliente</label>
+        <FormField label="Cliente">
           <Select value={clienteId} onChange={(e) => setClienteId(e.target.value)} disabled={isPending}>
             <option value="">— Sin cliente —</option>
             {clientes.map((c) => (
@@ -150,12 +143,11 @@ export function DealFormModal({ pipelineId, stages, deal, defaultStageId, onClos
               </option>
             ))}
           </Select>
-        </div>
+        </FormField>
 
         {/* Monto + Moneda */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-foreground">Monto</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label="Monto">
             <Input
               type="number"
               min="0"
@@ -165,19 +157,16 @@ export function DealFormModal({ pipelineId, stages, deal, defaultStageId, onClos
               placeholder="0"
               disabled={isPending}
             />
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-foreground">Moneda</label>
+          </FormField>
+          <FormField label="Moneda">
             <Select value={moneda} onChange={(e) => setMoneda(e.target.value)} disabled={isPending}>
               <option value="MXN">MXN</option>
               <option value="USD">USD</option>
             </Select>
-          </div>
+          </FormField>
         </div>
 
-        {/* Owner */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">Responsable</label>
+        <FormField label="Responsable">
           <Select value={ownerId} onChange={(e) => setOwnerId(e.target.value)} disabled={isPending}>
             <option value="">— Sin asignar —</option>
             {usuarios.map((u) => (
@@ -186,7 +175,7 @@ export function DealFormModal({ pipelineId, stages, deal, defaultStageId, onClos
               </option>
             ))}
           </Select>
-        </div>
+        </FormField>
 
         <ModalFooter>
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isPending}>

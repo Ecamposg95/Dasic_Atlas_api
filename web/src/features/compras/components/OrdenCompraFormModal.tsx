@@ -12,6 +12,7 @@ import { useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { toast } from '@/lib/toast';
@@ -166,6 +167,12 @@ export function OrdenCompraFormModal({ onClose }: Props) {
 
   return (
     <Modal title="Nueva orden de compra" onClose={onClose} size="xl">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
       <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
         <p className="text-xs text-muted-foreground">
           MVP: líneas libres (fantasma) — captura SKU/descripción a mano. La OC
@@ -175,10 +182,7 @@ export function OrdenCompraFormModal({ onClose }: Props) {
 
         {/* Cabecera */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Proveedor <span className="text-rose-600 dark:text-rose-400">*</span>
-            </label>
+          <FormField label="Proveedor" required>
             <Select
               value={proveedorId === '' ? '' : String(proveedorId)}
               onChange={(e) => {
@@ -194,12 +198,9 @@ export function OrdenCompraFormModal({ onClose }: Props) {
                 </option>
               ))}
             </Select>
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Moneda OC
-            </label>
+          <FormField label="Moneda OC">
             <Select
               value={moneda}
               onChange={(e) => setMoneda(e.target.value as Moneda)}
@@ -208,12 +209,9 @@ export function OrdenCompraFormModal({ onClose }: Props) {
               <option value="MXN">MXN</option>
               <option value="USD">USD</option>
             </Select>
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Tipo de cambio
-            </label>
+          <FormField label="Tipo de cambio" required>
             <Input
               type="number"
               step="0.0001"
@@ -223,7 +221,7 @@ export function OrdenCompraFormModal({ onClose }: Props) {
               disabled={crearMut.isPending}
               className="font-mono text-right"
             />
-          </div>
+          </FormField>
         </div>
 
         {/* Líneas */}
@@ -346,13 +344,20 @@ export function OrdenCompraFormModal({ onClose }: Props) {
       </div>
 
       <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={crearMut.isPending}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          disabled={crearMut.isPending}
+        >
           Cancelar
         </Button>
-        <Button size="sm" onClick={onSubmit} disabled={crearMut.isPending}>
+        <Button type="submit" size="sm" disabled={crearMut.isPending}>
           {crearMut.isPending ? 'Guardando…' : 'Crear OC (borrador)'}
         </Button>
       </ModalFooter>
+      </form>
     </Modal>
   );
 }

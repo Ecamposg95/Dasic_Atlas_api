@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import type { Gasto, GastoCreate } from '../types';
@@ -53,12 +54,15 @@ export function GastoFormModal({ mode, gasto, categorias, onSave, onClose, busy 
       onClose={onClose}
       size="md"
     >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
       <div className="space-y-3">
         {/* Categoría */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">
-            Categoría <span className="text-rose-600 dark:text-rose-400">*</span>
-          </label>
+        <FormField label="Categoría" required>
           <Select
             value={categoria}
             onChange={(e) => setCategoria(e.target.value)}
@@ -71,38 +75,31 @@ export function GastoFormModal({ mode, gasto, categorias, onSave, onClose, busy 
             ))}
             <option value="__nueva__">+ Nueva categoría…</option>
           </Select>
-        </div>
+        </FormField>
 
         {isNewCategoria && (
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Nueva categoría <span className="text-rose-600 dark:text-rose-400">*</span>
-            </label>
+          <FormField label="Nueva categoría" required>
             <Input
               value={categoriaCustom}
               onChange={(e) => setCategoriaCustom(e.target.value)}
               placeholder="Ej. Viáticos, Papelería…"
               autoFocus
             />
-          </div>
+          </FormField>
         )}
 
         {/* Descripción */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">Descripción</label>
+        <FormField label="Descripción">
           <Input
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
             placeholder="Detalle del gasto (opcional)"
           />
-        </div>
+        </FormField>
 
         {/* Monto + Moneda */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Monto <span className="text-rose-600 dark:text-rose-400">*</span>
-            </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label="Monto" required>
             <Input
               type="number"
               step="0.01"
@@ -111,9 +108,8 @@ export function GastoFormModal({ mode, gasto, categorias, onSave, onClose, busy 
               onChange={(e) => setMonto(e.target.value)}
               placeholder="0.00"
             />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Moneda</label>
+          </FormField>
+          <FormField label="Moneda">
             <Select value={moneda} onChange={(e) => setMoneda(e.target.value)}>
               {MONEDAS.map((m) => (
                 <option key={m} value={m}>
@@ -121,7 +117,7 @@ export function GastoFormModal({ mode, gasto, categorias, onSave, onClose, busy 
                 </option>
               ))}
             </Select>
-          </div>
+          </FormField>
         </div>
 
         {err && (
@@ -132,13 +128,14 @@ export function GastoFormModal({ mode, gasto, categorias, onSave, onClose, busy 
       </div>
 
       <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={busy}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={onSubmit} disabled={busy}>
+        <Button type="submit" size="sm" disabled={busy}>
           {busy ? 'Guardando…' : mode === 'create' ? 'Registrar gasto' : 'Guardar cambios'}
         </Button>
       </ModalFooter>
+      </form>
     </Modal>
   );
 }

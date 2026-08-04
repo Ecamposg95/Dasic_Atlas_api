@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import type { PrecioProveedorCreate, Moneda } from '../types';
@@ -64,12 +65,15 @@ export function PrecioFormModal({ productos, proveedores, onSave, onClose, busy 
 
   return (
     <Modal title="Registrar precio" onClose={onClose} size="md">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
       <div className="space-y-3">
         {/* Proveedor */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">
-            Proveedor <span className="text-rose-400">*</span>
-          </label>
+        <FormField label="Proveedor" required>
           <Select value={proveedorId} onChange={(e) => setProveedorId(e.target.value)}>
             <option value="">— Selecciona —</option>
             {proveedores.map((p) => (
@@ -78,11 +82,10 @@ export function PrecioFormModal({ productos, proveedores, onSave, onClose, busy 
               </option>
             ))}
           </Select>
-        </div>
+        </FormField>
 
         {/* Producto */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">Producto (catálogo)</label>
+        <FormField label="Producto (catálogo)">
           <Select value={productoId} onChange={(e) => setProductoId(e.target.value)}>
             <option value="">— Selecciona o usa descripción libre —</option>
             {productos.map((p) => (
@@ -91,28 +94,22 @@ export function PrecioFormModal({ productos, proveedores, onSave, onClose, busy 
               </option>
             ))}
           </Select>
-        </div>
+        </FormField>
 
         {/* Descripción libre */}
         {!productoId && (
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Descripción libre {!productoId && <span className="text-rose-400">*</span>}
-            </label>
+          <FormField label="Descripción libre" required>
             <Input
               value={descripcionLibre}
               onChange={(e) => setDescripcionLibre(e.target.value)}
               placeholder="Nombre del producto/servicio tal como lo ofrece el proveedor"
             />
-          </div>
+          </FormField>
         )}
 
         {/* Precio + moneda */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Precio <span className="text-rose-400">*</span>
-            </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label="Precio" required>
             <Input
               type="number"
               step="0.01"
@@ -121,45 +118,41 @@ export function PrecioFormModal({ productos, proveedores, onSave, onClose, busy 
               onChange={(e) => setPrecio(e.target.value)}
               placeholder="0.00"
             />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Moneda</label>
+          </FormField>
+          <FormField label="Moneda">
             <Select value={moneda} onChange={(e) => setMoneda(e.target.value as Moneda)}>
               <option value="MXN">MXN</option>
               <option value="USD">USD</option>
             </Select>
-          </div>
+          </FormField>
         </div>
 
         {/* Vigencia */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Vigencia desde</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormField label="Vigencia desde">
             <Input
               type="date"
               value={vigDesde}
               onChange={(e) => setVigDesde(e.target.value)}
             />
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Vigencia hasta</label>
+          </FormField>
+          <FormField label="Vigencia hasta">
             <Input
               type="date"
               value={vigHasta}
               onChange={(e) => setVigHasta(e.target.value)}
             />
-          </div>
+          </FormField>
         </div>
 
         {/* Notas */}
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">Notas</label>
+        <FormField label="Notas">
           <Input
             value={notas}
             onChange={(e) => setNotas(e.target.value)}
             placeholder="Condiciones, volumen mínimo, etc. (opcional)"
           />
-        </div>
+        </FormField>
 
         {err && (
           <div className="text-xs bg-rose-50 dark:bg-rose-900/30 border border-rose-300 dark:border-rose-700/50 rounded p-2 text-rose-700 dark:text-rose-300">
@@ -169,13 +162,14 @@ export function PrecioFormModal({ productos, proveedores, onSave, onClose, busy 
       </div>
 
       <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={busy}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={onSubmit} disabled={busy}>
+        <Button type="submit" size="sm" disabled={busy}>
           {busy ? 'Guardando…' : 'Registrar precio'}
         </Button>
       </ModalFooter>
+      </form>
     </Modal>
   );
 }

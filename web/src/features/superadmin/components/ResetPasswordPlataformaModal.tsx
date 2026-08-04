@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import type { Usuario } from '@/features/usuarios/types';
 
@@ -38,15 +39,18 @@ export function ResetPasswordPlataformaModal({ usuario, onSave, onClose, busy }:
       onClose={onClose}
       size="sm"
     >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
       <div className="space-y-3">
         <p className="font-mono text-[11px] text-muted-foreground">
           {usuario.email} · {usuario.rol}
         </p>
 
-        <div>
-          <label className="block font-mono text-[11px] text-emerald-500/80 mb-1">
-            Nueva contraseña <span className="text-rose-400">*</span>
-          </label>
+        <FormField label="Nueva contraseña" required>
           <Input
             type="password"
             value={password}
@@ -54,11 +58,8 @@ export function ResetPasswordPlataformaModal({ usuario, onSave, onClose, busy }:
             placeholder="Mínimo 6 caracteres"
             className="font-mono text-sm"
           />
-        </div>
-        <div>
-          <label className="block font-mono text-[11px] text-emerald-500/80 mb-1">
-            Confirmar contraseña <span className="text-rose-400">*</span>
-          </label>
+        </FormField>
+        <FormField label="Confirmar contraseña" required>
           <Input
             type="password"
             value={confirmPwd}
@@ -66,7 +67,7 @@ export function ResetPasswordPlataformaModal({ usuario, onSave, onClose, busy }:
             placeholder="Repetir contraseña"
             className="font-mono text-sm"
           />
-        </div>
+        </FormField>
 
         {err && (
           <div className="font-mono text-[11px] bg-rose-900/30 border border-rose-700/50 rounded p-2 text-rose-300">
@@ -76,13 +77,14 @@ export function ResetPasswordPlataformaModal({ usuario, onSave, onClose, busy }:
       </div>
 
       <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={busy}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={onSubmit} disabled={busy}>
+        <Button type="submit" size="sm" disabled={busy}>
           {busy ? 'Guardando…' : 'Cambiar contraseña'}
         </Button>
       </ModalFooter>
+      </form>
     </Modal>
   );
 }

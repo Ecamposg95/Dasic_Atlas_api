@@ -3,6 +3,7 @@ import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { FormField } from '@/components/ui/form-field';
 import { toast } from '@/lib/toast';
 import { normalizeDetail } from '@/lib/api';
 import { useClientes } from '@/features/clientes/hooks/useClientes';
@@ -73,39 +74,34 @@ export function RecordatorioFormModal({ ordenId, folio, onClose }: Props) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Cliente (solo recordatorio libre) */}
         {esLibre && (
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-foreground" htmlFor="rec-cliente">
-              Cliente <span className="text-muted-foreground font-normal">(opcional)</span>
-            </label>
-            <Input
-              id="rec-cliente-q"
-              type="text"
-              placeholder="Buscar cliente…"
-              value={clienteQuery}
-              onChange={(e) => setClienteQuery(e.target.value)}
-              className="mb-1.5"
-            />
-            <Select
-              id="rec-cliente"
-              value={clienteId === '' ? '' : String(clienteId)}
-              onChange={(e) => setClienteId(e.target.value === '' ? '' : Number(e.target.value))}
-            >
-              <option value="">— Sin cliente —</option>
-              {clientesLoading && <option disabled>Cargando…</option>}
-              {(clientes ?? []).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre_empresa}
-                </option>
-              ))}
-            </Select>
-          </div>
+          <FormField label="Cliente (opcional)">
+            <div>
+              <Input
+                type="text"
+                placeholder="Buscar cliente…"
+                aria-label="Buscar cliente"
+                value={clienteQuery}
+                onChange={(e) => setClienteQuery(e.target.value)}
+                className="mb-1.5"
+              />
+              <Select
+                aria-label="Cliente"
+                value={clienteId === '' ? '' : String(clienteId)}
+                onChange={(e) => setClienteId(e.target.value === '' ? '' : Number(e.target.value))}
+              >
+                <option value="">— Sin cliente —</option>
+                {clientesLoading && <option disabled>Cargando…</option>}
+                {(clientes ?? []).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre_empresa}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </FormField>
         )}
 
-        {/* Fecha */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground" htmlFor="rec-fecha">
-            Próximo contacto <span className="text-rose-500">*</span>
-          </label>
+        <FormField label="Próximo contacto" required>
           <Input
             id="rec-fecha"
             type="datetime-local"
@@ -113,13 +109,9 @@ export function RecordatorioFormModal({ ordenId, folio, onClose }: Props) {
             onChange={(e) => setFecha(e.target.value)}
             required
           />
-        </div>
+        </FormField>
 
-        {/* Tipo de acción */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground" htmlFor="rec-tipo">
-            Tipo de acción
-          </label>
+        <FormField label="Tipo de acción">
           <Select
             id="rec-tipo"
             value={tipo}
@@ -131,13 +123,9 @@ export function RecordatorioFormModal({ ordenId, folio, onClose }: Props) {
               </option>
             ))}
           </Select>
-        </div>
+        </FormField>
 
-        {/* Descripción */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground" htmlFor="rec-desc">
-            Descripción <span className="text-muted-foreground font-normal">(opcional)</span>
-          </label>
+        <FormField label="Descripción (opcional)">
           <textarea
             id="rec-desc"
             value={descripcion}
@@ -146,7 +134,7 @@ export function RecordatorioFormModal({ ordenId, folio, onClose }: Props) {
             placeholder="Notas para el seguimiento…"
             className="flex w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:border-ring/60 ring-offset-background transition-[box-shadow,border-color] duration-150 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
           />
-        </div>
+        </FormField>
 
         <ModalFooter>
           <Button type="button" variant="ghost" size="sm" onClick={onClose}>

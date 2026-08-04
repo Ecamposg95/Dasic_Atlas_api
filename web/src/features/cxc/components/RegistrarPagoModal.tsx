@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/lib/toast';
 import { normalizeDetail } from '@/lib/api';
@@ -67,10 +68,11 @@ export function RegistrarPagoModal({ clienteId, nombreEmpresa, onClose }: Props)
     <Modal title={`Registrar pago — ${nombreEmpresa}`} onClose={onClose} size="sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Monto */}
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-foreground uppercase tracking-wide">
-            Monto (MXN) <span className="text-rose-500">*</span>
-          </label>
+        <FormField
+          label="Monto (MXN)"
+          required
+          hint="Se distribuirá automáticamente en orden FIFO (más antiguo primero)."
+        >
           <Input
             type="number"
             min="0.01"
@@ -81,16 +83,10 @@ export function RegistrarPagoModal({ clienteId, nombreEmpresa, onClose }: Props)
             disabled={mutation.isPending}
             autoFocus
           />
-          <p className="text-[11px] text-muted-foreground">
-            Se distribuirá automáticamente en orden FIFO (más antiguo primero).
-          </p>
-        </div>
+        </FormField>
 
         {/* Descripción */}
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-foreground uppercase tracking-wide">
-            Descripción (opcional)
-          </label>
+        <FormField label="Descripción (opcional)">
           <Input
             type="text"
             placeholder="Referencia, número de transferencia…"
@@ -98,7 +94,7 @@ export function RegistrarPagoModal({ clienteId, nombreEmpresa, onClose }: Props)
             onChange={(e) => setDescripcion(e.target.value)}
             disabled={mutation.isPending}
           />
-        </div>
+        </FormField>
 
         <ModalFooter>
           <Button type="button" variant="ghost" onClick={onClose} disabled={mutation.isPending}>

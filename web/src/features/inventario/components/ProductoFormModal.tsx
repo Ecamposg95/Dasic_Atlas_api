@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { SatCombobox } from '@/components/ui/sat-combobox';
 import { Textarea } from '@/components/ui/textarea';
@@ -122,37 +123,39 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
       onClose={onClose}
       size="lg"
     >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
       <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
         {/* Identificación */}
         <section>
           <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Identificación</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">SKU interno</label>
+            <FormField label="SKU interno">
               <Input value={sku} onChange={(e) => setSku(e.target.value)} placeholder="SKU-001" />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">SKU comercial</label>
+            </FormField>
+            <FormField label="SKU comercial">
               <Input value={skuComercial} onChange={(e) => setSkuComercial(e.target.value)} placeholder="SKU-COM-001" />
-            </div>
+            </FormField>
           </div>
         </section>
 
         <section>
           <div className="grid grid-cols-1 gap-3">
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Nombre *</label>
+            <FormField label="Nombre" required>
               <Input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del producto" />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Descripción</label>
+            </FormField>
+            <FormField label="Descripción">
               <Textarea
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
                 rows={2}
                 placeholder="Descripción opcional…"
               />
-            </div>
+            </FormField>
           </div>
         </section>
 
@@ -160,34 +163,29 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
         <section>
           <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Clasificación</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Marca</label>
+            <FormField label="Marca">
               <select value={marcaId} onChange={(e) => setMarcaId(e.target.value)} className={SELECT_CLS}>
                 <option value="">— Sin marca —</option>
                 {marcas.map((m) => (
                   <option key={m.id} value={m.id}>{m.nombre}</option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Categoría</label>
+            </FormField>
+            <FormField label="Categoría">
               <Input value={categoria} onChange={(e) => setCategoria(e.target.value)} placeholder="Ej. Lubricantes" />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Unidad</label>
+            </FormField>
+            <FormField label="Unidad">
               <Input value={unidad} onChange={(e) => setUnidad(e.target.value)} placeholder="PZA" />
-            </div>
+            </FormField>
           </div>
           {/* SAT (CFDI 4.0) — opcionales hasta facturar */}
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Clave producto/servicio SAT</label>
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormField label="Clave producto/servicio SAT">
               <SatCombobox value={claveProdServ} onChange={setClaveProdServ} endpoint="/api/sat/clave-prod-serv" minChars={2} maxLength={8} placeholder="Buscar o escribir (ej. 31181701)" className="font-mono" />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Clave unidad SAT</label>
+            </FormField>
+            <FormField label="Clave unidad SAT">
               <SatCombobox value={claveUnidadSat} onChange={setClaveUnidadSat} endpoint="/api/sat/clave-unidad" minChars={1} maxLength={10} placeholder="Buscar unidad (ej. H87)" className="font-mono" />
-            </div>
+            </FormField>
           </div>
           <div className="mt-3 flex items-center gap-2">
             <input
@@ -207,24 +205,22 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
         <section>
           <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Stock</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Stock actual</label>
+            <FormField label="Stock actual">
               <Input
                 type="number"
                 value={stockActual}
                 onChange={(e) => setStockActual(e.target.value)}
                 min="0"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Stock mínimo</label>
+            </FormField>
+            <FormField label="Stock mínimo">
               <Input
                 type="number"
                 value={stockMinimo}
                 onChange={(e) => setStockMinimo(e.target.value)}
                 min="0"
               />
-            </div>
+            </FormField>
           </div>
         </section>
 
@@ -232,8 +228,7 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
         <section>
           <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Costos y precios</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Costo de compra *</label>
+            <FormField label="Costo de compra" required>
               <Input
                 type="number"
                 step="0.01"
@@ -241,18 +236,16 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
                 onChange={(e) => setCostoCompra(e.target.value)}
                 placeholder="0.00"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Moneda compra</label>
+            </FormField>
+            <FormField label="Moneda compra">
               <select value={monedaCompra} onChange={(e) => setMonedaCompra(e.target.value as Moneda)} className={SELECT_CLS}>
                 <option value="MXN">MXN</option>
                 <option value="USD">USD</option>
               </select>
-            </div>
+            </FormField>
           </div>
-          <div className="grid grid-cols-3 gap-3 mt-3">
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Precio público</label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+            <FormField label="Precio público">
               <Input
                 type="number"
                 step="0.01"
@@ -260,9 +253,8 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
                 onChange={(e) => setPrecioPublico(e.target.value)}
                 placeholder="—"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Precio mayorista</label>
+            </FormField>
+            <FormField label="Precio mayorista">
               <Input
                 type="number"
                 step="0.01"
@@ -270,9 +262,8 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
                 onChange={(e) => setPrecioMayorista(e.target.value)}
                 placeholder="0.00"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Precio distribuidor</label>
+            </FormField>
+            <FormField label="Precio distribuidor">
               <Input
                 type="number"
                 step="0.01"
@@ -280,7 +271,7 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
                 onChange={(e) => setPrecioDistribuidor(e.target.value)}
                 placeholder="0.00"
               />
-            </div>
+            </FormField>
           </div>
         </section>
 
@@ -288,27 +279,24 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
         <section>
           <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Proveedores y logística</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Proveedor principal</label>
+            <FormField label="Proveedor principal">
               <select value={provPrincipalId} onChange={(e) => setProvPrincipalId(e.target.value)} className={SELECT_CLS}>
                 <option value="">— Sin asignar —</option>
                 {proveedores.map((p) => (
                   <option key={p.id} value={p.id}>{p.nombre_empresa}</option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">Proveedor alterno</label>
+            </FormField>
+            <FormField label="Proveedor alterno">
               <select value={provAlternoId} onChange={(e) => setProvAlternoId(e.target.value)} className={SELECT_CLS}>
                 <option value="">— Sin asignar —</option>
                 {proveedores.map((p) => (
                   <option key={p.id} value={p.id}>{p.nombre_empresa}</option>
                 ))}
               </select>
-            </div>
+            </FormField>
           </div>
-          <div className="mt-3">
-            <label className="block text-xs text-muted-foreground mb-1">Tiempo de entrega (días)</label>
+          <FormField label="Tiempo de entrega (días)" className="mt-3">
             <Input
               type="number"
               value={tiempoEntrega}
@@ -316,7 +304,7 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
               min="0"
               className="max-w-[160px]"
             />
-          </div>
+          </FormField>
         </section>
 
         {err && (
@@ -327,13 +315,14 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
       </div>
 
       <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={mut.isPending}>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={mut.isPending}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={onSubmit} disabled={mut.isPending}>
+        <Button type="submit" size="sm" disabled={mut.isPending}>
           {mut.isPending ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear producto'}
         </Button>
       </ModalFooter>
+      </form>
     </Modal>
   );
 }

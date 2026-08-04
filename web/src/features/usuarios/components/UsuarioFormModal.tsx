@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { branding } from '@/lib/branding';
 import type { Usuario, UsuarioCreate, UsuarioUpdate, RolUsuario } from '../types';
@@ -78,32 +79,31 @@ export function UsuarioFormModal({ mode, usuario, onSave, onClose, busy }: Props
       title={mode === 'create' ? 'Nuevo usuario' : `Editar: ${usuario?.nombre ?? ''}`}
       onClose={onClose}
     >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
       <div className="space-y-3">
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">
-            Nombre <span className="text-rose-400">*</span>
-          </label>
+        <FormField label="Nombre" required>
           <Input
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Nombre completo"
           />
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">
-            Correo electrónico <span className="text-rose-400">*</span>
-          </label>
+        <FormField label="Correo electrónico" required>
           <Input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={branding.emailPlaceholder}
           />
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">Rol</label>
+        <FormField label="Rol">
           <select
             value={rol}
             onChange={(e) => setRol(e.target.value as RolUsuario)}
@@ -115,7 +115,7 @@ export function UsuarioFormModal({ mode, usuario, onSave, onClose, busy }: Props
               </option>
             ))}
           </select>
-        </div>
+        </FormField>
 
         <div className="flex items-center gap-2">
           <input
@@ -132,28 +132,22 @@ export function UsuarioFormModal({ mode, usuario, onSave, onClose, busy }: Props
 
         {mode === 'create' && (
           <>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">
-                Contraseña <span className="text-rose-400">*</span>
-              </label>
+            <FormField label="Contraseña" required>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">
-                Confirmar contraseña <span className="text-rose-400">*</span>
-              </label>
+            </FormField>
+            <FormField label="Confirmar contraseña" required>
               <Input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Repetir contraseña"
               />
-            </div>
+            </FormField>
           </>
         )}
 
@@ -165,13 +159,14 @@ export function UsuarioFormModal({ mode, usuario, onSave, onClose, busy }: Props
       </div>
 
       <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={busy}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={onSubmit} disabled={busy}>
+        <Button type="submit" size="sm" disabled={busy}>
           {busy ? 'Guardando…' : mode === 'create' ? 'Crear usuario' : 'Guardar cambios'}
         </Button>
       </ModalFooter>
+      </form>
     </Modal>
   );
 }

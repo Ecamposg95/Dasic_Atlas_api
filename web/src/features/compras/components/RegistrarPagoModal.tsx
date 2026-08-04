@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
@@ -89,6 +90,12 @@ export function RegistrarPagoModal({ orden, onClose }: Props) {
 
   return (
     <Modal title="Registrar pago a proveedor" onClose={onClose} size="sm">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
       <div className="space-y-3 text-sm">
         <p className="text-muted-foreground text-xs">
           OC: <span className="font-mono text-cyan-700 dark:text-cyan-300">{orden.folio ?? `#${orden.id}`}</span> —{' '}
@@ -106,10 +113,7 @@ export function RegistrarPagoModal({ orden, onClose }: Props) {
           </div>
         )}
 
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">
-            Monto ({orden.moneda}) <span className="text-rose-600 dark:text-rose-400">*</span>
-          </label>
+        <FormField label={`Monto (${orden.moneda})`} required>
           <Input
             type="number"
             min="0.01"
@@ -118,18 +122,15 @@ export function RegistrarPagoModal({ orden, onClose }: Props) {
             onChange={(e) => setMonto(e.target.value)}
             placeholder="0.00"
           />
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">
-            Referencia / nota
-          </label>
+        <FormField label="Referencia / nota">
           <Input
             value={ref}
             onChange={(e) => setRef(e.target.value)}
             placeholder={`Pago OC ${orden.folio ?? orden.id}`}
           />
-        </div>
+        </FormField>
 
         {err && (
           <div className="text-xs bg-rose-100 border border-rose-300 text-rose-700 dark:bg-rose-900/30 dark:border-rose-700/50 dark:text-rose-300 rounded p-2">
@@ -138,10 +139,16 @@ export function RegistrarPagoModal({ orden, onClose }: Props) {
         )}
       </div>
       <ModalFooter>
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={mutation.isPending}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          disabled={mutation.isPending}
+        >
           Cancelar
         </Button>
-        <Button size="sm" onClick={onSubmit} disabled={submitDeshabilitado}>
+        <Button type="submit" size="sm" disabled={submitDeshabilitado}>
           {mutation.isPending
             ? 'Registrando…'
             : cargandoDetalle
@@ -149,6 +156,7 @@ export function RegistrarPagoModal({ orden, onClose }: Props) {
               : 'Registrar pago'}
         </Button>
       </ModalFooter>
+      </form>
     </Modal>
   );
 }
