@@ -45,7 +45,7 @@ export function Layout() {
   }, [user, setUser, navigate]);
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
+    <div className="app-frame flex overflow-hidden bg-background text-foreground">
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

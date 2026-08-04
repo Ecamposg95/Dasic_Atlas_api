@@ -111,6 +111,14 @@
   animation: drawer-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Marco fijo de la aplicación: sidebar, header y footer siempre visibles;
+   SOLO el área de contenido (main) scrollea. dvh evita el salto de la
+   barra del navegador en móvil (fallback vh para navegadores viejos). */
+.app-frame {
+  height: 100vh;
+  height: 100dvh;
+}
+
 .app-canvas {
   background-color: hsl(var(--background));
   background-image:
