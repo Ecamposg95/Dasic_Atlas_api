@@ -20,7 +20,7 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("remisiones", sa.Column("estado", sa.String(20), nullable=False, server_default="borrador"))
+    op.add_column("remisiones", sa.Column("estado", sa.String(20), nullable=False, server_default="BORRADOR"))
     op.add_column("remisiones", sa.Column("emitida_at", sa.DateTime(timezone=True), nullable=True))
     op.add_column("remisiones", sa.Column("emitida_por_id", sa.Integer(), sa.ForeignKey("usuarios.id"), nullable=True))
     op.add_column("remisiones", sa.Column("cancelada_at", sa.DateTime(timezone=True), nullable=True))
@@ -29,8 +29,12 @@ def upgrade() -> None:
     op.add_column("remisiones", sa.Column("sobre_entrega_autorizada_por_id", sa.Integer(), sa.ForeignKey("usuarios.id"), nullable=True))
     op.add_column("remisiones", sa.Column("stock_descontado", sa.Boolean(), nullable=False, server_default="false"))
     op.create_index("ix_remisiones_estado", "remisiones", ["estado"])
-    # Backfill de históricos: con recepción -> recibida; el resto -> emitida.
-    op.execute("UPDATE remisiones SET estado = CASE WHEN recibido_at IS NOT NULL THEN 'recibida' ELSE 'emitida' END")
+    # Backfill de históricos: con recepción -> RECIBIDA; el resto -> EMITIDA.
+    # NOMBRE en mayúsculas (no el `value` lowercase) porque TolerantEnum
+    # persiste el nombre del miembro al escribir vía ORM (ver
+    # app/models/enums.py:TolerantEnum.process_bind_param) — mismo criterio
+    # que la normalización UPPER de ordenes_venta.estatus en 20260608_01.
+    op.execute("UPDATE remisiones SET estado = CASE WHEN recibido_at IS NOT NULL THEN 'RECIBIDA' ELSE 'EMITIDA' END")
 
 
 def downgrade() -> None:

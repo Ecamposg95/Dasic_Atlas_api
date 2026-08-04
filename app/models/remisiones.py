@@ -26,7 +26,7 @@ class Remision(Base):
     creado_en = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     estado = Column(TolerantEnum(EstadoRemision), nullable=False,
-                     server_default=text("'borrador'"), index=True)
+                     server_default=text("'BORRADOR'"), index=True)
     emitida_at = Column(DateTime(timezone=True), nullable=True)
     emitida_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     cancelada_at = Column(DateTime(timezone=True), nullable=True)
