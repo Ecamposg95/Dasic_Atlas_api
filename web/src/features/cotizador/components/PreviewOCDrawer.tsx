@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { X, Truck, AlertTriangle, Package } from 'lucide-react';
+import { Truck, AlertTriangle, Package } from 'lucide-react';
+import { Drawer } from '@/components/ui/drawer';
 import { useCotizador } from '../store';
 import { useProveedores } from '../hooks/useProveedores';
 import { agruparOCs, type GrupoOC, type SubtotalPorMoneda } from '../lib/previewOC';
@@ -49,13 +50,6 @@ export function PreviewOCDrawer() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open]);
-
   const grupos = useMemo<GrupoOC[]>(() => agruparOCs(cart), [cart]);
 
   if (!open) return null;
@@ -66,27 +60,25 @@ export function PreviewOCDrawer() {
   const isEmpty = cart.length === 0;
 
   return (
-    <>
-      <div
-        data-overlay
-        className="fixed inset-0 z-40 bg-slate-100 dark:bg-slate-950/60"
-        onClick={() => setOpen(false)}
-      />
-      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-card border-l border-border shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
+    // `data-overlay` marca overlay abierto para useAtajos (suprime atajos de teclado).
+    <div data-overlay className="contents">
+      <Drawer
+        size="md"
+        onClose={() => setOpen(false)}
+        title={
+          <span className="flex items-center gap-2">
             <Truck className="h-4 w-4 text-accent-glow" /> Preview OCs
-          </h3>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          </span>
+        }
+        footer={
+          <p className="w-full text-[10px] text-muted-foreground leading-relaxed">
+            Subtotales por proveedor en moneda nativa de cada línea (sin TC, sin
+            utilidad, sin descuento). El backend genera las OCs reales al usar
+            "Sugerir OC" después de guardar.
+          </p>
+        }
+      >
+        <div className="space-y-3">
           {isEmpty && (
             <div className="text-xs text-muted-foreground text-center p-6 flex flex-col items-center gap-2">
               <Package className="h-8 w-8 text-slate-300 dark:text-slate-700" />
@@ -186,13 +178,7 @@ export function PreviewOCDrawer() {
             </>
           )}
         </div>
-
-        <div className="p-3 border-t border-border text-[10px] text-muted-foreground leading-relaxed">
-          Subtotales por proveedor en moneda nativa de cada línea (sin TC, sin
-          utilidad, sin descuento). El backend genera las OCs reales al usar
-          "Sugerir OC" después de guardar.
-        </div>
-      </aside>
-    </>
+      </Drawer>
+    </div>
   );
 }

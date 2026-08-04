@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { X, ClipboardList, ExternalLink } from 'lucide-react';
+import { ClipboardList, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Drawer } from '@/components/ui/drawer';
 import { useBorradores } from '../hooks/useBorradores';
 
 function fmtMoney(n: number, m: string) {
@@ -35,13 +36,6 @@ export function DrawerBorradores() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open]);
-
   if (!open) return null;
 
   const items = data?.items ?? [];
@@ -50,27 +44,39 @@ export function DrawerBorradores() {
   const hayMas = items.length === (data?.page_size ?? 10);
 
   return (
-    <>
-      <div
-        data-overlay
-        className="fixed inset-0 z-40 bg-slate-100 dark:bg-slate-950/60"
-        onClick={() => setOpen(false)}
-      />
-      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-card border-l border-border shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
+    // `data-overlay` marca overlay abierto para useAtajos (suprime atajos de teclado).
+    <div data-overlay className="contents">
+      <Drawer
+        size="md"
+        onClose={() => setOpen(false)}
+        title={
+          <span className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4 text-accent-glow" /> Borradores apilados
-          </h3>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          </span>
+        }
+        footer={
+          <div className="flex w-full items-center justify-between">
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              ← Anterior
+            </Button>
+            <span className="text-[10px] text-muted-foreground">Página {page}</span>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={!hayMas}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Siguiente →
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-2">
           {isLoading && (
             <div className="text-xs text-muted-foreground text-center p-4">Cargando…</div>
           )}
@@ -108,27 +114,7 @@ export function DrawerBorradores() {
             </a>
           ))}
         </div>
-
-        <div className="p-4 border-t border-border flex justify-between items-center">
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            ← Anterior
-          </Button>
-          <span className="text-[10px] text-muted-foreground">Página {page}</span>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={!hayMas}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Siguiente →
-          </Button>
-        </div>
-      </aside>
-    </>
+      </Drawer>
+    </div>
   );
 }
