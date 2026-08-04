@@ -29,13 +29,13 @@ export function TendenciaChart({ series, loading }: { series: TendenciaPunto[]; 
       </CardHeader>
       <CardContent className="px-2 pb-4">
         {loading ? (
-          <div className="h-[260px] animate-pulse bg-surface-2 rounded" />
+          <div className="h-[200px] animate-pulse bg-surface-2 rounded" />
         ) : !series.length ? (
-          <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
+          <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
             Sin datos del periodo
           </div>
         ) : (
-          <div className="h-[260px]">
+          <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={series} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
                 <defs>

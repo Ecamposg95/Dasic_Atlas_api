@@ -147,8 +147,8 @@ function TopProductosSection({ dias }: { dias: number }) {
 
   return (
     <Section title="Top productos">
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="18rem">
+        <DataTableHead sticky>
           <tr>
             <th className="px-4 py-3 text-left w-8">#</th>
             <th className="px-4 py-3 text-left">SKU / Producto</th>
@@ -221,8 +221,8 @@ function TopClientesSection({ dias }: { dias: number }) {
 
   return (
     <Section title="Top clientes">
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="18rem">
+        <DataTableHead sticky>
           <tr>
             <th className="px-4 py-3 text-left w-8">#</th>
             <th className="px-4 py-3 text-left">Empresa</th>
@@ -299,8 +299,8 @@ function RankingVendedoresSection({ dias }: { dias: number }) {
 
   return (
     <Section title="Ranking vendedores">
-      <DataTable>
-        <DataTableHead>
+      <DataTable maxBodyHeight="18rem">
+        <DataTableHead sticky>
           <tr>
             <th className="px-4 py-3 text-left w-8">#</th>
             <th className="px-4 py-3 text-left">Vendedor</th>
@@ -389,7 +389,7 @@ export function ReportesPage({ embedded = false }: { embedded?: boolean }) {
   );
 
   return (
-    <div className={embedded ? 'w-full space-y-8' : 'p-6 max-w-7xl mx-auto w-full space-y-8'}>
+    <div className={embedded ? 'w-full space-y-5' : 'p-6 max-w-7xl mx-auto w-full space-y-5'}>
       {/* Header — oculto cuando va embebido (KpisPage ya rinde el título de la pestaña) */}
       {embedded ? (
         <div className="flex justify-end">{rangos}</div>
@@ -406,9 +406,11 @@ export function ReportesPage({ embedded = false }: { embedded?: boolean }) {
       )}
 
       <VentasMesSection dias={dias} isAdmin={isAdmin} />
-      <TopProductosSection dias={dias} />
-      <TopClientesSection dias={dias} />
-      <RankingVendedoresSection dias={dias} />
+      <div className="grid xl:grid-cols-2 gap-5 items-start">
+        <TopProductosSection dias={dias} />
+        <TopClientesSection dias={dias} />
+        <RankingVendedoresSection dias={dias} />
+      </div>
     </div>
   );
 }

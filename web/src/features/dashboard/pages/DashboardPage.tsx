@@ -136,8 +136,12 @@ export function DashboardPage() {
     });
   }
 
+  const visibleAlerts = alertItems.slice(0, 6);
+  const hiddenAlertCount = alertItems.length - visibleAlerts.length;
+  const hiddenAlertLink = alertItems[6]?.link;
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 max-w-7xl mx-auto space-y-4">
       {/* Header */}
       <PageHeader
         title={
@@ -152,7 +156,7 @@ export function DashboardPage() {
 
       {/* Row 1: KPIs hero */}
       <section>
-        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3">
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-2">
           Ventas — mes actual
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -191,17 +195,15 @@ export function DashboardPage() {
         </div>
       </section>
 
-      {/* Row 2: Tendencia */}
+      {/* Row 2: Tendencia + Pipeline donut + Heatmap */}
       <section>
-        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3">
-          Tendencia (12 meses)
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-2">
+          Tendencia y pipeline
         </h2>
-        <TendenciaChart series={tendenciaQ.data?.series ?? []} loading={tendenciaQ.isLoading} />
-      </section>
-
-      {/* Row 3: Pipeline donut + Heatmap */}
-      <section>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
+          <div className="md:col-span-2 xl:col-span-1">
+            <TendenciaChart series={tendenciaQ.data?.series ?? []} loading={tendenciaQ.isLoading} />
+          </div>
           <PipelineDonut pipeline={pipeline} loading={pipelineQ.isLoading} />
           <ActivityHeatmap
             days={heatmapQ.data?.days ?? []}
@@ -212,9 +214,10 @@ export function DashboardPage() {
         </div>
       </section>
 
-      {/* Row 4: Alertas */}
+      {/* Row 3: Alertas + Recordatorios */}
+      <div className="grid lg:grid-cols-2 gap-4 items-start">
       <section>
-        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3 flex items-center gap-1">
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-2 flex items-center gap-1">
           <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
           Alertas
         </h2>
@@ -224,7 +227,7 @@ export function DashboardPage() {
           <p className="text-sm text-muted-foreground">Sin alertas activas.</p>
         ) : (
           <div className="space-y-2">
-            {alertItems.map((a) => (
+            {visibleAlerts.map((a) => (
               <div
                 key={a.key}
                 className="flex items-start gap-3 bg-card border border-border rounded-lg px-3 py-2"
@@ -240,13 +243,26 @@ export function DashboardPage() {
                 )}
               </div>
             ))}
+            {hiddenAlertCount > 0 && (
+              hiddenAlertLink ? (
+                <Link
+                  to={hiddenAlertLink}
+                  className="block text-xs text-accent-glow hover:text-accent-glow/80 px-3 py-1"
+                >
+                  y {hiddenAlertCount} más…
+                </Link>
+              ) : (
+                <p className="text-xs text-muted-foreground px-3 py-1">
+                  y {hiddenAlertCount} más…
+                </p>
+              )
+            )}
           </div>
         )}
       </section>
 
-      {/* Row 5: Recordatorios */}
       <section>
-        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3 flex items-center gap-1">
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-2 flex items-center gap-1">
           <BellRing className="h-3.5 w-3.5 text-accent-glow" />
           Recordatorios
         </h2>
@@ -309,10 +325,11 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </section>
+      </div>
 
-      {/* Row 6: Tops */}
+      {/* Row 4: Tops */}
       <section>
-        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3">
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-2">
           Tops del mes
         </h2>
         <div className={`grid gap-4 ${tops?.ve_equipo ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
