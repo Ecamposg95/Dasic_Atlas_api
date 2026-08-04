@@ -60,3 +60,6 @@ context/screenshot*.png
 # Respaldos de base de datos (producción) — contienen datos de negocio,
 # NUNCA commitearlos. Se generan localmente vía pg_dump desde Railway.
 backups/
+
+# Worktrees locales de Claude Code
+.worktrees/
