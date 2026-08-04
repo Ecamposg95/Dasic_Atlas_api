@@ -143,23 +143,37 @@ def build_remision_docx(
     remision,
     simbolo: str,
     fecha_str: str,
+    empresa_nombre: str = "DASIC Industrial",
+    es_borrador: bool = False,
 ) -> bytes:
     """Genera una remisión como .docx editable.
 
     Columnas de precio (P. Unit / Subtotal) sólo se incluyen cuando
     ``remision.mostrar_precios`` es verdadero; en ese caso se agrega una fila
     de Total al final de la tabla.
+
+    ``empresa_nombre`` es branding configurable (Task 8, `config_service`) —
+    el default reproduce el valor hardcodeado anterior, así que callers que
+    no lo pasen no cambian de comportamiento.
+
+    ``es_borrador``: python-docx no soporta overlays tipo marca de agua
+    (a diferencia del HTML, que sí superpone "BORRADOR" — ver
+    `app/domains/remisiones/documents.py`). Como sustituto, antepone
+    "BORRADOR — SIN VALIDEZ · " al subtítulo — decisión documentada: un
+    prefijo visible en el encabezado basta para que el documento no se
+    confunda con una remisión válida.
     """
     doc = Document()
 
     # --- Encabezado -----------------------------------------------------------
     h = doc.add_paragraph()
-    r = h.add_run("DASIC Industrial")
+    r = h.add_run(empresa_nombre)
     r.bold = True
     r.font.size = Pt(18)
 
+    prefijo_borrador = "BORRADOR — SIN VALIDEZ · " if es_borrador else ""
     sub = doc.add_paragraph()
-    sr = sub.add_run(f"REMISIÓN · {remision.folio or ''}")
+    sr = sub.add_run(f"{prefijo_borrador}REMISIÓN · {remision.folio or 'SIN FOLIO'}")
     sr.bold = True
     sr.font.size = Pt(12)
 
@@ -227,7 +241,7 @@ def build_remision_docx(
             orun.italic = True
             orun.font.size = Pt(8)
 
-        unidad = d.clave_unidad_sat or "PZA"
+        unidad = d.unidad or d.clave_unidad_sat or "PZA"
         row[3].text = f"{d.cantidad} ({unidad})"
 
         if mostrar:
