@@ -19,7 +19,7 @@ import {
   useEmitir,
   useOrdenesRemisionables,
 } from '../hooks/useRemisiones';
-import { useRemision } from '../store';
+import { useRemision, type RemisionLinea } from '../store';
 import { remisionLineaToVM } from '../lib/vm';
 import { RemisionProductSearch } from '../components/RemisionProductSearch';
 import { AgregarLineaFantasmaModal } from '../components/AgregarLineaFantasmaModal';
@@ -29,6 +29,43 @@ import type { EmitirErrorDetail, RemisionDetalleInput, RemisionEmitirError } fro
 
 function fmtMoney(n: number, moneda: string) {
   return `${moneda} $${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function buildDetallesFromLineas(lineas: RemisionLinea[]): RemisionDetalleInput[] {
+  return lineas
+    .filter((l) => l.incluir && l.cantidad > 0)
+    .map((l) => ({
+      detalle_orden_id: l.detalle_orden_id,
+      descripcion: l.descripcion,
+      sku: l.sku,
+      cantidad: l.cantidad,
+      unidad: l.unidad,
+      observaciones_linea: l.observaciones_linea || null,
+      clave_unidad_sat: l.clave_unidad_sat,
+      precio_unitario: l.detalle_orden_id == null ? l.precio_unitario : null,
+    }));
+}
+
+// Snapshot serializable de los campos que viajan al backend — usado para
+// saber si hay ediciones sin guardar (ver `savedSnapshotRef` más abajo).
+// Ledger pendiente (Task 9/10): "Emitir" debía deshabilitarse con cambios
+// sin guardar. Se eligió comparar snapshots en vez de auto-guardar antes de
+// emitir porque es menos invasivo — no dispara una escritura implícita que
+// el usuario no pidió, y reutiliza el mismo payload que ya arma `onGuardar`.
+function snapshotOf(state: {
+  transportista: string;
+  observaciones: string;
+  mostrarPrecios: boolean;
+  moneda: string;
+  lineas: RemisionLinea[];
+}): string {
+  return JSON.stringify({
+    transportista: state.transportista.trim(),
+    observaciones: state.observaciones.trim(),
+    mostrarPrecios: state.mostrarPrecios,
+    moneda: state.moneda,
+    detalles: buildDetallesFromLineas(state.lineas),
+  });
 }
 
 // Errores de mutación tipados como el resto del repo maneja `api.*`
@@ -62,6 +99,10 @@ export function CrearRemisionPage() {
   const [modalFantasma, setModalFantasma] = useState(false);
   const [savedId, setSavedId] = useState<number | null>(editingId);
   const [emitError, setEmitError] = useState<EmitirErrorDetail | null>(null);
+  // Snapshot del último payload guardado en el backend (crear/actualizar) —
+  // null hasta el primer guardado. Se compara contra el estado actual del
+  // store para deshabilitar "Emitir" cuando hay ediciones sin persistir.
+  const savedSnapshotRef = useRef<string | null>(null);
 
   const s = useRemision();
 
@@ -80,6 +121,9 @@ export function CrearRemisionPage() {
       if (hydratedKey.current === key) return;
       useRemision.getState().hydrateFromDetalle(detalleExistente, borrador ?? null);
       hydratedKey.current = key;
+      // Reabrir un borrador existente arranca "limpio" (sin cambios sin
+      // guardar) — el snapshot inicial es el que acaba de hidratarse.
+      savedSnapshotRef.current = snapshotOf(useRemision.getState());
       return;
     }
     if (borrador && ordenIdNuevo != null) {
@@ -207,6 +251,12 @@ export function CrearRemisionPage() {
     }));
   }
 
+  // Snapshot del estado actual del store — comparado contra el último
+  // guardado (`savedSnapshotRef`) para saber si "Emitir" debe deshabilitarse.
+  const currentSnapshot = snapshotOf(s);
+  const hasUnsavedChanges =
+    savedId != null && savedSnapshotRef.current != null && savedSnapshotRef.current !== currentSnapshot;
+
   function onGuardar() {
     if (incluidas.length === 0) {
       toast({ kind: 'warning', title: 'Incluye al menos una línea con cantidad > 0' });
@@ -232,6 +282,7 @@ export function CrearRemisionPage() {
           onSuccess: (r) => {
             toast({ kind: 'success', title: 'Borrador de remisión guardado' });
             setSavedId(r.id);
+            savedSnapshotRef.current = currentSnapshot;
             // Reabre por su ruta canónica: un refresh no pierde el draft, y
             // "Emitir" queda disponible sin volver a guardar.
             navigate(`/spa/remisiones/${r.id}/editar`, { replace: true });
@@ -258,7 +309,10 @@ export function CrearRemisionPage() {
         },
       },
       {
-        onSuccess: () => toast({ kind: 'success', title: 'Borrador actualizado' }),
+        onSuccess: () => {
+          toast({ kind: 'success', title: 'Borrador actualizado' });
+          savedSnapshotRef.current = currentSnapshot;
+        },
         onError: (e) => {
           const err = e as unknown as MutationErrorLike;
           if (err.status === 401) { window.location.href = '/spa/login'; return; }
@@ -403,8 +457,14 @@ export function CrearRemisionPage() {
             <Button
               size="sm"
               onClick={onEmitir}
-              disabled={savedId == null || emitir.isPending}
-              title={savedId == null ? 'Guarda el borrador antes de emitir' : undefined}
+              disabled={savedId == null || emitir.isPending || hasUnsavedChanges}
+              title={
+                savedId == null
+                  ? 'Guarda el borrador antes de emitir'
+                  : hasUnsavedChanges
+                    ? 'Tienes cambios sin guardar — guarda el borrador antes de emitir'
+                    : undefined
+              }
             >
               {emitir.isPending ? 'Emitiendo…' : 'Emitir'}
             </Button>

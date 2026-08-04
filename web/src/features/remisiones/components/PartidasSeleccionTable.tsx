@@ -89,7 +89,11 @@ export function PartidasSeleccionTable() {
                     min="0.001"
                     value={l.cantidad}
                     disabled={!l.incluir}
-                    onChange={(e) => setQty(l.uid, Math.max(0, parseFloat(e.target.value) || 0))}
+                    // Piso alineado con el `min="0.001"` de arriba y con el
+                    // patrón de `DocumentRow` (`components/document/DocumentRow.tsx`)
+                    // para inputs `decimalQty` — antes caía a 0 en un campo
+                    // vacío/inválido, por debajo del mínimo declarado.
+                    onChange={(e) => setQty(l.uid, Math.max(0.001, parseFloat(e.target.value) || 0.001))}
                     className="h-7 text-center text-xs px-1 w-24 mx-auto"
                   />
                 </td>
