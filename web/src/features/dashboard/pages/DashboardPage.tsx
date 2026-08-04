@@ -234,7 +234,7 @@ export function DashboardPage() {
                 </Badge>
                 <span className="text-sm text-foreground flex-1 leading-snug">{a.text}</span>
                 {a.link && (
-                  <Link to={a.link} className="text-xs text-cyan-400 hover:text-cyan-300 shrink-0 self-center">
+                  <Link to={a.link} className="text-xs text-accent-glow hover:text-accent-glow/80 shrink-0 self-center">
                     ver →
                   </Link>
                 )}
@@ -268,7 +268,7 @@ export function DashboardPage() {
               </div>
               <Link
                 to="/spa/recordatorios"
-                className="ml-auto text-xs text-cyan-500 hover:text-cyan-400 self-center"
+                className="ml-auto text-xs text-accent-glow hover:text-accent-glow/80 self-center"
               >
                 ver todos →
               </Link>

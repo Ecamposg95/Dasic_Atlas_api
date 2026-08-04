@@ -19,8 +19,8 @@ export default {
           activebg: 'var(--sidebar-activebg)',
         },
         accent: {
-          glow: '#00d4e0',
-          deep: '#2563eb',
+          glow: '#ffb01f',   // FORJA · ámbar industrial
+          deep: '#ff7a00',
         },
         // Semantic tokens (HSL channel format for alpha support)
         background: 'hsl(var(--background) / <alpha-value>)',

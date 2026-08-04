@@ -403,7 +403,7 @@ export function InventarioPage() {
                   <button
                     onClick={() => setModalAjuste(p)}
                     title="Ajustar stock"
-                    className="text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 px-1"
+                    className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300 px-1"
                   >
                     <Sliders className="h-4 w-4 inline" />
                   </button>

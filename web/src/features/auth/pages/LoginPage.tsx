@@ -75,7 +75,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       {/* ── Panel de marca (solo desktop) — deliberadamente oscuro en ambos temas ── */}
-      <aside className="relative hidden lg:flex lg:w-[46%] flex-col justify-between overflow-hidden p-12 bg-[#070b16] text-slate-100">
+      <aside className="relative hidden lg:flex lg:w-[46%] flex-col justify-between overflow-hidden p-12 bg-[#121212] text-slate-100">
         {/* Glow del acento */}
         <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-accent-glow/25 blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-accent-deep/20 blur-3xl" />

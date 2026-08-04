@@ -346,7 +346,7 @@ export function ClientesPage() {
                 <td className="p-3 text-right whitespace-nowrap">
                   <button
                     onClick={() => navigate(`/spa/empresas/${c.id}`)}
-                    className="text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 px-1.5 text-xs"
+                    className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300 px-1.5 text-xs"
                     title="Ver ficha completa"
                   >
                     Ver

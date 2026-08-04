@@ -92,7 +92,7 @@ export function DealCard({ deal, clientesMap, usuariosMap, onEdit, onDelete }: P
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="mt-1.5 flex items-center gap-1 text-[10px] text-cyan-500 hover:text-cyan-400 transition-colors"
+          className="mt-1.5 flex items-center gap-1 text-[10px] text-accent-glow hover:text-accent-glow/80 transition-colors"
         >
           <ExternalLink className="h-3 w-3 shrink-0" />
           Ver cotización

@@ -320,7 +320,7 @@ export function FantasmasPage() {
           <button onClick={onBulkDescartar} className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 hover:underline text-xs">
             <X className="h-3 w-3 inline mr-0.5" /> Descartar
           </button>
-          <button onClick={() => setModalAsignar(true)} className="text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 hover:underline text-xs">
+          <button onClick={() => setModalAsignar(true)} className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300 hover:underline text-xs">
             <Truck className="h-3 w-3 inline mr-0.5" /> Asignar proveedor
           </button>
           <button onClick={clearSel} className="ml-auto text-muted-foreground hover:underline text-xs">Cancelar</button>
@@ -392,7 +392,7 @@ export function FantasmasPage() {
               <td className="p-3 text-xs text-muted-foreground">{fmtDate(f.ultimo_visto_en)}</td>
               <td className="p-3 text-right whitespace-nowrap">
                 <button onClick={() => setModalDetalle(f.id)} title="Ver detalle"
-                        className="text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 px-1">
+                        className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300 px-1">
                   <Eye className="h-4 w-4 inline" />
                 </button>
                 {(f.estado === 'PENDIENTE' || f.estado === 'EN_OC' || f.estado === 'RECIBIDO') && (

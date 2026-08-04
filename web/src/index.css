@@ -10,42 +10,42 @@
   --sidebar-bottom: #000000;
   --sidebar-text: #b6bdc9;
   --sidebar-dim: #5d6673;
-  --sidebar-border: #1a1f28;
+  --sidebar-border: #262119;
   --sidebar-hover: rgba(255, 255, 255, 0.06);
   --sidebar-strong: #f4f6f9;
-  --sidebar-active: #00d4e0;   /* accent glow */
-  --sidebar-activebg: rgba(0, 212, 224, 0.12);
+  --sidebar-active: #ffb01f;   /* accent glow (FORJA · ámbar industrial) */
+  --sidebar-activebg: rgba(255, 176, 31, 0.12);
 
-  /* Semantic design tokens */
-  --background: 210 40% 98%;
+  /* Semantic design tokens — FORJA light: acero cálido + tinta */
+  --background: 40 22% 97%;
   --surface: 0 0% 100%;
-  --surface-2: 210 40% 96.5%;
-  --foreground: 222 47% 11%;
-  --muted-foreground: 215 16% 47%;
-  --border: 214 32% 91%;
-  --border-strong: 213 27% 84%;
-  --ring: 188 100% 44%;
-  --primary: 221 83% 53%;
-  --primary-foreground: 0 0% 100%;
-  --accent: 188 100% 44%;
-  --shadow-color: 222 47% 11%;
+  --surface-2: 40 18% 94%;
+  --foreground: 30 22% 12%;
+  --muted-foreground: 32 9% 44%;
+  --border: 38 16% 88%;
+  --border-strong: 37 13% 79%;
+  --ring: 38 100% 50%;
+  --primary: 33 96% 46%;
+  --primary-foreground: 30 90% 8%;
+  --accent: 38 100% 50%;
+  --shadow-color: 30 22% 12%;
 }
 .dark {
   /* Sidebar: mismas vars negras de :root (no se sobreescriben). */
 
-  /* Semantic design tokens — near-black azulado */
-  --background: 222 47% 5%;
-  --surface: 220 39% 9%;
-  --surface-2: 220 35% 13%;
-  --foreground: 210 40% 96%;
-  --muted-foreground: 215 20% 60%;
-  --border: 217 33% 17%;
-  --border-strong: 215 28% 25%;
-  --ring: 188 100% 50%;
-  --primary: 188 100% 44%;
-  --primary-foreground: 222 47% 8%;
-  --accent: 188 100% 50%;
-  --shadow-color: 222 60% 2%;
+  /* Semantic design tokens — FORJA dark: carbón cálido */
+  --background: 40 5% 7%;
+  --surface: 42 5% 10%;
+  --surface-2: 42 7% 13%;
+  --foreground: 38 35% 92%;
+  --muted-foreground: 34 8% 60%;
+  --border: 40 10% 17%;
+  --border-strong: 40 9% 26%;
+  --ring: 38 100% 56%;
+  --primary: 38 100% 56%;
+  --primary-foreground: 35 90% 7%;
+  --accent: 38 100% 56%;
+  --shadow-color: 40 30% 2%;
 }
 
 @layer base {
