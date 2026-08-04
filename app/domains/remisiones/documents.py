@@ -16,7 +16,7 @@ subtítulo del documento (ver `_prefijo_borrador` más abajo).
 """
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlalchemy.orm import Session
 
 from app import models
@@ -24,7 +24,17 @@ from app.services import config_service
 from app.services.word_service import build_remision_docx
 
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
-_env = Environment(loader=FileSystemLoader(_TEMPLATES_DIR))
+# autoescape ON: `descripcion`/`observaciones_linea`/`observaciones`/
+# `transportista`/`empresa_nombre` son texto libre de negocio (viene de
+# clientes, no de este código) que termina en un HTMLResponse real
+# (`GET /{id}/imprimir`) — sin esto, un valor como
+# "<script>alert(1)</script>" en `descripcion` se sirve crudo (XSS
+# almacenado). La plantilla no usa `|safe` ni construye HTML dentro de una
+# variable en ningún punto, así que activarlo no cambia el render.
+_env = Environment(
+    loader=FileSystemLoader(_TEMPLATES_DIR),
+    autoescape=select_autoescape(enabled_extensions=("html", "j2"), default_for_string=True),
+)
 
 _MESES_ES = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",

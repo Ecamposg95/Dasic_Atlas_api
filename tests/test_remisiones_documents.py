@@ -90,3 +90,19 @@ def test_folio_nulo_muestra_sin_folio(db):
     html = documents.render_html(db, rem)
 
     assert "SIN FOLIO" in html
+
+
+def test_html_escapa_descripcion_maliciosa(db):
+    """Sin autoescape, `descripcion`/`observaciones`/`transportista`/
+    `empresa_nombre` se inyectan crudos en el HTML servido por
+    `GET /{id}/imprimir` (HTMLResponse) — XSS almacenado. La plantilla no usa
+    `|safe` en ningún lado, así que activar autoescape no debe romper el
+    render."""
+    rem = _remision(db, estado="emitida", unidad="MTS")
+    rem.detalles[0].descripcion = "<script>alert(1)</script>"
+    db.commit()
+
+    html = documents.render_html(db, rem)
+
+    assert "&lt;script&gt;" in html
+    assert "<script>alert" not in html

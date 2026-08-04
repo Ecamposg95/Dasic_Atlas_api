@@ -143,7 +143,7 @@ def build_remision_docx(
     remision,
     simbolo: str,
     fecha_str: str,
-    empresa_nombre: str = "DASIC Industrial",
+    empresa_nombre: str,
     es_borrador: bool = False,
 ) -> bytes:
     """Genera una remisión como .docx editable.
@@ -153,8 +153,10 @@ def build_remision_docx(
     de Total al final de la tabla.
 
     ``empresa_nombre`` es branding configurable (Task 8, `config_service`) —
-    el default reproduce el valor hardcodeado anterior, así que callers que
-    no lo pasen no cambian de comportamiento.
+    sin default aquí a propósito: el default vive en un solo lugar
+    (`config_service.empresa_nombre`, "DASIC Industrial"), no duplicado.
+    Único caller: `app.domains.remisiones.documents.render_word`, que
+    siempre lo resuelve vía `config_service` antes de llamar.
 
     ``es_borrador``: python-docx no soporta overlays tipo marca de agua
     (a diferencia del HTML, que sí superpone "BORRADOR" — ver
