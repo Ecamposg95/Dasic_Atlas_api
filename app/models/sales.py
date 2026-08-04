@@ -2,7 +2,7 @@
 Sales models: OrdenVenta, DetalleOrden.
 """
 
-from sqlalchemy import Boolean, Column, DateTime, DECIMAL, ForeignKey, Integer, String, Text, text
+from sqlalchemy import Boolean, Column, DateTime, DECIMAL, ForeignKey, Integer, Numeric, String, Text, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -109,7 +109,8 @@ class DetalleOrden(Base):
     marca = Column(String(80), nullable=True)
     mostrar_marca = Column(Boolean, nullable=False, server_default=text("false"))
 
-    cantidad = Column(Integer, nullable=False)
+    cantidad = Column(Numeric(12, 3), nullable=False)
+    unidad = Column(String(20), nullable=True)
     precio_unitario = Column(DECIMAL(10, 2), nullable=False)
     utilidad_aplicada = Column(DECIMAL(10, 2), default=0.00)
     descuento_aplicado = Column(DECIMAL(10, 2), default=0.00)

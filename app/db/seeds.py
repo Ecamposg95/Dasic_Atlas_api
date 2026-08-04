@@ -530,6 +530,19 @@ _BACKFILL_DDL = [
     "ALTER TABLE IF EXISTS remisiones ADD COLUMN IF NOT EXISTS stock_descontado BOOLEAN NOT NULL DEFAULT false",
     "CREATE INDEX IF NOT EXISTS ix_remisiones_estado ON remisiones (estado)",
     "UPDATE remisiones SET estado = CASE WHEN recibido_at IS NOT NULL THEN 'RECIBIDA' ELSE 'EMITIDA' END WHERE estado = 'BORRADOR' AND folio IS NOT NULL",
+
+    # 20260803_02: numeric + unidades
+    "ALTER TABLE IF EXISTS detalles_orden ALTER COLUMN cantidad TYPE NUMERIC(12,3)",
+    "ALTER TABLE IF EXISTS detalles_remision ALTER COLUMN cantidad TYPE NUMERIC(12,3)",
+    "ALTER TABLE IF EXISTS detalles_orden ADD COLUMN IF NOT EXISTS unidad VARCHAR(20)",
+    "ALTER TABLE IF EXISTS detalles_remision ADD COLUMN IF NOT EXISTS unidad VARCHAR(20)",
+    """CREATE TABLE IF NOT EXISTS unidades_medida (
+        id SERIAL PRIMARY KEY,
+        nombre VARCHAR(40) NOT NULL UNIQUE,
+        abreviatura VARCHAR(20) NOT NULL,
+        activa BOOLEAN NOT NULL DEFAULT true,
+        orden INTEGER NOT NULL DEFAULT 0
+    )""",
 ]
 
 
@@ -840,6 +853,31 @@ def seed_default_pipeline(db: Session) -> None:
     logger.info("seed_default_pipeline: pipeline 'Ventas' con 5 stages creado.")
 
 
+_UNIDADES_BASE = [
+    ("Pieza", "PZA"), ("Metro", "MTS"), ("Caja", "CAJA"), ("Kit", "KIT"),
+    ("Mes", "MES"), ("Servicio", "SERV"), ("Kilogramo", "KG"), ("Juego", "JUEGO"),
+    ("Par", "PAR"), ("Rollo", "ROLLO"), ("Litro", "LITRO"),
+]
+
+
+def seed_unidades(db: Session) -> None:
+    """Siembra el catálogo `unidades_medida` con la base comercial + cualquier
+    unidad libre ya usada en productos que no esté en la base.
+
+    Idempotente: solo inserta lo que falta (por `abreviatura`).
+    """
+    existentes = {u.abreviatura for u in db.query(models.UnidadMedida).all()}
+    for i, (nombre, abrev) in enumerate(_UNIDADES_BASE):
+        if abrev not in existentes:
+            db.add(models.UnidadMedida(nombre=nombre, abreviatura=abrev, orden=i))
+    # Unidades libres ya usadas en productos que no estén en la base:
+    usadas = {r[0] for r in db.query(models.Producto.unidad).distinct() if r[0]}
+    conocidas = {a for _, a in _UNIDADES_BASE} | existentes
+    for extra in sorted(usadas - conocidas):
+        db.add(models.UnidadMedida(nombre=extra, abreviatura=extra, orden=99))
+    db.commit()
+
+
 def run_all_seeds(db: Session) -> None:
     """Punto de entrada único para tareas de startup."""
     run_backfill_ddl(db)
@@ -851,4 +889,5 @@ def run_all_seeds(db: Session) -> None:
     seed_sat_clave_unidad(db)
     seed_contactos_principal(db)
     seed_default_pipeline(db)
+    seed_unidades(db)
     logger.info("Startup completado correctamente.")

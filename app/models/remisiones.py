@@ -1,6 +1,6 @@
 """Remision y DetalleRemision — comprobantes de entrega física."""
 
-from sqlalchemy import Boolean, Column, DateTime, DECIMAL, ForeignKey, Integer, String, Text, text
+from sqlalchemy import Boolean, Column, DateTime, DECIMAL, ForeignKey, Integer, Numeric, String, Text, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -49,7 +49,8 @@ class DetalleRemision(Base):
     detalle_orden_id = Column(Integer, ForeignKey("detalles_orden.id"), nullable=True)
     descripcion = Column(Text, nullable=False)
     sku = Column(String(80), nullable=True)
-    cantidad = Column(Integer, nullable=False)
+    cantidad = Column(Numeric(12, 3), nullable=False)
+    unidad = Column(String(20), nullable=True)
     observaciones_linea = Column(Text, nullable=True)
     clave_unidad_sat = Column(String(10), nullable=True)
     precio_unitario = Column(DECIMAL(10, 2), nullable=True)

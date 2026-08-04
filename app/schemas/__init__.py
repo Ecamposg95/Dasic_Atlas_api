@@ -32,6 +32,9 @@ from app.schemas.catalog import (  # noqa: F401
     MarcaCreate,
     MarcaUpdate,
     MarcaResponse,
+    UnidadMedidaCreate,
+    UnidadMedidaUpdate,
+    UnidadMedidaResponse,
 )
 
 from app.schemas.clients import (  # noqa: F401
@@ -142,6 +145,8 @@ __all__ = [
     "ProductoBase", "ProductoCreate", "ProductoUpdate",
     "ProductoResponseVendedor", "ProductoResponseAdmin", "ProductoInfo",
     "PromocionBase", "PromocionCreate", "PromocionResponse",
+    "MarcaCreate", "MarcaUpdate", "MarcaResponse",
+    "UnidadMedidaCreate", "UnidadMedidaUpdate", "UnidadMedidaResponse",
     # clients
     "ClienteBase", "ClienteCreate", "ClienteUpdate", "ClienteResponse",
     "ProveedorBase", "ProveedorCreate", "ProveedorResponse",
