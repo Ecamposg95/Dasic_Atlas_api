@@ -3,7 +3,13 @@ sobre-entrega/stock híbrido, recepción, cancelación con reversa,
 eliminación y conversión remisión→cotización.
 
 Arma líneas/snapshot siguiendo el patrón del router viejo
-(`app/routers/remisiones.py:161-244`).
+(`app/routers/remisiones.py:161-244`). El patrón lock→refresh→re-check de
+`emitir`/`cancelar` sigue el mismo criterio que
+`app/routers/ventas.py::convertir_cotizacion` (líneas ~1360-1372): el lock
+se adquiere ANTES de leer/verificar el estado mutable, y el estado se
+re-verifica (`db.refresh` + comparación) DESPUÉS del lock — nunca al revés,
+o una segunda transacción que entra mientras la primera espera el lock
+puede pasar la verificación con datos obsoletos (TOCTOU).
 """
 from datetime import datetime
 from decimal import Decimal
@@ -79,6 +85,8 @@ def crear_borrador(db, payload: RemisionCreate, user) -> models.Remision:
             raise HTTPException(404, "Orden de venta no encontrada")
         if orden.estatus == EstatusOrden.COTIZACION:
             raise HTTPException(400, "La orden todavía es cotización — convierte a venta antes de remisionar")
+        if orden.estatus == EstatusOrden.CANCELADA:
+            raise HTTPException(400, "La orden está cancelada")
         det_orden = {d.id: d for d in orden.detalles}
         moneda = orden.moneda
     else:
@@ -119,7 +127,9 @@ def actualizar_borrador(db, remision_id: int, payload: RemisionUpdate, user) -> 
         rem.observaciones = payload.observaciones
     if payload.mostrar_precios is not None:
         rem.mostrar_precios = payload.mostrar_precios
-    if payload.moneda is not None:
+    # Si la remisión está ligada a una orden, la moneda la manda la orden —
+    # ignoramos cualquier cambio de moneda que traiga el payload.
+    if payload.moneda is not None and not rem.orden_venta_id:
         rem.moneda = payload.moneda
 
     if payload.detalles is not None:
@@ -148,16 +158,27 @@ def eliminar_borrador(db, remision_id: int, user) -> None:
 
 def emitir(db, remision_id, user, locker=folio_service.pg_locker):
     rem = _get_or_404(db, remision_id)
+    # Lock ANTES de refrescar/verificar estado: serializa la doble-emisión de
+    # la MISMA remisión (doble-submit) y, si aplica, emisiones concurrentes
+    # de la MISMA orden (el cálculo de excesos lee acumulados de todas las
+    # remisiones de la orden). Orden fijo remisión→orden SIEMPRE, para no
+    # arriesgar deadlock si algún otro flujo tomara esos locks al revés.
+    locker(db, f"remision:{rem.id}")
+    if rem.orden_venta_id:
+        locker(db, f"remision-emitir:orden:{rem.orden_venta_id}")
+    # Re-check tras el lock: otra transacción pudo emitir/cancelar esta
+    # remisión mientras esperábamos el lock.
+    db.refresh(rem)
     if rem.estado != models.EstadoRemision.BORRADOR:
         raise HTTPException(409, "Solo un borrador puede emitirse")
     if not rem.detalles:
         raise HTTPException(400, "La remisión no tiene líneas")
     if rem.orden_venta_id:
-        # Lock ANTES de leer acumulados: serializa emisiones concurrentes de la misma orden.
-        locker(db, f"remision-emitir:orden:{rem.orden_venta_id}")
         pend = repository.pendientes_por_detalle(db, rem.orden_venta)
+        cotizado_por_detalle = {d.id: Decimal(str(d.cantidad)) for d in rem.orden_venta.detalles}
         excesos = [
             {"detalle_orden_id": d.detalle_orden_id,
+             "cotizado": str(cotizado_por_detalle.get(d.detalle_orden_id, Decimal("0"))),
              "pendiente": str(pend.get(d.detalle_orden_id, Decimal("0"))),
              "solicitado": str(d.cantidad)}
             for d in rem.detalles
@@ -177,24 +198,36 @@ def emitir(db, remision_id, user, locker=folio_service.pg_locker):
     rem.emitida_at = datetime.utcnow()
     rem.emitida_por_id = user.id
     if config_service.stock_evento_descuento(db) == "remision":
-        _descontar_stock(db, rem, user)
-        rem.stock_descontado = True
+        movimientos = _descontar_stock(db, rem, user)
+        # Solo marcamos stock_descontado si hubo AL MENOS un movimiento real
+        # (líneas de servicio/ad-hoc sin producto de catálogo no cuentan) —
+        # si no, `cancelar` intentaría revertir movimientos que nunca existieron.
+        rem.stock_descontado = movimientos > 0
     db.commit()
     db.refresh(rem)
     return rem
 
 
-def _descontar_stock(db, rem, user):
+def _descontar_stock(db, rem, user) -> int:
+    movimientos = 0
     for det in rem.detalles:
         base = det.detalle_orden if det.detalle_orden_id else None
         producto = base.producto if base is not None else None
         if producto is None or getattr(producto, "es_servicio", False):
             continue
         cantidad = cantidad_entera_para_stock(det.cantidad, producto.sku)
-        stock_service.aplicar_movimiento(
-            db, producto=producto, tipo=TipoMovimientoStock.SALIDA.value,
-            cantidad=-cantidad, referencia_tipo="remision",
-            referencia_id=rem.id, motivo=f"Salida por remisión {rem.folio}", usuario=user)
+        try:
+            stock_service.aplicar_movimiento(
+                db, producto=producto, tipo=TipoMovimientoStock.SALIDA.value,
+                cantidad=-cantidad, referencia_tipo="remision",
+                referencia_id=rem.id, motivo=f"Salida por remisión {rem.folio}", usuario=user)
+        except ValueError as exc:
+            # aplicar_movimiento levanta ValueError puro (no HTTPException) si
+            # el stock quedaría negativo — lo traducimos a 400 aquí, el único
+            # lugar con contexto HTTP.
+            raise HTTPException(400, str(exc))
+        movimientos += 1
+    return movimientos
 
 
 def registrar_recepcion(db, remision_id: int, recibido_por: str, user) -> models.Remision:
@@ -211,9 +244,14 @@ def registrar_recepcion(db, remision_id: int, recibido_por: str, user) -> models
     return rem
 
 
-def cancelar(db, remision_id, motivo, user):
+def cancelar(db, remision_id, motivo, user, *, locker=folio_service.pg_locker):
     require(user, "cancel", "remision")
     rem = _get_or_404(db, remision_id)
+    # Mismo patrón que `emitir`: lock por remisión ANTES de refrescar/
+    # verificar estado, para que una segunda cancelación concurrente no pase
+    # la verificación con el objeto todavía en memoria como EMITIDA/RECIBIDA.
+    locker(db, f"remision:{rem.id}")
+    db.refresh(rem)
     if rem.estado not in (models.EstadoRemision.EMITIDA, models.EstadoRemision.RECIBIDA):
         raise HTTPException(409, "Solo una remisión emitida o recibida puede cancelarse")
     if not (motivo or "").strip():
@@ -224,10 +262,17 @@ def cancelar(db, remision_id, motivo, user):
             producto = base.producto if base is not None else None
             if producto is None or getattr(producto, "es_servicio", False):
                 continue
-            stock_service.aplicar_movimiento(
-                db, producto=producto, tipo=TipoMovimientoStock.ENTRADA.value,
-                cantidad=int(Decimal(str(det.cantidad))), referencia_tipo="remision",
-                referencia_id=rem.id, motivo=f"Reversa por cancelación de {rem.folio}", usuario=user)
+            # Mismo helper que `_descontar_stock` (Task 4): nunca truncar en
+            # silencio con int(Decimal(...)) — si la cantidad no es entera,
+            # 400 explícito en vez de reversar mal.
+            cantidad = cantidad_entera_para_stock(det.cantidad, producto.sku)
+            try:
+                stock_service.aplicar_movimiento(
+                    db, producto=producto, tipo=TipoMovimientoStock.ENTRADA.value,
+                    cantidad=cantidad, referencia_tipo="remision",
+                    referencia_id=rem.id, motivo=f"Reversa por cancelación de {rem.folio}", usuario=user)
+            except ValueError as exc:
+                raise HTTPException(400, str(exc))
     rem.estado = models.EstadoRemision.CANCELADA
     rem.cancelada_at = datetime.utcnow()
     rem.cancelada_por_id = user.id
@@ -236,18 +281,8 @@ def cancelar(db, remision_id, motivo, user):
     return rem
 
 
-def _locker_para_folio_cotizacion(db):
-    """`crear_cotizacion_desde` tiene firma fija (db, remision_id, user) — la
-    consume el router de Task 7 sin parámetro `locker` — así que no podemos
-    inyectar un no-op de test como hace `emitir`. pg_advisory_xact_lock es
-    Postgres-only; bajo SQLite (suite de tests) no existe, así que detectamos
-    el dialecto en runtime y usamos no-op fuera de Postgres."""
-    if db.get_bind().dialect.name != "postgresql":
-        return lambda _db, _key: None
-    return folio_service.pg_locker
-
-
-def crear_cotizacion_desde(db, remision_id: int, user) -> models.OrdenVenta:
+def crear_cotizacion_desde(db, remision_id: int, user, *, locker=folio_service.pg_locker) -> models.OrdenVenta:
+    require(user, "convertir", "remision")
     rem = _get_or_404(db, remision_id)
     if rem.estado not in (EstadoRemision.EMITIDA, EstadoRemision.RECIBIDA):
         raise HTTPException(409, "Solo una remisión emitida o recibida puede convertirse a cotización")
@@ -255,9 +290,12 @@ def crear_cotizacion_desde(db, remision_id: int, user) -> models.OrdenVenta:
     if not cliente_id:
         raise HTTPException(400, "La remisión no tiene cliente asociado")
 
+    # Repetible a propósito: convertir la misma remisión más de una vez
+    # produce varias cotizaciones (ledger), no un error — decisión explícita
+    # del sprint, no un descuido.
     folio = folio_service.generar_folio(
         db, prefijo="C", modelo=models.OrdenVenta, campo=models.OrdenVenta.folio, padding=3,
-        locker=_locker_para_folio_cotizacion(db))
+        locker=locker)
 
     cot = models.OrdenVenta(
         folio=folio,
@@ -271,14 +309,21 @@ def crear_cotizacion_desde(db, remision_id: int, user) -> models.OrdenVenta:
     db.add(cot)
     db.flush()
     for det in rem.detalles:
+        base = det.detalle_orden if det.detalle_orden_id else None
+        producto_id = base.producto_id if base is not None else None
+        tipo_linea = "producto_catalogo" if producto_id else "producto_fantasma"
         db.add(models.DetalleOrden(
             orden_id=cot.id,
+            producto_id=producto_id,
             sku_libre=det.sku,
             descripcion_libre=det.descripcion,
             cantidad=det.cantidad,
             unidad=det.unidad,
+            clave_unidad_sat=det.clave_unidad_sat,
+            observaciones_linea=det.observaciones_linea,
             precio_unitario=Decimal("0"),
             subtotal=Decimal("0"),
+            tipo_linea=tipo_linea,
         ))
     db.commit()
     db.refresh(cot)

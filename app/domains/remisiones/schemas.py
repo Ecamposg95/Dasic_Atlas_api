@@ -37,6 +37,11 @@ class RemisionCreate(BaseModel):
     def _exactly_one_origin(self):
         if bool(self.orden_venta_id) == bool(self.cliente_id):
             raise ValueError("Manda exactamente uno: orden_venta_id (desde orden) o cliente_id (libre)")
+        # Modo libre (sin orden): no hay de dónde heredar la moneda, así que
+        # es obligatoria. Ligada a orden: el service ignora este campo y usa
+        # siempre orden.moneda (la orden manda).
+        if self.cliente_id and not self.moneda:
+            raise ValueError("moneda es obligatoria en modo libre (sin orden_venta_id)")
         return self
 
 
