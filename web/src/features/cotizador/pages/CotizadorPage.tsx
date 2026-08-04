@@ -420,7 +420,7 @@ export function CotizadorPage() {
                     type="checkbox"
                     checked={pdfConceptoEnabled}
                     onChange={(e) => setPdfConceptoEnabled(e.target.checked)}
-                    className="accent-cyan-500"
+                    className="accent-accent-glow"
                   />
                   PDF con concepto unificado
                 </label>

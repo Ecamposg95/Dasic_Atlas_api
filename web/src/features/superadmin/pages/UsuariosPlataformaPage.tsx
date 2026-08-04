@@ -288,7 +288,7 @@ export function UsuariosPlataformaPage() {
                         type="button"
                         onClick={() => handleToggleActivo(u)}
                         disabled={editarMut.isPending || isSelf(u)}
-                        className="font-mono text-xs text-muted-foreground hover:text-cyan-400 px-1.5 transition-colors disabled:opacity-40"
+                        className="font-mono text-xs text-muted-foreground hover:text-accent-glow px-1.5 transition-colors disabled:opacity-40"
                         title={isSelf(u) ? 'No puedes desactivarte a ti mismo' : u.activo ? 'Desactivar' : 'Activar'}
                       >
                         {u.activo ? 'Desactivar' : 'Activar'}

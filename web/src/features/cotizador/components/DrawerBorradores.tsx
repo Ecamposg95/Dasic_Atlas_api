@@ -92,7 +92,7 @@ export function DrawerBorradores() {
               className="block p-3 rounded border border-border hover:border-accent-glow bg-background transition"
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="font-mono text-xs font-bold text-cyan-400">{b.folio}</span>
+                <span className="font-mono text-xs font-bold text-accent-glow">{b.folio}</span>
                 <span className="text-[10px] text-muted-foreground">
                   {fmtDate(b.actualizado_en)}
                 </span>

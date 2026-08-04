@@ -185,7 +185,7 @@ export function SatTab() {
             {r.descripcion}
             <div className="flex gap-1.5 mt-0.5 flex-wrap">
               {r.aplica_persona_fisica && (
-                <span className="text-[10px] bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded">Física</span>
+                <span className="text-[10px] bg-accent-glow/15 dark:bg-accent-glow/10 text-accent-deep dark:text-accent-glow px-1.5 py-0.5 rounded">Física</span>
               )}
               {r.aplica_persona_moral && (
                 <span className="text-[10px] bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 px-1.5 py-0.5 rounded">Moral</span>

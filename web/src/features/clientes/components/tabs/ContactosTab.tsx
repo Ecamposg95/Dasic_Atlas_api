@@ -43,7 +43,7 @@ export function ContactosTab({ clienteId }: { clienteId: number }) {
               >
                 <FileText className="h-4 w-4" />
               </button>
-              <button onClick={() => abrirEditar(c)} className="p-1 text-muted-foreground hover:text-cyan-500" title="Editar"><Pencil className="h-4 w-4" /></button>
+              <button onClick={() => abrirEditar(c)} className="p-1 text-muted-foreground hover:text-accent-glow" title="Editar"><Pencil className="h-4 w-4" /></button>
               <button
                 onClick={async () => {
                   if (await confirm({ mensaje: `¿Eliminar a ${c.nombre}?`, tono: 'danger' })) eliminar.mutate(c.id);

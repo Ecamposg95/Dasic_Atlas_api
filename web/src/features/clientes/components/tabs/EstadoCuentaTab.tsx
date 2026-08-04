@@ -72,7 +72,7 @@ export function EstadoCuentaTab({
                     <td className="p-2 font-mono">
                       <a
                         href={`/spa/cotizador?edit=${o.id}`}
-                        className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300"
+                        className="text-accent-deep hover:text-accent-deep/80 dark:text-accent-glow dark:hover:text-accent-glow/80"
                       >
                         {o.folio}
                       </a>

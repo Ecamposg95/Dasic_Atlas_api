@@ -143,7 +143,7 @@ export function ServiciosPage() {
       <PageHeader
         title={
           <span className="flex items-center gap-2">
-            <Wrench className="h-5 w-5 text-cyan-400" /> Servicios
+            <Wrench className="h-5 w-5 text-accent-glow" /> Servicios
           </span>
         }
         actions={
@@ -221,7 +221,7 @@ export function ServiciosPage() {
           )}
           {items.map((s) => (
             <DataTableRow key={s.id}>
-              <td className="p-3 font-mono text-xs text-cyan-700 dark:text-cyan-300">{s.codigo}</td>
+              <td className="p-3 font-mono text-xs text-accent-deep dark:text-accent-glow">{s.codigo}</td>
               <td className="p-3 font-medium text-foreground">{s.nombre}</td>
               <td className="p-3">
                 {s.categoria_servicio ? (

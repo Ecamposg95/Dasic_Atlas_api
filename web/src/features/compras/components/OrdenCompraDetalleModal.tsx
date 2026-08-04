@@ -56,7 +56,7 @@ export function OrdenCompraDetalleModal({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div>
               <div className="text-xs text-muted-foreground mb-0.5">Folio</div>
-              <div className="font-mono font-bold text-cyan-700 dark:text-cyan-300">
+              <div className="font-mono font-bold text-accent-deep dark:text-accent-glow">
                 {oc.folio ?? `#${oc.id}`}
               </div>
             </div>
@@ -85,7 +85,7 @@ export function OrdenCompraDetalleModal({
                 <div className="text-xs text-muted-foreground mb-0.5">Cotización origen</div>
                 <a
                   href={`/ventas/cotizador?edit=${oc.cotizacion_id}`}
-                  className="text-cyan-600 hover:underline text-xs dark:text-cyan-400"
+                  className="text-accent-deep hover:underline text-xs dark:text-accent-glow"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -145,7 +145,7 @@ export function OrdenCompraDetalleModal({
           <div className="flex justify-end">
             <div className="text-right">
               <div className="text-xs text-muted-foreground mb-0.5">Total OC</div>
-              <div className="text-lg font-bold text-cyan-700 dark:text-cyan-300">
+              <div className="text-lg font-bold text-accent-deep dark:text-accent-glow">
                 {fmtMoney(oc.total, oc.moneda)} {oc.moneda}
               </div>
             </div>

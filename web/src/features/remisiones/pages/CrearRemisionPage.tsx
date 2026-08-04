@@ -55,7 +55,7 @@ export function CrearRemisionPage() {
           backTo="/spa/remisiones"
           title={
             <span className="flex items-center gap-2">
-              <Truck className="h-5 w-5 text-cyan-400" /> Nueva remisión
+              <Truck className="h-5 w-5 text-accent-glow" /> Nueva remisión
             </span>
           }
         />
@@ -169,7 +169,7 @@ export function CrearRemisionPage() {
           actions={
             <>
               {s.ordenFolio && (
-                <span className="text-xs bg-cyan-900/30 text-cyan-300 border border-cyan-700/50 px-2 py-1 rounded font-mono">
+                <span className="text-xs bg-accent-glow/10 text-accent-glow border border-accent-glow/40 px-2 py-1 rounded font-mono">
                   {s.ordenFolio}
                 </span>
               )}

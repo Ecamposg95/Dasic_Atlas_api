@@ -2,7 +2,7 @@ import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 
 const TONES: Record<string, string> = {
   emerald: '#10b981',
-  cyan: '#06b6d4',
+  cyan: '#2ee6a8',
   rose: '#f43f5e',
   slate: '#94a3b8',
 };

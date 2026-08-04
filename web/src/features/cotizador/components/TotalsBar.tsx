@@ -290,7 +290,7 @@ export function TotalsBar() {
                 Por moneda nativa
               </span>
               {breakdown.usd_count > 0 && (
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border bg-cyan-900/30 text-cyan-300 border-cyan-700/50">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border bg-accent-glow/10 text-accent-glow border-accent-glow/40">
                   USD {breakdown.usd_count} línea{breakdown.usd_count === 1 ? '' : 's'} · $
                   {breakdown.usd.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>

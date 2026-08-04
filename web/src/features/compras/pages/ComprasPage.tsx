@@ -113,7 +113,7 @@ export function ComprasPage() {
       <PageHeader
         title={
           <span className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5 text-cyan-400" /> Compras
+            <ShoppingCart className="h-5 w-5 text-accent-glow" /> Compras
           </span>
         }
         actions={
@@ -190,7 +190,7 @@ export function ComprasPage() {
           )}
           {filtradas.map((o) => (
             <DataTableRow key={o.id}>
-              <td className="p-3 font-mono text-xs text-cyan-700 dark:text-cyan-300">
+              <td className="p-3 font-mono text-xs text-accent-deep dark:text-accent-glow">
                 {o.folio ?? `#${o.id}`}
               </td>
               <td className="p-3 text-sm">{o.proveedor}</td>
@@ -205,7 +205,7 @@ export function ComprasPage() {
                   <button
                     type="button"
                     onClick={() => navigate(`/ventas/cotizador?edit=${o.cotizacion_id}`)}
-                    className="text-cyan-600 hover:underline dark:text-cyan-400"
+                    className="text-accent-deep hover:underline dark:text-accent-glow"
                   >
                     #{o.cotizacion_id}
                   </button>
@@ -218,7 +218,7 @@ export function ComprasPage() {
                 <button
                   onClick={() => setModalDetalle(o.id)}
                   title="Ver detalle"
-                  className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300 px-1"
+                  className="text-accent-deep hover:text-accent-deep/80 dark:text-accent-glow dark:hover:text-accent-glow/80 px-1"
                 >
                   <Eye className="h-4 w-4 inline" />
                 </button>

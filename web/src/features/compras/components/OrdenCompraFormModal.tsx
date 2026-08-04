@@ -326,7 +326,7 @@ export function OrdenCompraFormModal({ onClose }: Props) {
                 </td>
                 <td colSpan={2} className="px-2 py-2 text-right font-bold text-foreground">
                   Total estimado:{' '}
-                  <span className="font-mono text-cyan-700 dark:text-cyan-300">
+                  <span className="font-mono text-accent-deep dark:text-accent-glow">
                     {fmtMoneda(totalEstimado)}
                   </span>
                 </td>

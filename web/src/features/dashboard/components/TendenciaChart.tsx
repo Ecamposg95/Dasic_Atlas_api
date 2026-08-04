@@ -77,7 +77,7 @@ export function TendenciaChart({ series, loading }: { series: TendenciaPunto[]; 
                 <Line
                   type="monotone"
                   dataKey="cotizaciones_mxn"
-                  stroke="#06b6d4"
+                  stroke="#8b5cf6"
                   strokeWidth={2}
                   dot={false}
                   isAnimationActive={false}

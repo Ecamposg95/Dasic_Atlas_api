@@ -16,7 +16,7 @@ const COLORS = {
   success: 'border-emerald-700/50 bg-emerald-900/40 text-emerald-200',
   error: 'border-rose-700/50 bg-rose-900/40 text-rose-200',
   warning: 'border-amber-700/50 bg-amber-900/40 text-amber-200',
-  info: 'border-cyan-700/50 bg-cyan-900/40 text-cyan-200',
+  info: 'border-sky-700/50 bg-sky-900/40 text-sky-200',
 } as const;
 
 export function Toaster() {

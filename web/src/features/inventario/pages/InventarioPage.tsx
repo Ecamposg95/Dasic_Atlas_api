@@ -208,7 +208,7 @@ export function InventarioPage() {
       <PageHeader
         title={
           <span className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-cyan-400" /> Inventario
+            <Package className="h-5 w-5 text-accent-glow" /> Inventario
           </span>
         }
         actions={
@@ -403,7 +403,7 @@ export function InventarioPage() {
                   <button
                     onClick={() => setModalAjuste(p)}
                     title="Ajustar stock"
-                    className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300 px-1"
+                    className="text-accent-deep hover:text-accent-deep/80 dark:text-accent-glow dark:hover:text-accent-glow/80 px-1"
                   >
                     <Sliders className="h-4 w-4 inline" />
                   </button>

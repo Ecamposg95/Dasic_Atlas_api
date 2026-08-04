@@ -23,7 +23,7 @@ export function UltimaCotHint({ clienteId }: { clienteId: number | null }) {
       <span>Última cot:</span>
       <a
         href={`/seguimiento?folio=${encodeURIComponent(data.folio)}`}
-        className="font-mono text-cyan-400 hover:underline"
+        className="font-mono text-accent-glow hover:underline"
       >
         {data.folio}
       </a>

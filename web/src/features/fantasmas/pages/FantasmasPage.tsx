@@ -241,7 +241,7 @@ export function FantasmasPage() {
         {ESTADOS.map((e) => {
           const tone: Record<typeof e.variant, string> = {
             amber: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300',
-            cyan: 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300',
+            cyan: 'bg-accent-glow/15 dark:bg-accent-glow/10 text-accent-deep dark:text-accent-glow',
             emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300',
             violet: 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300',
             slate: 'bg-surface-2 text-foreground',
@@ -320,7 +320,7 @@ export function FantasmasPage() {
           <button onClick={onBulkDescartar} className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 hover:underline text-xs">
             <X className="h-3 w-3 inline mr-0.5" /> Descartar
           </button>
-          <button onClick={() => setModalAsignar(true)} className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300 hover:underline text-xs">
+          <button onClick={() => setModalAsignar(true)} className="text-accent-deep hover:text-accent-deep/80 dark:text-accent-glow dark:hover:text-accent-glow/80 hover:underline text-xs">
             <Truck className="h-3 w-3 inline mr-0.5" /> Asignar proveedor
           </button>
           <button onClick={clearSel} className="ml-auto text-muted-foreground hover:underline text-xs">Cancelar</button>
@@ -392,7 +392,7 @@ export function FantasmasPage() {
               <td className="p-3 text-xs text-muted-foreground">{fmtDate(f.ultimo_visto_en)}</td>
               <td className="p-3 text-right whitespace-nowrap">
                 <button onClick={() => setModalDetalle(f.id)} title="Ver detalle"
-                        className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300 px-1">
+                        className="text-accent-deep hover:text-accent-deep/80 dark:text-accent-glow dark:hover:text-accent-glow/80 px-1">
                   <Eye className="h-4 w-4 inline" />
                 </button>
                 {(f.estado === 'PENDIENTE' || f.estado === 'EN_OC' || f.estado === 'RECIBIDO') && (
@@ -510,7 +510,7 @@ function DetalleModal({ id, onClose }: { id: number; onClose: () => void }) {
               <ul className="text-xs space-y-1">
                 {d.cotizaciones.map((c) => (
                   <li key={c.id}>
-                    <span className="font-mono text-cyan-600 dark:text-cyan-400">{c.folio}</span>
+                    <span className="font-mono text-accent-deep dark:text-accent-glow">{c.folio}</span>
                     <span className="text-muted-foreground"> ({c.estatus})</span>
                     <span className="text-muted-foreground"> ×{c.cantidad}</span>
                   </li>

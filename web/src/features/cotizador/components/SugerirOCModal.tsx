@@ -109,7 +109,7 @@ export function SugerirOCModal({
                   <tbody>
                     {items.map((l, idx) => (
                       <tr key={`${prov.proveedor_id}-${l.producto_id ?? 'fantasma'}-${idx}`} className="border-t border-border">
-                        <td className="py-1 font-mono text-cyan-400">{l.sku ?? '—'}</td>
+                        <td className="py-1 font-mono text-accent-glow">{l.sku ?? '—'}</td>
                         <td className="py-1 text-foreground truncate max-w-xs">{l.nombre}</td>
                         <td className="py-1 text-center">{l.cantidad}</td>
                         <td className="py-1 text-right font-mono">{fmtMoney(l.costo_unitario, l.moneda)}</td>

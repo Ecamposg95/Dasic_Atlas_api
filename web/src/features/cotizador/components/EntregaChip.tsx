@@ -18,7 +18,7 @@ export function EntregaChip({ min, max, unidad }: Props) {
   const lbl = min === max ? `${min}` : `${min}–${max}`;
   const u = unidad === 'dias' ? 'd' : 'sem';
   return (
-    <span className="text-[10px] bg-cyan-900/30 text-cyan-300 px-1.5 py-0.5 rounded flex items-center gap-1">
+    <span className="text-[10px] bg-accent-glow/10 text-accent-glow px-1.5 py-0.5 rounded flex items-center gap-1">
       <Clock className="h-2.5 w-2.5" /> {lbl} {u}
     </span>
   );

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PipelineResponse } from '../types';
 
 const STAGES: { key: keyof PipelineResponse; label: string; color: string }[] = [
-  { key: 'nueva', label: 'Nuevas', color: '#06b6d4' },
+  { key: 'nueva', label: 'Nuevas', color: '#8b5cf6' },
   { key: 'seguimiento', label: 'Seguimiento', color: '#94a3b8' },
   { key: 'por_vencer', label: 'Por vencer', color: '#f59e0b' },
   { key: 'vencida', label: 'Vencidas', color: '#f43f5e' },
@@ -26,7 +26,7 @@ export function PipelineDonut({ pipeline, loading }: { pipeline?: PipelineRespon
     <Card>
       <CardHeader className="pb-2 pt-4 px-4">
         <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
-          <GitBranch className="h-4 w-4 text-cyan-400" /> Pipeline por etapa
+          <GitBranch className="h-4 w-4 text-accent-glow" /> Pipeline por etapa
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4">

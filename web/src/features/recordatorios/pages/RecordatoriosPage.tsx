@@ -263,7 +263,7 @@ export function RecordatoriosPage() {
                           {rec.folio ? (
                             <Link
                               to="/spa/seguimiento"
-                              className="font-mono text-xs text-cyan-600 dark:text-cyan-400 hover:underline"
+                              className="font-mono text-xs text-accent-deep dark:text-accent-glow hover:underline"
                             >
                               {rec.folio}
                             </Link>

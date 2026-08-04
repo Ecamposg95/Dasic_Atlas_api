@@ -121,7 +121,7 @@ export function PreviewOCDrawer() {
                       {g.items.map((it) => (
                         <li key={it.uid} className="flex items-baseline gap-2">
                           <span className="text-muted-foreground">•</span>
-                          <span className="font-mono text-cyan-400 shrink-0">
+                          <span className="font-mono text-accent-glow shrink-0">
                             {it.sku}
                           </span>
                           <span className="text-muted-foreground shrink-0">×{it.qty}</span>

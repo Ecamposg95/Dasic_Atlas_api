@@ -37,7 +37,7 @@ const ESTATUS_OPCIONES: Array<{ key: EstatusOrden | ''; label: string }> = [
 ];
 
 const ESTATUS_CLASS: Record<EstatusOrden, string> = {
-  cotizacion: 'bg-cyan-900/30 text-cyan-300 border border-cyan-700/50',
+  cotizacion: 'bg-accent-glow/10 text-accent-glow border border-accent-glow/40',
   pendiente: 'bg-amber-900/30 text-amber-300 border border-amber-700/50',
   pagada: 'bg-emerald-900/30 text-emerald-300 border border-emerald-700/50',
   cancelada: 'bg-surface-2 text-muted-foreground border border-border-strong',
@@ -249,7 +249,7 @@ export function HistorialTab({ clienteIdFiltro: _clienteIdFiltro }: { clienteIdF
             )}
             {items.map((o) => (
               <tr key={o.id} className="border-b border-border hover:bg-surface-2/60">
-                <td className="p-2 font-mono text-[11px] font-bold text-cyan-400">{o.folio}</td>
+                <td className="p-2 font-mono text-[11px] font-bold text-accent-glow">{o.folio}</td>
                 <td className="p-2 text-foreground max-w-xs truncate">{o.cliente ?? '—'}</td>
                 <td className="p-2"><span className={badgeEstatus(o.estatus)}>{o.estatus.toUpperCase()}</span></td>
                 <td className="p-2 text-right font-mono font-bold">{fmtMoney(o.total, o.moneda)}</td>

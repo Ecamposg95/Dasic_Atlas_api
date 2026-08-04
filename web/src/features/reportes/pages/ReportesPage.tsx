@@ -194,7 +194,7 @@ function TopProductosSection({ dias }: { dias: number }) {
                 <td className="px-4 py-3">
                   <div className="h-2 bg-surface-2 rounded overflow-hidden">
                     <div
-                      className="h-full bg-cyan-500 rounded"
+                      className="h-full bg-accent-glow rounded"
                       style={{
                         width: `${Math.round((row.monto_mxn / maxMonto) * 100)}%`,
                       }}

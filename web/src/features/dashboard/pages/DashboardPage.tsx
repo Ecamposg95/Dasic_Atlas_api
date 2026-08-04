@@ -247,7 +247,7 @@ export function DashboardPage() {
       {/* Row 5: Recordatorios */}
       <section>
         <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3 flex items-center gap-1">
-          <BellRing className="h-3.5 w-3.5 text-cyan-400" />
+          <BellRing className="h-3.5 w-3.5 text-accent-glow" />
           Recordatorios
         </h2>
         <Card>
@@ -392,7 +392,7 @@ export function DashboardPage() {
             <Card>
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
-                  <CreditCard className="h-4 w-4 text-cyan-400" />
+                  <CreditCard className="h-4 w-4 text-accent-glow" />
                   Top vendedores del mes
                 </CardTitle>
               </CardHeader>

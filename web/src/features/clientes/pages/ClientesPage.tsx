@@ -207,7 +207,7 @@ export function ClientesPage() {
       <PageHeader
         title={
           <span className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-cyan-400" /> Empresas
+            <Users className="h-5 w-5 text-accent-glow" /> Empresas
           </span>
         }
         description={
@@ -346,7 +346,7 @@ export function ClientesPage() {
                 <td className="p-3 text-right whitespace-nowrap">
                   <button
                     onClick={() => navigate(`/spa/empresas/${c.id}`)}
-                    className="text-accent-deep hover:text-accent-deep/80 dark:text-cyan-400 dark:hover:text-cyan-300 px-1.5 text-xs"
+                    className="text-accent-deep hover:text-accent-deep/80 dark:text-accent-glow dark:hover:text-accent-glow/80 px-1.5 text-xs"
                     title="Ver ficha completa"
                   >
                     Ver

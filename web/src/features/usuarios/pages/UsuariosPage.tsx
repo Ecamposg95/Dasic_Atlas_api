@@ -162,7 +162,7 @@ export function UsuariosPage() {
       <PageHeader
         title={
           <span className="flex items-center gap-2">
-            <UserCog className="h-5 w-5 text-cyan-400" /> Usuarios
+            <UserCog className="h-5 w-5 text-accent-glow" /> Usuarios
           </span>
         }
         actions={

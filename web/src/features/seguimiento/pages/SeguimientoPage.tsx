@@ -137,7 +137,7 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
           variant="ghost"
           size="icon"
           title="Recotizar (nueva versión)"
-          className="h-7 w-7 text-muted-foreground hover:text-cyan-600 dark:hover:text-cyan-300"
+          className="h-7 w-7 text-muted-foreground hover:text-accent-deep dark:hover:text-accent-glow/80"
           disabled={isBusy}
           onClick={() => onRecotizar(item.id)}
         >
@@ -183,7 +183,7 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
           variant="ghost"
           size="icon"
           title="Recordar seguimiento"
-          className="h-7 w-7 text-muted-foreground hover:text-cyan-600 dark:hover:text-cyan-300"
+          className="h-7 w-7 text-muted-foreground hover:text-accent-deep dark:hover:text-accent-glow/80"
           onClick={() => onRecordar(item)}
         >
           <BellPlus className="h-3.5 w-3.5" />

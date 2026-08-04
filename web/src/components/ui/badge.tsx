@@ -8,7 +8,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: 'border-border bg-surface-2 text-muted-foreground',
-        cyan: 'border-cyan-300 bg-cyan-100 text-cyan-700 dark:border-cyan-700/50 dark:bg-cyan-900/30 dark:text-cyan-300',
+        cyan: 'border-accent-glow/30 bg-accent-glow/15 text-accent-deep dark:border-accent-glow/40 dark:bg-accent-glow/10 dark:text-accent-glow',
         amber: 'border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/30 dark:text-amber-300',
         emerald: 'border-emerald-300 bg-emerald-100 text-emerald-700 dark:border-emerald-700/50 dark:bg-emerald-900/30 dark:text-emerald-300',
         rose: 'border-rose-300 bg-rose-100 text-rose-700 dark:border-rose-700/50 dark:bg-rose-900/30 dark:text-rose-300',

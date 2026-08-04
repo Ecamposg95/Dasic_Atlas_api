@@ -172,7 +172,7 @@ export function EditLineModal() {
         <div className={`inline-block text-[11px] font-bold uppercase px-2 py-0.5 rounded mb-3 ${
           esFantasma
             ? 'bg-purple-900/30 text-purple-300'
-            : 'bg-cyan-900/30 text-cyan-300'
+            : 'bg-accent-glow/10 text-accent-glow'
         }`}>
           {esFantasma
             ? '👻 Fantasma'
