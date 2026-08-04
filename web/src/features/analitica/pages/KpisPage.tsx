@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
+import { PageHeader } from '@/components/ui/page-header';
 import { ReportesPage } from '@/features/reportes/pages/ReportesPage';
 import { ReportesServicioPage } from '@/features/reportes_servicio/pages/ReportesServicioPage';
 
@@ -13,6 +14,7 @@ export function KpisPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto w-full space-y-4">
+      <PageHeader title="Analítica" description="KPIs de ventas y operación" />
       <div className="flex items-center gap-1 border-b border-border">
         {TABS.map((t) => (
           <button

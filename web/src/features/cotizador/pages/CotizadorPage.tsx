@@ -29,6 +29,7 @@ import { ModalConceptoPDF } from '../components/ModalConceptoPDF';
 import { AgregarFantasmaModal } from '../components/AgregarFantasmaModal';
 import { GenerarReporteServicioModal } from '@/features/reportes_servicio_docs/components/GenerarReporteServicioModal';
 import { CollapsibleCard } from '@/components/ui/CollapsibleCard';
+import { PageHeader } from '@/components/ui/page-header';
 import { useCotizador } from '../store';
 import { useCotizacionLoader } from '../hooks/useCotizacion';
 import { useAtajos, type AtajoHandler } from '../hooks/useAtajos';
@@ -253,12 +254,16 @@ export function CotizadorPage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <div className="flex-1 p-4 w-full space-y-3">
-        <header className="flex items-center justify-between gap-2 flex-wrap">
-          <h1 className="text-xl font-semibold flex items-center gap-2">
-            <FileText className="h-5 w-5 text-accent-glow" />
-            {editingId ? 'Editar cotización' : 'Nueva cotización'}
-          </h1>
-          <div className="flex items-center gap-1.5">
+        <PageHeader
+          className="mb-0"
+          title={
+            <span className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-accent-glow" />
+              {editingId ? 'Editar cotización' : 'Nueva cotización'}
+            </span>
+          }
+          actions={
+            <>
             {editingFolio && (
               <span className="text-xs bg-amber-900/30 text-amber-300 border border-amber-700/50 px-2 py-1 rounded flex items-center gap-1">
                 <Pencil className="h-3 w-3" />
@@ -332,8 +337,9 @@ export function CotizadorPage() {
                 <FileText className="h-3 w-3" /> Ver PDF
               </button>
             )}
-          </div>
-        </header>
+            </>
+          }
+        />
 
         <TabsCotizador active={tab} onChange={setTab} />
 

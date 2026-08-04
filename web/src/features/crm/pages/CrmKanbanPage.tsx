@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { KanbanSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/page-header';
 import { Select } from '@/components/ui/select';
 import { toast } from '@/lib/toast';
 import { confirm } from '@/lib/confirm';
@@ -119,33 +120,39 @@ export function CrmKanbanPage() {
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Page header */}
-      <div className="flex items-center justify-between gap-4 px-4 pt-4 pb-3 shrink-0 border-b border-border">
-        <div className="flex items-center gap-2">
-          <KanbanSquare className="h-5 w-5 text-accent-glow shrink-0" />
-          <h1 className="text-lg font-semibold">CRM · Pipeline</h1>
-        </div>
+      <div className="px-4 pt-4 pb-3 shrink-0 border-b border-border">
+        <PageHeader
+          className="mb-0"
+          title={
+            <span className="flex items-center gap-2">
+              <KanbanSquare className="h-5 w-5 text-accent-glow shrink-0" />
+              CRM · Pipeline
+            </span>
+          }
+          actions={
+            <>
+              {/* Pipeline selector — only shown when >1 pipeline */}
+              {pipelines.length > 1 && (
+                <Select
+                  value={activePipelineId != null ? String(activePipelineId) : ''}
+                  onChange={(e) => setSelectedPipelineId(parseInt(e.target.value, 10))}
+                  className="w-48 h-9 text-sm"
+                >
+                  {pipelines.map((p) => (
+                    <option key={p.id} value={String(p.id)}>
+                      {p.nombre}
+                    </option>
+                  ))}
+                </Select>
+              )}
 
-        <div className="flex items-center gap-2">
-          {/* Pipeline selector — only shown when >1 pipeline */}
-          {pipelines.length > 1 && (
-            <Select
-              value={activePipelineId != null ? String(activePipelineId) : ''}
-              onChange={(e) => setSelectedPipelineId(parseInt(e.target.value, 10))}
-              className="w-48 h-9 text-sm"
-            >
-              {pipelines.map((p) => (
-                <option key={p.id} value={String(p.id)}>
-                  {p.nombre}
-                </option>
-              ))}
-            </Select>
-          )}
-
-          <Button size="sm" onClick={openCreate} className="gap-1.5">
-            <Plus className="h-4 w-4" />
-            Nuevo deal
-          </Button>
-        </div>
+              <Button size="sm" onClick={openCreate} className="gap-1.5">
+                <Plus className="h-4 w-4" />
+                Nuevo deal
+              </Button>
+            </>
+          }
+        />
       </div>
 
       {/* Board area — horizontal scroll */}

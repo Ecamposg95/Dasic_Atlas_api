@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { useIsAdminOrGerente } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/page-header';
 import {
   DataTable,
   DataTableHead,
@@ -393,13 +394,15 @@ export function ReportesPage({ embedded = false }: { embedded?: boolean }) {
       {embedded ? (
         <div className="flex justify-end">{rangos}</div>
       ) : (
-        <header className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-3">
-            <BarChart3 className="h-6 w-6 text-accent-glow" />
-            <h1 className="text-2xl font-semibold">Reportes</h1>
-          </div>
-          {rangos}
-        </header>
+        <PageHeader
+          title={
+            <span className="flex items-center gap-3">
+              <BarChart3 className="h-6 w-6 text-accent-glow" />
+              Reportes
+            </span>
+          }
+          actions={rangos}
+        />
       )}
 
       <VentasMesSection dias={dias} isAdmin={isAdmin} />

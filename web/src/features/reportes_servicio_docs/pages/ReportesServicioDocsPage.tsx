@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ClipboardCheck, CheckSquare, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { ListToolbar } from '@/components/ui/list-toolbar';
@@ -211,24 +212,30 @@ export function ReportesServicioDocsPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-3">
-          <ClipboardCheck className="h-6 w-6 text-accent-glow" />
-          <h1 className="text-2xl font-semibold">Reportes de servicio</h1>
-          {!isLoading && (
-            <span className="text-muted-foreground text-sm">
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            <ClipboardCheck className="h-6 w-6 text-accent-glow" />
+            Reportes de servicio
+          </span>
+        }
+        description={
+          !isLoading && (
+            <>
               ({total} {total === 1 ? 'reporte' : 'reportes'})
-            </span>
-          )}
-        </div>
-        <Button
-          size="sm"
-          disabled
-          title="Genera el reporte desde el historial de cotizaciones (tab Historial del Cotizador)"
-        >
-          + Nuevo reporte
-        </Button>
-      </header>
+            </>
+          )
+        }
+        actions={
+          <Button
+            size="sm"
+            disabled
+            title="Genera el reporte desde el historial de cotizaciones (tab Historial del Cotizador)"
+          >
+            + Nuevo reporte
+          </Button>
+        }
+      />
 
       <ListToolbar
         search={search}
