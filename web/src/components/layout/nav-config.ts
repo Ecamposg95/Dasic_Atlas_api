@@ -78,6 +78,7 @@ export const SECTIONS: NavSection[] = [
 
 // Rutas que no aparecen en el menú pero pertenecen a una sección (breadcrumbs).
 const EXTRA_ROUTES: Array<{ prefix: string; section: string; label: string }> = [
+  { prefix: '/spa/crm/deals/', section: 'Comercial', label: 'CRM Pipeline' },
   { prefix: '/spa/empresas-unificar', section: 'Clientes', label: 'Empresas' },
   { prefix: '/spa/empresas/', section: 'Clientes', label: 'Empresas' },
   { prefix: '/spa/remisiones-nueva', section: 'Operación', label: 'Remisiones' },

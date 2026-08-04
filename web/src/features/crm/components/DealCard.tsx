@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Trash2, ExternalLink } from 'lucide-react';
 import type { Deal } from '../types';
 import type { Cliente } from '@/features/clientes/types';
@@ -45,7 +46,15 @@ export function DealCard({ deal, clientesMap, usuariosMap, onEdit, onDelete }: P
       {/* Title row */}
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium text-foreground leading-snug flex-1 line-clamp-2">
-          {deal.titulo}
+          {/* Link solo en el texto del título — no interfiere con el drag del card. */}
+          <Link
+            to={`/spa/crm/deals/${deal.id}`}
+            onClick={(e) => e.stopPropagation()}
+            draggable={false}
+            className="hover:text-accent-glow hover:underline transition-colors"
+          >
+            {deal.titulo}
+          </Link>
         </p>
         <button
           type="button"

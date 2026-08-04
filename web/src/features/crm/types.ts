@@ -32,9 +32,61 @@ export type Deal = {
   moneda: string;
   owner_user_id: number | null;
   orden_en_stage: number;
+  // Campos CRM v2 (pueden no venir en respuestas legacy → opcionales).
+  probabilidad?: number | string | null;
+  fecha_cierre_estimada?: string | null;
+  proximo_paso?: string | null;
+  notas?: string | null;
   creado_en: string;
   actualizado_en: string | null;
   cerrado_en: string | null;
+};
+
+// --- Detalle de deal (CRM v2) ---
+
+export type ActividadTipo = 'nota' | 'llamada' | 'email' | 'reunion' | 'visita' | 'sistema';
+
+export type Actividad = {
+  id: number;
+  tipo: ActividadTipo;
+  descripcion: string;
+  usuario_id: number | null;
+  usuario_nombre: string | null;
+  creado_en: string;
+};
+
+// POST /api/crm/deals/{id}/actividades body ('sistema' lo genera el backend).
+export type ActividadCreate = {
+  tipo: Exclude<ActividadTipo, 'sistema'>;
+  descripcion: string;
+};
+
+// GET /api/crm/deals/{id} response.
+// Decimales llegan como string desde el backend — coerciona con Number().
+export type DealDetalle = {
+  id: number;
+  titulo: string;
+  pipeline_id: number;
+  stage_id: number;
+  stage_nombre: string | null;
+  cliente_id: number | null;
+  cliente_nombre: string | null;
+  orden_id: number | null;
+  orden_folio: string | null;
+  orden_estatus: string | null;
+  orden_total: number | string | null;
+  monto: number | string | null;
+  moneda: string;
+  probabilidad: number | string | null;
+  fecha_cierre_estimada: string | null;
+  proximo_paso: string | null;
+  notas: string | null;
+  owner_user_id: number | null;
+  owner_nombre: string | null;
+  creado_en: string;
+  actualizado_en: string | null;
+  cerrado_en: string | null;
+  actividades: Actividad[];
 };
 
 // GET /api/crm/pipelines/{pipeline_id}/board response
@@ -57,8 +109,13 @@ export type DealCreate = {
   owner_user_id?: number | null;
 };
 
-// PATCH body (all optional)
-export type DealUpdate = Partial<Omit<DealCreate, 'pipeline_id'>>;
+// PATCH body (all optional). Acepta además los campos CRM v2.
+export type DealUpdate = Partial<Omit<DealCreate, 'pipeline_id'>> & {
+  probabilidad?: number | null;
+  fecha_cierre_estimada?: string | null;
+  proximo_paso?: string | null;
+  notas?: string | null;
+};
 
 // PATCH /move body
 export type DealMove = {
