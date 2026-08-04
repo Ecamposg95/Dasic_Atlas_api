@@ -1,9 +1,10 @@
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 export function Tabs<T extends string>({
   tabs, value, onChange, className,
 }: {
-  tabs: ReadonlyArray<{ key: T; label: string }>;
+  tabs: ReadonlyArray<{ key: T; label: ReactNode }>;
   value: T;
   onChange: (key: T) => void;
   className?: string;

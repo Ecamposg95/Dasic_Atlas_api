@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { BookMarked, Tags, Layers, Ruler, Wrench, FileSearch } from 'lucide-react';
 import { api } from '@/lib/api';
 import { PageHeader } from '@/components/ui/page-header';
+import { Tabs } from '@/components/ui/tabs';
 import type { ResumenCatalogo } from '../types';
 import { MarcasTab } from '../components/MarcasTab';
 import { CategoriasTab } from '../components/CategoriasTab';
@@ -12,13 +13,23 @@ import { SatTab } from '../components/SatTab';
 
 type Tab = 'marcas' | 'categorias' | 'unidades' | 'categorias-servicio' | 'sat';
 
-const TABS: { key: Tab; label: string; Icon: typeof Tags }[] = [
-  { key: 'marcas', label: 'Marcas', Icon: Tags },
-  { key: 'categorias', label: 'Categorías de producto', Icon: Layers },
-  { key: 'unidades', label: 'Unidades', Icon: Ruler },
-  { key: 'categorias-servicio', label: 'Categorías de servicio', Icon: Wrench },
-  { key: 'sat', label: 'Catálogos SAT', Icon: FileSearch },
+const TAB_DEFS: { key: Tab; text: string; Icon: typeof Tags }[] = [
+  { key: 'marcas', text: 'Marcas', Icon: Tags },
+  { key: 'categorias', text: 'Categorías de producto', Icon: Layers },
+  { key: 'unidades', text: 'Unidades', Icon: Ruler },
+  { key: 'categorias-servicio', text: 'Categorías de servicio', Icon: Wrench },
+  { key: 'sat', text: 'Catálogos SAT', Icon: FileSearch },
 ];
+
+const TABS = TAB_DEFS.map(({ key, text, Icon }) => ({
+  key,
+  label: (
+    <span className="flex items-center gap-1.5">
+      <Icon className="h-3.5 w-3.5" />
+      {text}
+    </span>
+  ),
+}));
 
 export function CatalogosPage() {
   const [tab, setTab] = useState<Tab>('marcas');
@@ -70,23 +81,7 @@ export function CatalogosPage() {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-border flex gap-1 overflow-x-auto whitespace-nowrap">
-        {TABS.map(({ key, label, Icon }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTab(key)}
-            className={`px-4 py-2 text-sm font-medium transition border-b-2 -mb-px inline-flex items-center gap-1.5 ${
-              tab === key
-                ? 'border-accent-glow text-accent-glow'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Icon className="h-3.5 w-3.5" />
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} className="overflow-x-auto whitespace-nowrap" />
 
       {/* Tab content */}
       <div>

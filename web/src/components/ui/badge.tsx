@@ -12,6 +12,7 @@ const badgeVariants = cva(
         amber: 'border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/30 dark:text-amber-300',
         emerald: 'border-emerald-300 bg-emerald-100 text-emerald-700 dark:border-emerald-700/50 dark:bg-emerald-900/30 dark:text-emerald-300',
         rose: 'border-rose-300 bg-rose-100 text-rose-700 dark:border-rose-700/50 dark:bg-rose-900/30 dark:text-rose-300',
+        sky: 'border-sky-300 bg-sky-100 text-sky-700 dark:border-sky-700/50 dark:bg-sky-900/30 dark:text-sky-300',
         violet: 'border-violet-300 bg-violet-100 text-violet-700 dark:border-violet-700/50 dark:bg-violet-900/30 dark:text-violet-300',
         slate: 'border-border bg-surface-2 text-muted-foreground',
       },

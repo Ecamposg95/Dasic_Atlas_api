@@ -38,11 +38,11 @@ const ROL_LABELS: Record<string, string> = {
   operativo:         'Operativo',
 };
 
-type BadgeVariant = 'emerald' | 'cyan' | 'violet' | 'slate';
+type BadgeVariant = 'emerald' | 'sky' | 'violet' | 'slate';
 
 function rolBadgeVariant(rol: string): BadgeVariant {
   if (rol === 'superadmin')        return 'emerald';
-  if (rol === 'administrador')     return 'cyan';
+  if (rol === 'administrador')     return 'sky';
   if (rol === 'gerente_comercial') return 'violet';
   return 'slate';
 }

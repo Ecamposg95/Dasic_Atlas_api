@@ -266,7 +266,7 @@ export function CuentasPorCobrarPage() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <section className="space-y-4">
           <SectionTitle>Antigüedad de saldo (aging)</SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 gap-4">
             <AgingDonut buckets={agingBuckets} loading={loadingAging} />
             <div className="flex items-center">
               <div className="w-full">

@@ -3,13 +3,13 @@ import { Modal } from '@/components/ui/modal';
 import { useCardex } from '../hooks/useProductos';
 import type { Producto } from '../types';
 
-type BadgeVariant = 'emerald' | 'rose' | 'amber' | 'cyan' | 'slate';
+type BadgeVariant = 'emerald' | 'rose' | 'amber' | 'sky' | 'slate';
 
 const TIPO_VARIANT: Record<string, BadgeVariant> = {
   ENTRADA: 'emerald',
   SALIDA: 'rose',
   AJUSTE: 'amber',
-  RESERVA: 'cyan',
+  RESERVA: 'sky',
   LIBERACION: 'slate',
 };
 

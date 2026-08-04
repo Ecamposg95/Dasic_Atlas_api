@@ -21,10 +21,10 @@ function fmtDate(iso: string | null) {
 }
 
 function badgeEstatus(e: EstatusOC) {
-  const map: Record<EstatusOC, 'default' | 'amber' | 'cyan' | 'emerald' | 'rose' | 'slate'> = {
+  const map: Record<EstatusOC, 'default' | 'amber' | 'sky' | 'emerald' | 'rose' | 'slate'> = {
     borrador: 'slate',
     enviada: 'amber',
-    confirmada: 'cyan',
+    confirmada: 'sky',
     recibido: 'emerald',
     recibida_parcial: 'amber',
     pagado: 'emerald',

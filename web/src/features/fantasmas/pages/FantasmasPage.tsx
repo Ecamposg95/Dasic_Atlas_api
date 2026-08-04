@@ -35,9 +35,9 @@ function useDebounced<T>(value: T, delay = 300): T {
   return debounced;
 }
 
-const ESTADOS: { key: EstadoFantasma; label: string; variant: 'amber' | 'cyan' | 'emerald' | 'violet' | 'slate' }[] = [
+const ESTADOS: { key: EstadoFantasma; label: string; variant: 'amber' | 'sky' | 'emerald' | 'violet' | 'slate' }[] = [
   { key: 'PENDIENTE', label: 'Pendientes', variant: 'amber' },
-  { key: 'EN_OC', label: 'En OC', variant: 'cyan' },
+  { key: 'EN_OC', label: 'En OC', variant: 'sky' },
   { key: 'RECIBIDO', label: 'Recibidos', variant: 'emerald' },
   { key: 'PROMOVIDO', label: 'Promovidos', variant: 'violet' },
   { key: 'DESCARTADO', label: 'Descartados', variant: 'slate' },
@@ -241,7 +241,7 @@ export function FantasmasPage() {
         {ESTADOS.map((e) => {
           const tone: Record<typeof e.variant, string> = {
             amber: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300',
-            cyan: 'bg-accent-glow/15 dark:bg-accent-glow/10 text-accent-deep dark:text-accent-glow',
+            sky: 'bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300',
             emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300',
             violet: 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300',
             slate: 'bg-surface-2 text-foreground',
