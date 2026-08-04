@@ -50,7 +50,7 @@ export function ConfirmHost() {
     <Modal title={titulo} onClose={() => close(false)} size="sm">
       <div className="flex items-start gap-3">
         <AlertTriangle className={`h-6 w-6 shrink-0 ${accent}`} />
-        <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">{current.mensaje}</p>
+        <p className="text-sm text-muted-foreground whitespace-pre-line">{current.mensaje}</p>
       </div>
       <ModalFooter>
         <Button variant="ghost" size="sm" onClick={() => close(false)}>{current.cancelLabel ?? 'Cancelar'}</Button>

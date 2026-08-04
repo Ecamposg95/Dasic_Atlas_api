@@ -88,9 +88,9 @@ export function SatCombobox({
         className={className}
       />
       {open && value.trim().length >= minChars && (items.length > 0 || loading) && (
-        <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md shadow-xl z-30">
+        <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-card border border-border rounded-md shadow-elev-2 z-30">
           {loading && items.length === 0 ? (
-            <div className="px-2 py-2 text-xs text-slate-500">Buscando…</div>
+            <div className="px-2 py-2 text-xs text-muted-foreground">Buscando…</div>
           ) : (
             items.map((it) => (
               <button
@@ -100,10 +100,10 @@ export function SatCombobox({
                   onChange(it.codigo);
                   setOpen(false);
                 }}
-                className="w-full text-left px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800 last:border-b-0 flex items-baseline gap-2"
+                className="w-full text-left px-2 py-1.5 hover:bg-surface-2/60 border-b border-border last:border-b-0 flex items-baseline gap-2"
               >
                 <span className="font-mono text-xs text-accent-glow">{it.codigo}</span>
-                <span className="text-xs text-slate-600 dark:text-slate-300 truncate">{label(it)}</span>
+                <span className="text-xs text-muted-foreground truncate">{label(it)}</span>
               </button>
             ))
           )}
