@@ -29,6 +29,7 @@ from app.services.cuentas_por_cobrar import crear_cargo_por_venta
 from app.models.enums import TipoMovimientoStock
 from app.services.stock_service import (
     aplicar_movimiento,
+    cantidad_entera_para_stock,
     consumir_reservas_a_salida,
     liberar_reservas_cotizacion,
     reservar_para_cotizacion,
@@ -708,13 +709,16 @@ def crear_orden(
 
                 if tipo_orden != models.EstatusOrden.COTIZACION:
                     # SALIDA auditada (kardex) + lock pesimista vía aplicar_movimiento.
+                    # movimientos_stock.cantidad es Integer: cantidad (Numeric(12,3) desde
+                    # Task 4) debe ser entera para poder moverse en el kardex.
+                    cantidad_stock = cantidad_entera_para_stock(item.cantidad, producto.sku)
                     # El servicio valida stock no-negativo y levanta ValueError si falla.
                     try:
                         aplicar_movimiento(
                             db,
                             producto=producto,
                             tipo=TipoMovimientoStock.SALIDA.value,
-                            cantidad=-item.cantidad,
+                            cantidad=-cantidad_stock,
                             referencia_tipo="venta_directa",
                             referencia_id=nueva_orden.id,
                             motivo=f"venta directa {nueva_orden.folio}",
@@ -842,10 +846,11 @@ def crear_orden(
                 and producto is not None
                 and tipo_linea == "producto_catalogo"
             ):
+                cantidad_stock = cantidad_entera_para_stock(item.cantidad, producto.sku)
                 reservar_para_cotizacion(
                     db,
                     producto=producto,
-                    cantidad=item.cantidad,
+                    cantidad=cantidad_stock,
                     cotizacion_id=nueva_orden.id,
                     usuario=current_user,
                 )
@@ -1112,10 +1117,11 @@ def actualizar_orden(
                 and tipo_linea == "producto_catalogo"
                 and orden.estatus == models.EstatusOrden.COTIZACION
             ):
+                cantidad_stock = cantidad_entera_para_stock(item.cantidad, producto.sku)
                 reservar_para_cotizacion(
                     db,
                     producto=producto,
-                    cantidad=item.cantidad,
+                    cantidad=cantidad_stock,
                     cotizacion_id=orden.id,
                     usuario=current_user,
                 )

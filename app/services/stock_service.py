@@ -13,13 +13,36 @@ LIBERACION (vía liberar_reservas_cotizacion).
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Optional
 
+from fastapi import HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app import models
 from app.models.enums import EstatusOrden, TipoMovimientoStock
+
+
+def cantidad_entera_para_stock(cantidad, sku: str) -> int:
+    """Valida y castea la cantidad (Decimal(12,3), snapshot comercial de la
+    línea) al `int` que exige `movimientos_stock.cantidad`.
+
+    Solo las líneas con producto de catálogo mueven/reservan stock físico
+    (kardex); esa columna sigue siendo `Integer` — Task 4 solo llevó
+    `DetalleOrden.cantidad`/`DetalleRemision.cantidad` a Numeric(12,3) a
+    nivel de línea comercial, no el inventario físico. Si la cantidad trae
+    parte fraccionaria (p.ej. "2.5" de una unidad tipo MTS), NO hay forma
+    correcta de moverla en un kardex de unidades enteras — se rechaza en vez
+    de redondear en silencio (redondear falsearía el stock reservado/movido).
+    """
+    cantidad_dec = Decimal(cantidad)
+    if cantidad_dec != cantidad_dec.to_integral_value():
+        raise HTTPException(
+            400,
+            f"La línea de {sku} mueve inventario y su cantidad debe ser entera",
+        )
+    return int(cantidad_dec)
 
 
 def aplicar_movimiento(
