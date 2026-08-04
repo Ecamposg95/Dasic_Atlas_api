@@ -402,9 +402,10 @@ def eliminar_categoria_producto(nombre: str, db: Session = Depends(get_db)):
 #
 # Reemplaza el antiguo diccionario "distinct sobre productos.unidad": ahora
 # es una tabla propia, administrable vía POST/PATCH (gateados con
-# require(user, "manage", "unidad") — recurso pendiente de entrar a la
-# matriz de permisos en Task 7; hasta entonces solo ADMIN pasa por el
-# wildcard *.*, el resto recibe 403, que es el comportamiento deseado).
+# require(user, "manage", "unidad") — el recurso "unidad" nunca entró a la
+# matriz de permisos (app/security/permissions.py) a propósito: solo ADMIN/
+# SUPERADMIN pasan por el wildcard *.*, el resto recibe 403. Ese es el
+# comportamiento deseado por el spec, no una tarea pendiente).
 #
 # El PUT /rename masivo de abajo sigue operando sobre `productos.unidad`
 # (dictamen legacy de texto libre) y se conserva intacto por compatibilidad.

@@ -348,11 +348,10 @@ def recepcion(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # "recibir" no tiene variante :own en la matriz — solo lo tienen
-    # OPERATIVO (plano) y ADMIN/SUPERADMIN (wildcard `*.*`). GERENTE_
-    # COMERCIAL NO tiene wildcard NI "recibir" en su lista de permisos (§6
-    # de la matriz) — recibe 403 aquí, y es INTENCIONAL, no un bug. Sin
-    # variante :own → sin owner-scoping que aplicar.
+    # "recibir" no tiene variante :own en la matriz — la tienen OPERATIVO,
+    # GERENTE_COMERCIAL (gestión completa de remisiones, §6) y ADMIN/
+    # SUPERADMIN (wildcard `*.*`). VENTAS no la tiene, así que recibe 403.
+    # Sin variante :own → sin owner-scoping que aplicar.
     require(current_user, "recibir", "remision")
     rem = service.registrar_recepcion(db, id, payload.recibido_por, current_user)
     return {

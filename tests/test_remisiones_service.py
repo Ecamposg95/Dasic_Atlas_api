@@ -93,6 +93,22 @@ def test_crear_cotizacion_desde_remision(db, orden):
     assert rem.estado == models.EstadoRemision.EMITIDA  # la remisión no se tocó
 
 
+def test_crear_cotizacion_desde_copia_contacto_de_la_orden(db, orden):
+    # M-2: la cotización derivada de una remisión-desde-orden hereda el
+    # contacto_id de la orden origen (antes quedaba siempre None).
+    o, d, admin = orden
+    contacto = models.Contacto(cliente_id=o.cliente_id, nombre="Juan Pérez")
+    db.add(contacto)
+    db.flush()
+    o.contacto_id = contacto.id
+    db.commit()
+
+    rem = _borrador(db, o, d, admin)
+    service.emitir(db, rem.id, admin, locker=_noop_locker)
+    cot = service.crear_cotizacion_desde(db, rem.id, admin, locker=_noop_locker)
+    assert cot.contacto_id == contacto.id
+
+
 # ---------------------------------------------------------------------------
 # Revisión adversarial: fixes de lock/re-check + validaciones nuevas.
 # ---------------------------------------------------------------------------
@@ -357,3 +373,67 @@ def test_lock_antes_de_refresh_spy(db, orden):
         assert eventos.index("lock") < eventos.index("refresh")
     finally:
         db.refresh = orig_refresh
+
+
+# ---------------------------------------------------------------------------
+# Cobertura de stock (spec §8): con stock_evento_descuento='remision', emitir
+# una remisión desde orden con producto de catálogo descuenta stock_actual y
+# la reversa por cancelación lo restaura.
+# ---------------------------------------------------------------------------
+
+def test_emitir_con_stock_evento_remision_descuenta_stock(db, orden):
+    o, d, admin = orden
+    prod = models.Producto(sku="SKU-STK", nombre="Producto con stock",
+                            stock_actual=20, es_servicio=False)
+    db.add(prod); db.flush()
+    d.producto_id = prod.id
+    db.add(models.PlatformConfig(clave="stock_evento_descuento", valor="remision"))
+    db.commit()
+
+    rem = _borrador(db, o, d, admin, "4")
+    rem = service.emitir(db, rem.id, admin, locker=_noop_locker)
+
+    assert rem.stock_descontado is True
+    db.refresh(prod)
+    assert prod.stock_actual == 16  # 20 - 4
+
+    mov = (
+        db.query(models.MovimientoStock)
+        .filter(models.MovimientoStock.referencia_tipo == "remision",
+                models.MovimientoStock.referencia_id == rem.id)
+        .one()
+    )
+    assert mov.tipo == models.TipoMovimientoStock.SALIDA.value
+    assert mov.cantidad == -4
+    assert mov.producto_id == prod.id
+
+
+def test_cancelar_remision_con_stock_descontado_revierte_stock(db, orden):
+    o, d, admin = orden
+    prod = models.Producto(sku="SKU-STK2", nombre="Producto con stock",
+                            stock_actual=20, es_servicio=False)
+    db.add(prod); db.flush()
+    d.producto_id = prod.id
+    db.add(models.PlatformConfig(clave="stock_evento_descuento", valor="remision"))
+    db.commit()
+
+    rem = _borrador(db, o, d, admin, "4")
+    rem = service.emitir(db, rem.id, admin, locker=_noop_locker)
+    db.refresh(prod)
+    assert prod.stock_actual == 16
+
+    rem = service.cancelar(db, rem.id, "motivo de cancelación", admin, locker=_noop_locker)
+    assert rem.estado == models.EstadoRemision.CANCELADA
+
+    db.refresh(prod)
+    assert prod.stock_actual == 20  # se restauró
+
+    mov_entrada = (
+        db.query(models.MovimientoStock)
+        .filter(models.MovimientoStock.referencia_tipo == "remision",
+                models.MovimientoStock.referencia_id == rem.id,
+                models.MovimientoStock.tipo == models.TipoMovimientoStock.ENTRADA.value)
+        .one()
+    )
+    assert mov_entrada.cantidad == 4
+    assert mov_entrada.producto_id == prod.id

@@ -71,10 +71,10 @@ PERMISSIONS: dict[RolUsuario, set[tuple[str, str]]] = {
         ("read", "reportes"), ("export", "reportes"),
         ("read", "gasto"), ("write", "gasto"),
         ("read", "fx"),
-        # remisiones: gestión completa
+        # remisiones: gestión completa (§6 de la matriz — incluye recepción)
         ("read", "remision"), ("create", "remision"), ("write", "remision"),
         ("emitir", "remision"), ("cancel", "remision"), ("sobreentrega", "remision"),
-        ("convertir", "remision"),
+        ("convertir", "remision"), ("recibir", "remision"),
     },
 
     RolUsuario.VENTAS: {

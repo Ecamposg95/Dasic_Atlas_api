@@ -92,6 +92,27 @@ def test_folio_nulo_muestra_sin_folio(db):
     assert "SIN FOLIO" in html
 
 
+def test_render_html_no_truena_con_subtotal_null(db):
+    # M-3: una línea con subtotal NULL (p.ej. ad-hoc sin precio capturado)
+    # no debe tronar el `sum(attribute='subtotal')` del total del pie.
+    rem = _remision(db, estado="emitida", unidad="MTS")
+    det_sin_precio = models.DetalleRemision(
+        remision_id=rem.id,
+        descripcion="Servicio sin precio",
+        cantidad=Decimal("1"),
+        unidad="PZA",
+        precio_unitario=None,
+        subtotal=None,
+    )
+    db.add(det_sin_precio)
+    db.commit()
+    db.refresh(rem)
+
+    html = documents.render_html(db, rem)
+
+    assert "50.00" in html  # el subtotal de la línea con precio sí suma
+
+
 def test_html_escapa_descripcion_maliciosa(db):
     """Sin autoescape, `descripcion`/`observaciones`/`transportista`/
     `empresa_nombre` se inyectan crudos en el HTML servido por

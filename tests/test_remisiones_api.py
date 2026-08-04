@@ -114,6 +114,21 @@ def test_operativo_si_puede_recibir(client_as, db):
     assert r.json()["estado"] == "recibida"
 
 
+def test_gerente_comercial_si_puede_recibir(client_as, db):
+    # §6 de la matriz: GERENTE_COMERCIAL tiene gestión completa de remisiones,
+    # incluida la recepción — no debe recibir 403 aquí (I-1).
+    cli = _cliente(db)
+    admin = client_as("administrador")
+    rem_id = _crear_borrador(admin, cli.id).json()["id"]
+    admin.post(f"/api/remisiones/{rem_id}/emitir")
+
+    gerente = client_as("gerente_comercial")
+    r = gerente.patch(f"/api/remisiones/{rem_id}/recepcion",
+                       json={"recibido_por": "Juan Pérez"})
+    assert r.status_code == 200, r.text
+    assert r.json()["estado"] == "recibida"
+
+
 # ---------------------------------------------------------------------------
 # Owner-scoping adicional (VENTAS :own más allá del listado)
 # ---------------------------------------------------------------------------

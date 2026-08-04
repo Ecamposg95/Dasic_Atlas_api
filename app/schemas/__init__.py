@@ -108,12 +108,6 @@ from app.schemas.precios import (  # noqa: F401
     PrecioProveedorResponse,
 )
 
-from app.schemas.remisiones import (  # noqa: F401
-    DetalleRemisionInput,
-    RemisionCreate,
-    RemisionResponse,
-)
-
 from app.schemas.reportes_servicio import (  # noqa: F401
     ReporteServicioCreate,
     ReporteServicioResponse,
@@ -174,8 +168,6 @@ __all__ = [
     "PromoverFantasmaInput",
     # precios
     "PrecioProveedorCreate", "PrecioProveedorResponse",
-    # remisiones
-    "DetalleRemisionInput", "RemisionCreate", "RemisionResponse",
     # reportes_servicio (documento hijo de OrdenVenta)
     "ReporteServicioCreate", "ReporteServicioResponse",
     # crm kanban

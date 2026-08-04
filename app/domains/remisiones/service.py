@@ -370,9 +370,15 @@ def crear_cotizacion_desde(db, remision_id: int, user, *, locker=folio_service.p
         db, prefijo="C", modelo=models.OrdenVenta, campo=models.OrdenVenta.folio, padding=3,
         locker=locker)
 
+    # M-2: si la remisión viene de una orden, hereda el contacto de esa
+    # orden — de lo contrario la cotización derivada queda sin contacto
+    # aunque la orden origen sí lo tuviera.
+    contacto_id = rem.orden_venta.contacto_id if rem.orden_venta else None
+
     cot = models.OrdenVenta(
         folio=folio,
         cliente_id=cliente_id,
+        contacto_id=contacto_id,
         vendedor_id=user.id,
         estatus=EstatusOrden.COTIZACION,
         moneda=rem.moneda or "MXN",
