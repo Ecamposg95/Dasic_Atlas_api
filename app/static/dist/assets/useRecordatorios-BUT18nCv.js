@@ -1,0 +1,1 @@
+import{e as r}from"./vendor-query-BkusyTQl.js";import{b as o}from"./index-CyrM-KM5.js";function u(e="pendientes"){return r({queryKey:["recordatorios",e],queryFn:()=>o.get(`/api/recordatorios/?vista=${e}`),placeholderData:a=>a})}function i(){return r({queryKey:["recordatorios","resumen"],queryFn:()=>o.get("/api/recordatorios/resumen"),staleTime:6e4})}export{i as a,u};
