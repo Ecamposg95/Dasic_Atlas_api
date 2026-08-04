@@ -126,6 +126,13 @@ from app.schemas.crm import (  # noqa: F401
     ActividadCreate,
     ActividadOut,
     DealDetalleOut,
+    StageCreate,
+    StageUpdate,
+    StageReorder,
+    PipelineUpdate,
+    MetricasEtapaOut,
+    MetricasTotalesOut,
+    MetricasPipelineOut,
 )
 
 from app.schemas.recordatorios import (  # noqa: F401
@@ -176,6 +183,8 @@ __all__ = [
     # crm kanban
     "PipelineOut", "StageOut", "DealOut", "DealCreate", "DealUpdate", "DealMove",
     "ActividadCreate", "ActividadOut", "DealDetalleOut",
+    "StageCreate", "StageUpdate", "StageReorder", "PipelineUpdate",
+    "MetricasEtapaOut", "MetricasTotalesOut", "MetricasPipelineOut",
     # recordatorios
     "RecordatorioCreate", "RecordatorioPosponer", "RecordatorioOut",
 ]

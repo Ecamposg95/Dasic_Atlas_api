@@ -9,10 +9,10 @@ devuelven todos los registros de la tabla (comportamiento idéntico a
 routers como servicios.py).
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -27,10 +27,17 @@ from app.schemas.crm import (
     DealMove,
     DealOut,
     DealUpdate,
+    MetricasEtapaOut,
+    MetricasPipelineOut,
+    MetricasTotalesOut,
     PipelineOut,
+    PipelineUpdate,
+    StageCreate,
     StageOut,
+    StageReorder,
+    StageUpdate,
 )
-from app.security import allow_all_staff, get_current_user
+from app.security import allow_admin_asistente, allow_all_staff, get_current_user
 
 router = APIRouter(prefix="/api/crm", tags=["CRM"])
 
@@ -62,6 +69,18 @@ def _deal_or_404(
     if not d:
         raise HTTPException(status_code=404, detail="Deal no encontrado")
     return d
+
+
+def _stage_or_404(
+    db: Session, stage_id: int, org_id: str | None
+) -> PipelineStage:
+    q = db.query(PipelineStage).filter(PipelineStage.id == stage_id)
+    if org_id:
+        q = q.filter(PipelineStage.organization_id == org_id)
+    s = q.first()
+    if not s:
+        raise HTTPException(status_code=404, detail="Stage no encontrado")
+    return s
 
 
 def _actividad_out(
@@ -134,6 +153,281 @@ def get_board(
         "stages": [StageOut.model_validate(s) for s in stages],
         "deals_by_stage": deals_by_stage,
     }
+
+
+# ---------------------------------------------------------------------------
+# GET /pipelines/{pipeline_id}/metricas
+# ---------------------------------------------------------------------------
+@router.get(
+    "/pipelines/{pipeline_id}/metricas",
+    response_model=MetricasPipelineOut,
+    dependencies=[Depends(allow_all_staff)],
+)
+def metricas_pipeline(
+    pipeline_id: int,
+    dias: int = Query(90, ge=1, le=365),
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    """Métricas de conversión del pipeline.
+
+    - ``por_etapa``: etapas normales → deals abiertos actuales
+      (``cerrado_en IS NULL``); etapas ganado/perdido → deals cerrados
+      dentro de los últimos ``dias`` días.
+    - ``abiertos``/``ganados``/``perdidos``: totales de esos mismos grupos.
+    - ``tasa_ganado_pct`` = ganados / (ganados + perdidos) * 100 en el período.
+
+    Nota sobre ``monto``: es la suma directa de ``Deal.monto`` SIN conversión
+    de moneda (puede mezclar MXN y USD). ``Deal`` no guarda ``tipo_cambio``,
+    por lo que la conversión USD→MXN del dashboard (que depende del TC
+    almacenado por orden) no es aplicable aquí.
+    """
+    org_id = _org_id(current_user)
+    _pipeline_or_404(db, pipeline_id, org_id)
+
+    stages = (
+        db.query(PipelineStage)
+        .filter(PipelineStage.pipeline_id == pipeline_id)
+        .order_by(PipelineStage.orden)
+        .all()
+    )
+
+    desde = datetime.now(timezone.utc) - timedelta(days=dias)
+
+    def _agg(por_cerrados: bool) -> dict[int, tuple[int, float]]:
+        q = db.query(
+            Deal.stage_id,
+            func.count(Deal.id),
+            func.coalesce(func.sum(Deal.monto), 0),
+        ).filter(Deal.pipeline_id == pipeline_id)
+        if org_id:
+            q = q.filter(Deal.organization_id == org_id)
+        if por_cerrados:
+            q = q.filter(Deal.cerrado_en.isnot(None), Deal.cerrado_en >= desde)
+        else:
+            q = q.filter(Deal.cerrado_en.is_(None))
+        return {
+            sid: (int(cnt), float(monto or 0))
+            for sid, cnt, monto in q.group_by(Deal.stage_id).all()
+        }
+
+    abiertos_por_stage = _agg(por_cerrados=False)
+    cerrados_por_stage = _agg(por_cerrados=True)
+
+    por_etapa: list[MetricasEtapaOut] = []
+    abiertos_count, abiertos_monto = 0, 0.0
+    ganados_count, ganados_monto = 0, 0.0
+    perdidos_count, perdidos_monto = 0, 0.0
+
+    for s in stages:
+        if s.es_ganado or s.es_perdido:
+            count, monto = cerrados_por_stage.get(s.id, (0, 0.0))
+            if s.es_ganado:
+                ganados_count += count
+                ganados_monto += monto
+            else:
+                perdidos_count += count
+                perdidos_monto += monto
+        else:
+            count, monto = abiertos_por_stage.get(s.id, (0, 0.0))
+            abiertos_count += count
+            abiertos_monto += monto
+        por_etapa.append(
+            MetricasEtapaOut(
+                stage_id=s.id,
+                nombre=s.nombre,
+                color=s.color,
+                es_ganado=s.es_ganado,
+                es_perdido=s.es_perdido,
+                count=count,
+                monto=round(monto, 2),
+            )
+        )
+
+    cerrados_total = ganados_count + perdidos_count
+    tasa_ganado_pct = (
+        round(ganados_count / cerrados_total * 100, 1) if cerrados_total else 0.0
+    )
+
+    return MetricasPipelineOut(
+        dias=dias,
+        por_etapa=por_etapa,
+        abiertos=MetricasTotalesOut(count=abiertos_count, monto=round(abiertos_monto, 2)),
+        ganados=MetricasTotalesOut(count=ganados_count, monto=round(ganados_monto, 2)),
+        perdidos=MetricasTotalesOut(count=perdidos_count, monto=round(perdidos_monto, 2)),
+        tasa_ganado_pct=tasa_ganado_pct,
+    )
+
+
+# ---------------------------------------------------------------------------
+# PATCH /pipelines/{pipeline_id}
+# ---------------------------------------------------------------------------
+@router.patch(
+    "/pipelines/{pipeline_id}",
+    response_model=PipelineOut,
+    dependencies=[Depends(allow_admin_asistente)],
+)
+def actualizar_pipeline(
+    pipeline_id: int,
+    payload: PipelineUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    org_id = _org_id(current_user)
+    pipeline = _pipeline_or_404(db, pipeline_id, org_id)
+
+    data = payload.model_dump(exclude_unset=True)
+    for field, value in data.items():
+        setattr(pipeline, field, value)
+
+    db.commit()
+    db.refresh(pipeline)
+    return pipeline
+
+
+# ---------------------------------------------------------------------------
+# POST /pipelines/{pipeline_id}/stages
+# ---------------------------------------------------------------------------
+@router.post(
+    "/pipelines/{pipeline_id}/stages",
+    response_model=StageOut,
+    status_code=201,
+    dependencies=[Depends(allow_admin_asistente)],
+)
+def crear_stage(
+    pipeline_id: int,
+    payload: StageCreate,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    org_id = _org_id(current_user)
+    pipeline = _pipeline_or_404(db, pipeline_id, org_id)
+
+    max_orden = (
+        db.query(func.max(PipelineStage.orden))
+        .filter(PipelineStage.pipeline_id == pipeline_id)
+        .scalar()
+    )
+
+    stage = PipelineStage(
+        organization_id=pipeline.organization_id,
+        pipeline_id=pipeline_id,
+        nombre=payload.nombre,
+        color=payload.color,
+        orden=(max_orden or 0) + 1,
+        es_ganado=False,
+        es_perdido=False,
+    )
+    db.add(stage)
+    db.commit()
+    db.refresh(stage)
+    return stage
+
+
+# ---------------------------------------------------------------------------
+# PATCH /stages/{stage_id}
+# ---------------------------------------------------------------------------
+@router.patch(
+    "/stages/{stage_id}",
+    response_model=StageOut,
+    dependencies=[Depends(allow_admin_asistente)],
+)
+def actualizar_stage(
+    stage_id: int,
+    payload: StageUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    org_id = _org_id(current_user)
+    stage = _stage_or_404(db, stage_id, org_id)
+
+    data = payload.model_dump(exclude_unset=True)
+    for field, value in data.items():
+        setattr(stage, field, value)
+
+    db.commit()
+    db.refresh(stage)
+    return stage
+
+
+# ---------------------------------------------------------------------------
+# DELETE /stages/{stage_id}
+# ---------------------------------------------------------------------------
+@router.delete(
+    "/stages/{stage_id}",
+    status_code=204,
+    dependencies=[Depends(allow_admin_asistente)],
+)
+def eliminar_stage(
+    stage_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    org_id = _org_id(current_user)
+    stage = _stage_or_404(db, stage_id, org_id)
+
+    if stage.es_ganado or stage.es_perdido:
+        raise HTTPException(
+            status_code=409,
+            detail="Las etapas de cierre (ganado/perdido) no se pueden eliminar",
+        )
+
+    deals_count = (
+        db.query(func.count(Deal.id))
+        .filter(Deal.stage_id == stage.id)
+        .scalar()
+    )
+    if deals_count:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"La etapa tiene {deals_count} deal(s); "
+                "muévelos a otra etapa antes de eliminarla"
+            ),
+        )
+
+    db.delete(stage)
+    db.commit()
+
+
+# ---------------------------------------------------------------------------
+# POST /pipelines/{pipeline_id}/stages/reorder
+# ---------------------------------------------------------------------------
+@router.post(
+    "/pipelines/{pipeline_id}/stages/reorder",
+    response_model=list[StageOut],
+    dependencies=[Depends(allow_admin_asistente)],
+)
+def reordenar_stages(
+    pipeline_id: int,
+    payload: StageReorder,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    org_id = _org_id(current_user)
+    _pipeline_or_404(db, pipeline_id, org_id)
+
+    stages = (
+        db.query(PipelineStage)
+        .filter(PipelineStage.pipeline_id == pipeline_id)
+        .all()
+    )
+    stages_by_id = {s.id: s for s in stages}
+
+    if set(payload.stage_ids) != set(stages_by_id):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "stage_ids debe incluir exactamente todas las etapas "
+                "del pipeline"
+            ),
+        )
+
+    for orden, sid in enumerate(payload.stage_ids, start=1):
+        stages_by_id[sid].orden = orden
+
+    db.commit()
+    return sorted(stages, key=lambda s: s.orden)
 
 
 # ---------------------------------------------------------------------------
