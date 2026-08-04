@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.db import Base
+from app.models.enums import EstadoRemision, TolerantEnum
 
 
 class Remision(Base):
@@ -23,6 +24,16 @@ class Remision(Base):
     mostrar_precios = Column(Boolean, nullable=False, server_default=text("false"))
     creado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     creado_en = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    estado = Column(TolerantEnum(EstadoRemision), nullable=False,
+                     server_default=text("'borrador'"), index=True)
+    emitida_at = Column(DateTime(timezone=True), nullable=True)
+    emitida_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    cancelada_at = Column(DateTime(timezone=True), nullable=True)
+    cancelada_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    motivo_cancelacion = Column(Text, nullable=True)
+    sobre_entrega_autorizada_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    stock_descontado = Column(Boolean, nullable=False, server_default=text("false"))
 
     orden_venta = relationship("OrdenVenta", foreign_keys=[orden_venta_id])
     cliente = relationship("Cliente", foreign_keys=[cliente_id])

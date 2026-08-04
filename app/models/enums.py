@@ -156,6 +156,22 @@ class EstatusOrden(str, enum.Enum):
         return None
 
 
+class EstadoRemision(str, enum.Enum):
+    BORRADOR = "borrador"
+    EMITIDA = "emitida"
+    RECIBIDA = "recibida"
+    CANCELADA = "cancelada"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            v = value.strip().lower()
+            for miembro in cls:
+                if miembro.value == v or miembro.name.lower() == v:
+                    return miembro
+        return None
+
+
 class TipoMovimiento(str, enum.Enum):
     CARGO = "cargo"
     ABONO = "abono"

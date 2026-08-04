@@ -62,6 +62,7 @@ from app.models.services import (  # noqa: F401
 from app.models.fantasmas import ProductoFantasma  # noqa: F401
 from app.models.precios import PrecioProveedor  # noqa: F401
 from app.models.remisiones import Remision, DetalleRemision  # noqa: F401
+from app.models.enums import EstadoRemision  # noqa: F401
 from app.models.reportes_servicio import ReporteServicio  # noqa: F401
 from app.models.platform import PlatformConfig  # noqa: F401
 from app.models.crm import Pipeline, PipelineStage, Deal, DealActividad  # noqa: F401
@@ -91,7 +92,7 @@ __all__ = [
     "SERVICIO_SAT_DEFAULT_OBJETO_IMP",
     "ProductoFantasma",
     "PrecioProveedor",
-    "Remision", "DetalleRemision",
+    "Remision", "DetalleRemision", "EstadoRemision",
     "ReporteServicio",
     "PlatformConfig",
     "Pipeline", "PipelineStage", "Deal", "DealActividad",

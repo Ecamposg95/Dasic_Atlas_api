@@ -514,6 +514,18 @@ _BACKFILL_DDL = [
     "ALTER TABLE IF EXISTS deals ADD COLUMN IF NOT EXISTS fecha_cierre_estimada DATE",
     "ALTER TABLE IF EXISTS deals ADD COLUMN IF NOT EXISTS proximo_paso VARCHAR(300)",
     "ALTER TABLE IF EXISTS deals ADD COLUMN IF NOT EXISTS notas TEXT",
+
+    # 20260803_01: remisiones v2 estados
+    "ALTER TABLE IF EXISTS remisiones ADD COLUMN IF NOT EXISTS estado VARCHAR(20) NOT NULL DEFAULT 'borrador'",
+    "ALTER TABLE IF EXISTS remisiones ADD COLUMN IF NOT EXISTS emitida_at TIMESTAMP WITH TIME ZONE",
+    "ALTER TABLE IF EXISTS remisiones ADD COLUMN IF NOT EXISTS emitida_por_id INTEGER REFERENCES usuarios(id)",
+    "ALTER TABLE IF EXISTS remisiones ADD COLUMN IF NOT EXISTS cancelada_at TIMESTAMP WITH TIME ZONE",
+    "ALTER TABLE IF EXISTS remisiones ADD COLUMN IF NOT EXISTS cancelada_por_id INTEGER REFERENCES usuarios(id)",
+    "ALTER TABLE IF EXISTS remisiones ADD COLUMN IF NOT EXISTS motivo_cancelacion TEXT",
+    "ALTER TABLE IF EXISTS remisiones ADD COLUMN IF NOT EXISTS sobre_entrega_autorizada_por_id INTEGER REFERENCES usuarios(id)",
+    "ALTER TABLE IF EXISTS remisiones ADD COLUMN IF NOT EXISTS stock_descontado BOOLEAN NOT NULL DEFAULT false",
+    "CREATE INDEX IF NOT EXISTS ix_remisiones_estado ON remisiones (estado)",
+    "UPDATE remisiones SET estado = CASE WHEN recibido_at IS NOT NULL THEN 'recibida' ELSE 'emitida' END WHERE estado = 'borrador' AND folio IS NOT NULL",
 ]
 
 
