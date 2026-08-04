@@ -115,7 +115,7 @@ export function AvanceEntregaCard({ ordenId }: { ordenId: number }) {
               <ul className="divide-y divide-border/60">
                 {data.remisiones.map((r) => (
                   <li key={r.id} className="flex items-center justify-between gap-3 py-1.5 text-xs">
-                    <Link to={`/spa/remisiones?ver=${r.id}`} className="font-mono text-accent-glow hover:underline">
+                    <Link to={`/spa/remisiones/historial?ver=${r.id}`} className="font-mono text-accent-glow hover:underline">
                       {r.folio ?? `#${r.id} (borrador)`}
                     </Link>
                     <span className="text-muted-foreground flex-1">{fmtFecha(r.fecha)}</span>

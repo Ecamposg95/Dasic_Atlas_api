@@ -12,6 +12,34 @@ function fmt(n: number) {
   return n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function fmtQty(n: number) {
+  return n.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+}
+
+/**
+ * Tope efectivo del input de cantidad. Con `vm.entregas` presente (línea de
+ * orden en el editor de remisiones) el tope es lo pendiente por entregar,
+ * salvo que caps.permitirExceso lo levante; sin entregas aplica el qtyMax
+ * clásico (comportamiento actual intacto).
+ */
+function qtyLimitOf(vm: DocRowVM, caps: DocRowCaps): number | null {
+  if (vm.entregas && !caps.permitirExceso) return vm.entregas.pendiente;
+  return vm.qtyMax ?? null;
+}
+
+/** Cifras compactas Cotizado/Entregado/Pendiente (patrón del "de {qtyMax}"). */
+function EntregasMeta({ e }: { e: NonNullable<DocRowVM['entregas']> }) {
+  return (
+    <div className="text-[10px] text-muted-foreground/70 leading-tight whitespace-nowrap">
+      <span title="Cotizado">C&nbsp;{fmtQty(e.cotizado)}</span>
+      {' · '}
+      <span className="text-emerald-400" title="Entregado">E&nbsp;{fmtQty(e.entregado)}</span>
+      {' · '}
+      <span className="text-amber-300" title="Pendiente">P&nbsp;{fmtQty(e.pendiente)}</span>
+    </div>
+  );
+}
+
 /** Wiring opcional de drag-and-drop, inyectado por SortableDocumentRow. */
 type DragWiring = {
   setNodeRef: (el: HTMLElement | null) => void;
@@ -46,12 +74,16 @@ export function DocumentRow({
 
   const esFantasma = vm.tipo === 'producto_fantasma';
   const esServicio = vm.tipo === 'servicio_catalogo';
+  const excluida = caps.seleccionable === true && vm.incluida === false;
+  const qtyLimit = qtyLimitOf(vm, caps);
 
-  const rowClass = esServicio
-    ? 'bg-emerald-950/30 border-l-4 border-l-emerald-500 hover:bg-emerald-950/45'
-    : esFantasma
-      ? 'bg-amber-950/30 border-l-4 border-l-amber-500 hover:bg-amber-950/45'
-      : 'hover:bg-surface-2/60';
+  const rowClass = `${
+    esServicio
+      ? 'bg-emerald-950/30 border-l-4 border-l-emerald-500 hover:bg-emerald-950/45'
+      : esFantasma
+        ? 'bg-amber-950/30 border-l-4 border-l-amber-500 hover:bg-amber-950/45'
+        : 'hover:bg-surface-2/60'
+  }${excluida ? ' opacity-40' : ''}`;
   const skuClass = esServicio
     ? 'text-emerald-300'
     : esFantasma
@@ -72,6 +104,19 @@ export function DocumentRow({
         cb.onToggleExpand(vm.uid);
       }}
     >
+      {/* Incluir (solo caps.seleccionable) */}
+      {caps.seleccionable && (
+        <td className="p-2.5 align-top text-center w-8">
+          <input
+            type="checkbox"
+            checked={vm.incluida !== false}
+            onChange={() => cb.onToggleIncluir?.(vm.uid)}
+            className="h-4 w-4 accent-accent-glow cursor-pointer align-middle"
+            aria-label="Incluir línea en la remisión"
+          />
+        </td>
+      )}
+
       {/* SKU / Descripción */}
       <td className="p-2.5 align-top max-w-md">
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -136,19 +181,23 @@ export function DocumentRow({
           type="number"
           min={caps.decimalQty ? '0.001' : '1'}
           step={caps.decimalQty ? '0.001' : undefined}
-          max={vm.qtyMax ?? undefined}
+          max={qtyLimit ?? undefined}
           value={vm.qty}
           disabled={!caps.editableQty}
           onChange={(e) => {
             const min = caps.decimalQty ? 0.001 : 1;
             const raw = caps.decimalQty ? parseFloat(e.target.value) : parseInt(e.target.value, 10);
             const v = Math.max(min, raw || min);
-            const capped = vm.qtyMax != null ? Math.min(v, vm.qtyMax) : v;
+            const capped = qtyLimit != null ? Math.min(v, qtyLimit) : v;
             cb.onQty(vm.uid, capped);
           }}
           className="h-7 text-center text-xs px-1"
         />
-        {vm.qtyMax != null && <div className="text-[10px] text-muted-foreground/70">de {vm.qtyMax}</div>}
+        {vm.entregas ? (
+          <EntregasMeta e={vm.entregas} />
+        ) : (
+          vm.qtyMax != null && <div className="text-[10px] text-muted-foreground/70">de {vm.qtyMax}</div>
+        )}
       </td>
 
       {/* Unidad */}
@@ -382,10 +431,21 @@ export function DocumentRowCard({
 }) {
   const esFantasma = vm.tipo === 'producto_fantasma';
   const esServicio = vm.tipo === 'servicio_catalogo';
+  const excluida = caps.seleccionable === true && vm.incluida === false;
+  const qtyLimit = qtyLimitOf(vm, caps);
   return (
-    <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+    <div className={`rounded-xl border border-border bg-card p-3 space-y-2${excluida ? ' opacity-40' : ''}`}>
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        {caps.seleccionable && (
+          <input
+            type="checkbox"
+            checked={vm.incluida !== false}
+            onChange={() => cb.onToggleIncluir?.(vm.uid)}
+            className="h-4 w-4 mt-0.5 shrink-0 accent-accent-glow cursor-pointer"
+            aria-label="Incluir línea en la remisión"
+          />
+        )}
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 flex-wrap">
             {esFantasma && (
               <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-500 text-amber-950 px-1.5 py-0.5 rounded">Fantasma</span>
@@ -414,19 +474,22 @@ export function DocumentRowCard({
             type="number"
             min={caps.decimalQty ? 0.001 : 1}
             step={caps.decimalQty ? 0.001 : undefined}
-            max={vm.qtyMax ?? undefined}
+            max={qtyLimit ?? undefined}
             value={vm.qty}
             disabled={!caps.editableQty}
             onChange={(e) => {
               const min = caps.decimalQty ? 0.001 : 1;
               const raw = caps.decimalQty ? parseFloat(e.target.value) : parseInt(e.target.value, 10);
               const v = Math.max(min, raw || min);
-              cb.onQty(vm.uid, vm.qtyMax != null ? Math.min(v, vm.qtyMax) : v);
+              cb.onQty(vm.uid, qtyLimit != null ? Math.min(v, qtyLimit) : v);
             }}
             className="h-7 w-16 text-center text-xs px-1 rounded border border-border bg-card"
           />
-          {vm.qtyMax != null && <span className="text-[10px] text-muted-foreground/70">de {vm.qtyMax}</span>}
+          {!vm.entregas && vm.qtyMax != null && (
+            <span className="text-[10px] text-muted-foreground/70">de {vm.qtyMax}</span>
+          )}
         </label>
+        {vm.entregas && <EntregasMeta e={vm.entregas} />}
         {caps.showUnidad && (
           <label className="flex items-center gap-1">
             <span className="text-muted-foreground">Unidad</span>

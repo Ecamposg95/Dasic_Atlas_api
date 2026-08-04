@@ -17,6 +17,8 @@ export type DocRowCaps = {
   showUnidad?: boolean;    // dropdown de unidad editable (solo remisión, líneas ad-hoc)
   unidadOptions?: string[]; // opciones del catálogo activo cuando showUnidad
   decimalQty?: boolean;    // cantidad admite decimales (remisión: metros/kg/etc.); default = solo enteros (cotizador)
+  seleccionable?: boolean; // checkbox "incluir" al inicio de la fila/card (editor de remisiones); fila con incluida=false se atenúa
+  permitirExceso?: boolean; // con vm.entregas presente, permite qty > pendiente (excesos autorizados)
 };
 
 /** View-model ya calculado de una línea. */
@@ -36,6 +38,14 @@ export type DocRowVM = {
   // Cantidad
   qty: number;
   qtyMax?: number | null;      // cap parcial (remisión). null/undefined => sin tope
+
+  // Selección (solo si caps.seleccionable). undefined ≡ incluida.
+  incluida?: boolean;
+
+  // Avance de entrega por línea de orden (editor de remisiones). Si viene,
+  // se muestran las 3 cifras compactas bajo la cantidad y el input se limita
+  // a `pendiente` (salvo caps.permitirExceso).
+  entregas?: { cotizado: number; entregado: number; pendiente: number };
 
   // Costo (solo si caps.showCosto)
   costOrigen: number;          // crudo del catálogo, moneda nativa
@@ -78,4 +88,5 @@ export type DocRowCallbacks = {
   onToggleExpand: (uid: string) => void;
   onPrecio?: (uid: string, v: number) => void;
   onUnidad?: (uid: string, unidad: string) => void;
+  onToggleIncluir?: (uid: string) => void; // checkbox incluir (solo si caps.seleccionable)
 };

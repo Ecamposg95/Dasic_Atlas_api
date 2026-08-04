@@ -72,6 +72,7 @@ export function DocumentCartTable({
       <table className="w-full text-[13px] min-w-[680px]">
           <thead className="bg-surface-2 text-[11px] text-muted-foreground uppercase tracking-[0.15em] sticky top-0 z-10">
             <tr>
+              {caps.seleccionable && <th className="p-2.5 text-center w-8" aria-label="Incluir"></th>}
               <th className="p-2.5 text-left">
                 <span className="inline-flex items-center gap-1">
                   <Tag className="h-3 w-3" /> SKU / Descripción
