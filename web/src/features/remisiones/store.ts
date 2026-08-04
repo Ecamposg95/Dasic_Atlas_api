@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Producto, Servicio } from '@/features/cotizador/types';
 import type { FantasmaPrevio } from '@/features/cotizador/hooks/useFantasmasSearch';
-import type { RemisionBorrador } from './types';
+import type { RemisionBorrador, RemisionDetalle } from './types';
 
 export type RemisionLinea = {
   uid: string;
@@ -10,10 +10,19 @@ export type RemisionLinea = {
   descripcion: string;
   sku: string | null;
   clave_unidad_sat: string | null;
+  unidad: string | null;
   precio_unitario: number;
   productCurrency: string;
   cantidad: number;
-  cantidad_max: number | null;       // tope para líneas de orden
+  // Vestigial — ya no se usa para topar `cantidad` (ver `setQty`: la
+  // sobre-entrega la decide el backend, la UI solo avisa). Ad-hoc siempre
+  // null; líneas de orden también van en null (el tope visual vive en
+  // `pendiente`, mostrado en la tabla de selección de partidas).
+  cantidad_max: number | null;
+  cotizado: number | null;           // snapshot cantidad_orden — solo líneas de orden
+  entregado: number | null;          // acumulado ya entregado — solo líneas de orden
+  pendiente: number | null;          // cotizado - entregado — solo líneas de orden
+  incluir: boolean;                  // checkbox de selección (líneas de orden); ad-hoc siempre true
   observaciones_linea: string;
   expanded: boolean;
 };
@@ -31,7 +40,16 @@ type RemisionState = {
   observaciones: string;
 
   hydrateFromBorrador: (b: RemisionBorrador, ordenId: number) => void;
+  // Reabre un borrador existente para editarlo (GET /api/remisiones/{id}).
+  // `borrador` es el contexto de acumulados de la orden (GET /orden/{id}/
+  // borrador), null en modo libre — sin él no hay cotizado/entregado/
+  // pendiente que mostrar en la tabla de selección de partidas.
+  hydrateFromDetalle: (detalle: RemisionDetalle, borrador: RemisionBorrador | null) => void;
   setQty: (uid: string, qty: number) => void;
+  setUnidad: (uid: string, unidad: string) => void;
+  toggleIncluir: (uid: string) => void;
+  seleccionarTodasPartidas: () => void;
+  limpiarSeleccionPartidas: () => void;
   removeLinea: (uid: string) => void;
   toggleExpand: (uid: string) => void;
   setMostrarPrecios: (v: boolean) => void;
@@ -81,22 +99,110 @@ export const useRemision = create<RemisionState>((set) => ({
         descripcion: l.descripcion,
         sku: l.sku,
         clave_unidad_sat: l.clave_unidad_sat,
+        unidad: l.unidad,
         precio_unitario: l.precio_unitario,
         productCurrency: b.moneda || 'MXN',
-        cantidad: l.cantidad_orden,
-        cantidad_max: l.cantidad_orden,
+        // Default = pendiente (NO cantidad_orden): lo normal es remisionar
+        // lo que falta, no repetir todo lo cotizado.
+        cantidad: l.cantidad_pendiente,
+        cantidad_max: null,
+        cotizado: l.cantidad_orden,
+        entregado: l.entregado,
+        pendiente: l.cantidad_pendiente,
+        // Partidas ya completamente entregadas arrancan sin marcar — el
+        // usuario las incluye a propósito si de verdad quiere sobre-entregar.
+        incluir: l.cantidad_pendiente > 0,
         observaciones_linea: '',
         expanded: false,
       })),
     }),
 
+  hydrateFromDetalle: (detalle, borrador) =>
+    set(() => {
+      const existentesPorPartida = new Map(
+        detalle.detalles
+          .filter((d) => d.detalle_orden_id != null)
+          .map((d) => [d.detalle_orden_id as number, d]),
+      );
+      const adHoc = detalle.detalles.filter((d) => d.detalle_orden_id == null);
+      const moneda = detalle.moneda || borrador?.moneda || 'MXN';
+      const modo: 'orden' | 'libre' = detalle.orden_venta_id != null ? 'orden' : 'libre';
+
+      const lineasOrden: RemisionLinea[] = (borrador?.lineas ?? []).map((l) => {
+        const existente = existentesPorPartida.get(l.detalle_orden_id);
+        return {
+          uid: nextUid('orden'),
+          detalle_orden_id: l.detalle_orden_id,
+          tipo: 'producto' as const,
+          descripcion: l.descripcion,
+          sku: l.sku,
+          clave_unidad_sat: existente?.clave_unidad_sat ?? l.clave_unidad_sat,
+          unidad: existente?.unidad ?? l.unidad,
+          precio_unitario: l.precio_unitario,
+          productCurrency: moneda,
+          cantidad: existente ? Number(existente.cantidad) : l.cantidad_pendiente,
+          cantidad_max: null,
+          cotizado: l.cantidad_orden,
+          entregado: l.entregado,
+          pendiente: l.cantidad_pendiente,
+          incluir: existente != null,
+          observaciones_linea: existente?.observaciones_linea ?? '',
+          expanded: false,
+        };
+      });
+
+      const lineasAdHoc: RemisionLinea[] = adHoc.map((d) => ({
+        uid: nextUid('adhoc'),
+        detalle_orden_id: null,
+        tipo: 'producto_fantasma' as const,
+        descripcion: d.descripcion ?? '',
+        sku: d.sku,
+        clave_unidad_sat: d.clave_unidad_sat,
+        unidad: d.unidad,
+        precio_unitario: d.precio_unitario ?? 0,
+        productCurrency: moneda,
+        cantidad: Number(d.cantidad),
+        cantidad_max: null,
+        cotizado: null,
+        entregado: null,
+        pendiente: null,
+        incluir: true,
+        observaciones_linea: d.observaciones_linea ?? '',
+        expanded: false,
+      }));
+
+      return {
+        ordenId: detalle.orden_venta_id,
+        ordenFolio: detalle.orden_folio,
+        clienteNombre: detalle.cliente_nombre,
+        modo,
+        clienteId: null, // PUT no manda cliente_id — es inmutable tras crear
+        moneda,
+        lineas: [...lineasOrden, ...lineasAdHoc],
+        mostrarPrecios: detalle.mostrar_precios,
+        transportista: detalle.transportista || '',
+        observaciones: detalle.observaciones || '',
+      };
+    }),
+
+  // Sin tope: la sobre-entrega la decide el backend en /emitir (400 con
+  // detalle de excesos) — la UI solo avisa con un badge (ver
+  // PartidasSeleccionTable), nunca bloquea el input.
   setQty: (uid, qty) =>
     set((s) => ({
-      lineas: s.lineas.map((l) =>
-        l.uid === uid
-          ? { ...l, cantidad: Math.max(0, l.cantidad_max != null ? Math.min(qty, l.cantidad_max) : qty) }
-          : l,
-      ),
+      lineas: s.lineas.map((l) => (l.uid === uid ? { ...l, cantidad: Math.max(0, qty) } : l)),
+    })),
+  setUnidad: (uid, unidad) =>
+    set((s) => ({ lineas: s.lineas.map((l) => (l.uid === uid ? { ...l, unidad } : l)) })),
+  toggleIncluir: (uid) =>
+    set((s) => ({ lineas: s.lineas.map((l) => (l.uid === uid ? { ...l, incluir: !l.incluir } : l)) })),
+  seleccionarTodasPartidas: () =>
+    set((s) => ({
+      lineas: s.lineas.map((l) => (l.detalle_orden_id != null ? { ...l, incluir: true } : l)),
+    })),
+  limpiarSeleccionPartidas: () =>
+    set((s) => ({
+      lineas: s.lineas.map((l) => (l.detalle_orden_id != null ? { ...l, incluir: false } : l)),
     })),
   removeLinea: (uid) => set((s) => ({ lineas: s.lineas.filter((l) => l.uid !== uid) })),
   toggleExpand: (uid) =>
@@ -130,6 +236,7 @@ export const useRemision = create<RemisionState>((set) => ({
           descripcion: p.nombre,
           sku: p.sku_comercial || p.sku,
           clave_unidad_sat: null,
+          unidad: null,
           // El catálogo es cost-first (no hay precio de venta); NO sembramos el
           // costo de DASIC como precio al cliente. Arranca en 0 → el usuario lo
           // captura si va a mostrar precios.
@@ -137,6 +244,10 @@ export const useRemision = create<RemisionState>((set) => ({
           productCurrency: p.moneda_compra || 'MXN',
           cantidad: qty,
           cantidad_max: null,
+          cotizado: null,
+          entregado: null,
+          pendiente: null,
+          incluir: true,
           observaciones_linea: '',
           expanded: false,
         },
@@ -153,10 +264,15 @@ export const useRemision = create<RemisionState>((set) => ({
           descripcion: svc.nombre,
           sku: svc.codigo,
           clave_unidad_sat: null,
+          unidad: null,
           precio_unitario: 0,
           productCurrency: (svc.moneda || 'MXN').toUpperCase(),
           cantidad: qty,
           cantidad_max: null,
+          cotizado: null,
+          entregado: null,
+          pendiente: null,
+          incluir: true,
           observaciones_linea: '',
           expanded: false,
         },
@@ -173,10 +289,15 @@ export const useRemision = create<RemisionState>((set) => ({
           descripcion: f.descripcion,
           sku: f.sku_libre || null,
           clave_unidad_sat: null,
+          unidad: null,
           precio_unitario: 0,
           productCurrency: (f.moneda || 'MXN').toUpperCase(),
           cantidad: qty,
           cantidad_max: null,
+          cotizado: null,
+          entregado: null,
+          pendiente: null,
+          incluir: true,
           observaciones_linea: '',
           expanded: false,
         },
@@ -193,10 +314,15 @@ export const useRemision = create<RemisionState>((set) => ({
           descripcion: input.descripcion,
           sku: input.sku,
           clave_unidad_sat: input.clave_unidad_sat,
+          unidad: null,
           precio_unitario: input.precio_unitario,
           productCurrency: 'MXN',
           cantidad: input.cantidad,
           cantidad_max: null,
+          cotizado: null,
+          entregado: null,
+          pendiente: null,
+          incluir: true,
           observaciones_linea: '',
           expanded: false,
         },

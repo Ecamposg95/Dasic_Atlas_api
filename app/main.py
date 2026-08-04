@@ -88,9 +88,10 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 from app.routers import (  # noqa: E402
     admin, auth, catalogos, clientes, compras, contactos, crm, cuentas_por_cobrar, dashboard,
-    fantasmas, fx, gastos, inventario, plantas, precios, productos, recordatorios, remisiones, reportes,
+    fantasmas, fx, gastos, inventario, plantas, precios, productos, recordatorios, reportes,
     reportes_servicio_docs, sat, servicios, superadmin, usuarios, ventas,
 )
+from app.domains.remisiones.router import router as remisiones_router  # noqa: E402
 
 app.include_router(auth.router)
 app.include_router(productos.router)
@@ -111,7 +112,7 @@ app.include_router(sat.router)
 app.include_router(servicios.router)
 app.include_router(cuentas_por_cobrar.router)
 app.include_router(precios.router)
-app.include_router(remisiones.router)
+app.include_router(remisiones_router)
 app.include_router(reportes_servicio_docs.router)
 app.include_router(superadmin.router)
 app.include_router(crm.router)

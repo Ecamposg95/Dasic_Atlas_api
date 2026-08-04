@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pen } from 'lucide-react';
+import { Pen, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,11 +25,17 @@ function RenombrarModal({
   onSaved: () => void;
 }) {
   const qc = useQueryClient();
-  const [nuevo, setNuevo] = useState(unidad.unidad);
+  const [nuevo, setNuevo] = useState(unidad.nombre);
   const [err, setErr] = useState<string | null>(null);
 
-  const renameMut = useMutation<unknown, { status?: number; detail?: string }, { antiguo: string; nuevo: string }>({
-    mutationFn: (payload) => api.put('/api/catalogos/unidades/rename', payload),
+  // (I-2) Renombra el registro del catálogo administrable `unidades_medida`
+  // (PATCH /api/catalogos/unidades/{id}, body {nombre}) — es el recurso que
+  // este tab lista. El PUT legacy `/unidades/rename` muta `productos.unidad`
+  // (texto libre) y NO toca esta tabla; quedó como acción aparte más abajo
+  // ("Renombrar en productos (legacy)") para quien todavía necesite el
+  // rename masivo de productos existentes.
+  const renameMut = useMutation<unknown, { status?: number; detail?: string }, { nombre: string }>({
+    mutationFn: (payload) => api.patch(`/api/catalogos/unidades/${unidad.id}`, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['catalogos', 'unidades'] });
       toast({ kind: 'success', title: 'Unidad renombrada' });
@@ -45,8 +51,8 @@ function RenombrarModal({
     setErr(null);
     const nuevoTrim = nuevo.trim().toUpperCase();
     if (!nuevoTrim) { setErr('El nombre no puede estar vacío.'); return; }
-    if (nuevoTrim === unidad.unidad) { onClose(); return; }
-    renameMut.mutate({ antiguo: unidad.unidad, nuevo: nuevoTrim });
+    if (nuevoTrim === unidad.nombre) { onClose(); return; }
+    renameMut.mutate({ nombre: nuevoTrim });
   }
 
   return (
@@ -54,7 +60,7 @@ function RenombrarModal({
       <div className="space-y-3">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">Unidad actual</label>
-          <p className="text-sm font-mono font-bold text-foreground">{unidad.unidad}</p>
+          <p className="text-sm font-mono font-bold text-foreground">{unidad.nombre}</p>
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">Nueva unidad *</label>
@@ -65,7 +71,8 @@ function RenombrarModal({
             autoFocus
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Se actualizarán {unidad.n_productos} producto(s). Se normaliza a mayúsculas.
+            Se normaliza a mayúsculas. Renombra el catálogo — no afecta la unidad
+            ya guardada en productos existentes.
           </p>
         </div>
         {err && (
@@ -82,46 +89,121 @@ function RenombrarModal({
   );
 }
 
+// ─── RenombrarLegacyModal ─────────────────────────────────────────────────────
+// (I-2) Flujo legacy conservado aparte: renombra el texto libre
+// `productos.unidad` en todos los productos que lo usen (PUT
+// /unidades/rename). No toca el catálogo `unidades_medida` — es un rename
+// masivo de datos históricos, útil cuando productos capturados antes de
+// este catálogo quedaron con una unidad mal escrita o inconsistente.
+
+function RenombrarLegacyModal({
+  unidad,
+  onClose,
+}: {
+  unidad: Unidad;
+  onClose: () => void;
+}) {
+  const [nuevo, setNuevo] = useState(unidad.nombre);
+  const [err, setErr] = useState<string | null>(null);
+
+  const renameMut = useMutation<
+    { actualizados: number },
+    { status?: number; detail?: string },
+    { antiguo: string; nuevo: string }
+  >({
+    mutationFn: (payload) => api.put('/api/catalogos/unidades/rename', payload),
+    onSuccess: (data) => {
+      toast({ kind: 'success', title: `${data.actualizados} producto(s) actualizado(s)` });
+      onClose();
+    },
+    onError: (e) => {
+      if (e.status === 403) toast({ kind: 'error', title: 'Sin permiso' });
+      else setErr(e.detail ?? 'No se pudo renombrar.');
+    },
+  });
+
+  function onSubmit() {
+    setErr(null);
+    const nuevoTrim = nuevo.trim().toUpperCase();
+    if (!nuevoTrim) { setErr('El nombre no puede estar vacío.'); return; }
+    if (nuevoTrim === unidad.nombre) { onClose(); return; }
+    renameMut.mutate({ antiguo: unidad.nombre, nuevo: nuevoTrim });
+  }
+
+  return (
+    <Modal title="Renombrar en productos (legacy)" onClose={onClose} size="md">
+      <div className="space-y-3">
+        <p className="text-xs text-muted-foreground">
+          Actualiza el texto libre <code>unidad</code> en todos los productos que
+          usan <span className="font-mono font-bold text-foreground">{unidad.nombre}</span>.
+          No modifica el catálogo administrable de unidades.
+        </p>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Nueva unidad *</label>
+          <Input
+            value={nuevo}
+            onChange={(e) => setNuevo(e.target.value.toUpperCase())}
+            placeholder="Ej: PZA"
+            autoFocus
+          />
+        </div>
+        {err && (
+          <div className="text-xs bg-rose-100 border border-rose-300 text-rose-700 dark:bg-rose-900/30 dark:border-rose-700/50 dark:text-rose-300 rounded p-2">{err}</div>
+        )}
+      </div>
+      <ModalFooter>
+        <Button variant="ghost" size="sm" onClick={onClose} disabled={renameMut.isPending}>Cancelar</Button>
+        <Button size="sm" onClick={onSubmit} disabled={renameMut.isPending}>
+          {renameMut.isPending ? 'Renombrando…' : 'Renombrar en productos'}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  );
+}
+
 // ─── UnidadesTab ─────────────────────────────────────────────────────────────
 
 export function UnidadesTab() {
   const { data, isLoading } = useUnidades();
   const [modalRename, setModalRename] = useState<Unidad | null>(null);
+  const [modalLegacy, setModalLegacy] = useState<Unidad | null>(null);
 
-  const enUso = data?.en_uso ?? [];
-  const sugeridas = data?.sugeridas ?? [];
-
-  // Sugeridas que aún no están en uso
-  const sugieridasNoEnUso = sugeridas.filter(
-    (s) => !enUso.some((u) => u.unidad === s),
-  );
+  // GET /api/catalogos/unidades ahora devuelve directamente el arreglo del
+  // catálogo `unidades_medida` (Task 4) — ya no { en_uso, sugeridas }. El
+  // conteo de productos por unidad y la lista de "sugeridas" (derivados del
+  // viejo diccionario distinct) no tienen equivalente en el nuevo shape.
+  const unidades = data ?? [];
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">{enUso.length} unidad(es) en uso</p>
+      <p className="text-sm text-muted-foreground">{unidades.length} unidad(es)</p>
 
       <DataTable maxBodyHeight="24rem">
         <DataTableHead sticky>
           <tr>
             <th className="p-3 text-left">Unidad</th>
-            <th className="p-3 text-center"># Productos</th>
+            <th className="p-3 text-center">Abreviatura</th>
+            <th className="p-3 text-center">Estado</th>
             <th className="p-3 text-right">Acciones</th>
           </tr>
         </DataTableHead>
         <DataTableBody>
           {isLoading && (
-            <DataTableEmpty colSpan={3}>Cargando unidades…</DataTableEmpty>
+            <DataTableEmpty colSpan={4}>Cargando unidades…</DataTableEmpty>
           )}
-          {!isLoading && enUso.length === 0 && (
-            <DataTableEmpty colSpan={3}>Sin unidades en uso</DataTableEmpty>
+          {!isLoading && unidades.length === 0 && (
+            <DataTableEmpty colSpan={4}>Sin unidades registradas</DataTableEmpty>
           )}
-          {enUso.map((u) => (
-            <DataTableRow key={u.unidad}>
-              <td className="p-3 font-mono font-bold text-foreground">{u.unidad}</td>
+          {unidades.map((u) => (
+            <DataTableRow key={u.id}>
+              <td className="p-3 font-mono font-bold text-foreground">{u.nombre}</td>
               <td className="p-3 text-center">
-                <Badge variant={u.n_productos > 0 ? 'cyan' : 'slate'}>{u.n_productos}</Badge>
+                <Badge variant="cyan">{u.abreviatura}</Badge>
               </td>
-              <td className="p-3 text-right">
+              <td className="p-3 text-center">
+                <Badge variant={u.activa ? 'cyan' : 'slate'}>{u.activa ? 'Activa' : 'Inactiva'}</Badge>
+              </td>
+              <td className="p-3 text-right whitespace-nowrap">
                 <button
                   onClick={() => setModalRename(u)}
                   title="Renombrar"
@@ -129,33 +211,31 @@ export function UnidadesTab() {
                 >
                   <Pen className="h-4 w-4 inline" />
                 </button>
+                <button
+                  onClick={() => setModalLegacy(u)}
+                  title="Renombrar en productos (legacy)"
+                  className="text-muted-foreground hover:text-foreground px-1"
+                >
+                  <History className="h-4 w-4 inline" />
+                </button>
               </td>
             </DataTableRow>
           ))}
         </DataTableBody>
       </DataTable>
 
-      {sugieridasNoEnUso.length > 0 && (
-        <div>
-          <p className="text-xs text-muted-foreground mb-2">Sugeridas (aún no en uso):</p>
-          <div className="flex flex-wrap gap-1.5">
-            {sugieridasNoEnUso.map((s) => (
-              <span
-                key={s}
-                className="px-2 py-0.5 rounded border border-border-strong font-mono text-xs text-muted-foreground"
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
       {modalRename && (
         <RenombrarModal
           unidad={modalRename}
           onClose={() => setModalRename(null)}
           onSaved={() => setModalRename(null)}
+        />
+      )}
+
+      {modalLegacy && (
+        <RenombrarLegacyModal
+          unidad={modalLegacy}
+          onClose={() => setModalLegacy(null)}
         />
       )}
     </div>

@@ -18,7 +18,11 @@ class DetalleOrdenCreate(BaseModel):
     # Servicio del catálogo (tabla servicios). Cuando viene, tipo_linea debe
     # ser "servicio_catalogo".
     servicio_id: Optional[int] = None
-    cantidad: int = Field(..., gt=0)
+    cantidad: Decimal = Field(..., gt=0)
+    # Unidad comercial snapshot (de UnidadMedida.abreviatura o texto libre).
+    # Igual que marca/claves SAT: se copia al guardar para que renombrar una
+    # unidad en el catálogo no reescriba cotizaciones históricas.
+    unidad: Optional[str] = Field(default=None, max_length=20)
     utilidad: Decimal = Field(default=Decimal("0"), ge=0, lt=100)
     descuento: Decimal = Field(default=Decimal("0"), ge=0, le=100)
     # Descuento del proveedor a Dasic (reduce costo OC). Independiente del
@@ -79,7 +83,8 @@ class DetalleOrdenResponse(BaseModel):
     descripcion_libre: Optional[str] = None
     moneda_origen_linea: Optional[str] = None
     costo_base_linea: Optional[Decimal] = None
-    cantidad: int
+    cantidad: Decimal
+    unidad: Optional[str] = None
     precio_unitario: Decimal
     utilidad_aplicada: Decimal
     descuento_aplicado: Decimal

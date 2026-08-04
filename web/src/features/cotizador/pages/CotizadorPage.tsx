@@ -28,6 +28,7 @@ import { ModalNotaLinea } from '../components/ModalNotaLinea';
 import { ModalTerminos } from '../components/ModalTerminos';
 import { ModalConceptoPDF } from '../components/ModalConceptoPDF';
 import { AgregarFantasmaModal } from '../components/AgregarFantasmaModal';
+import { AvanceEntregaCard } from '../components/AvanceEntregaCard';
 import { GenerarReporteServicioModal } from '@/features/reportes_servicio_docs/components/GenerarReporteServicioModal';
 import { CollapsibleCard } from '@/components/ui/CollapsibleCard';
 import { PageHeader } from '@/components/ui/page-header';
@@ -391,6 +392,11 @@ export function CotizadorPage() {
 
             <Cart />
             <SuggestRelacionados />
+
+            {/* Solo para órdenes ya convertidas a venta (estatus != COTIZACION,
+                mismo criterio que `noEditable`) — una cotización abierta no
+                tiene remisiones asociadas todavía. */}
+            {noEditable && editingId != null && <AvanceEntregaCard ordenId={editingId} />}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <CollapsibleCard

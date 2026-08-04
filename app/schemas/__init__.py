@@ -32,6 +32,9 @@ from app.schemas.catalog import (  # noqa: F401
     MarcaCreate,
     MarcaUpdate,
     MarcaResponse,
+    UnidadMedidaCreate,
+    UnidadMedidaUpdate,
+    UnidadMedidaResponse,
 )
 
 from app.schemas.clients import (  # noqa: F401
@@ -105,12 +108,6 @@ from app.schemas.precios import (  # noqa: F401
     PrecioProveedorResponse,
 )
 
-from app.schemas.remisiones import (  # noqa: F401
-    DetalleRemisionInput,
-    RemisionCreate,
-    RemisionResponse,
-)
-
 from app.schemas.reportes_servicio import (  # noqa: F401
     ReporteServicioCreate,
     ReporteServicioResponse,
@@ -158,6 +155,8 @@ __all__ = [
     "ProductoBase", "ProductoCreate", "ProductoUpdate",
     "ProductoResponseVendedor", "ProductoResponseAdmin", "ProductoInfo",
     "PromocionBase", "PromocionCreate", "PromocionResponse",
+    "MarcaCreate", "MarcaUpdate", "MarcaResponse",
+    "UnidadMedidaCreate", "UnidadMedidaUpdate", "UnidadMedidaResponse",
     # clients
     "ClienteBase", "ClienteCreate", "ClienteUpdate", "ClienteResponse",
     "ProveedorBase", "ProveedorCreate", "ProveedorResponse",
@@ -185,8 +184,6 @@ __all__ = [
     "PromoverFantasmaInput",
     # precios
     "PrecioProveedorCreate", "PrecioProveedorResponse",
-    # remisiones
-    "DetalleRemisionInput", "RemisionCreate", "RemisionResponse",
     # reportes_servicio (documento hijo de OrdenVenta)
     "ReporteServicioCreate", "ReporteServicioResponse",
     # crm kanban

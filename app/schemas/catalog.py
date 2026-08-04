@@ -133,3 +133,28 @@ class MarcaResponse(MarcaBase):
     n_productos: int = 0
     siguiente_sku: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
+
+
+# ---------- Unidades de medida (catálogo administrable) ----------
+
+class UnidadMedidaBase(BaseModel):
+    nombre: str = Field(..., min_length=1, max_length=40)
+    abreviatura: str = Field(..., min_length=1, max_length=20)
+    activa: bool = True
+    orden: int = 0
+
+
+class UnidadMedidaCreate(UnidadMedidaBase):
+    pass
+
+
+class UnidadMedidaUpdate(BaseModel):
+    nombre: Optional[str] = Field(None, min_length=1, max_length=40)
+    abreviatura: Optional[str] = Field(None, min_length=1, max_length=20)
+    activa: Optional[bool] = None
+    orden: Optional[int] = None
+
+
+class UnidadMedidaResponse(UnidadMedidaBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)

@@ -16,6 +16,7 @@ from app import models
 from app import schemas
 from app.core.config import get_settings
 from app.db import get_db, SessionLocal
+from app.domains.remisiones import repository as remisiones_repository
 from app.security import allow_all_staff, get_current_user
 from app.security.permissions import _normalize_role, is_owner_scoped, require
 from app.services.email_service import (
@@ -29,6 +30,7 @@ from app.services.cuentas_por_cobrar import crear_cargo_por_venta
 from app.models.enums import TipoMovimientoStock
 from app.services.stock_service import (
     aplicar_movimiento,
+    cantidad_entera_para_stock,
     consumir_reservas_a_salida,
     liberar_reservas_cotizacion,
     reservar_para_cotizacion,
@@ -708,13 +710,16 @@ def crear_orden(
 
                 if tipo_orden != models.EstatusOrden.COTIZACION:
                     # SALIDA auditada (kardex) + lock pesimista vía aplicar_movimiento.
+                    # movimientos_stock.cantidad es Integer: cantidad (Numeric(12,3) desde
+                    # Task 4) debe ser entera para poder moverse en el kardex.
+                    cantidad_stock = cantidad_entera_para_stock(item.cantidad, producto.sku)
                     # El servicio valida stock no-negativo y levanta ValueError si falla.
                     try:
                         aplicar_movimiento(
                             db,
                             producto=producto,
                             tipo=TipoMovimientoStock.SALIDA.value,
-                            cantidad=-item.cantidad,
+                            cantidad=-cantidad_stock,
                             referencia_tipo="venta_directa",
                             referencia_id=nueva_orden.id,
                             motivo=f"venta directa {nueva_orden.folio}",
@@ -807,6 +812,10 @@ def crear_orden(
             _mostrar_marca = bool(getattr(item, "mostrar_marca", False))
 
             tipo_linea = _resolve_tipo_linea(item, producto)
+            # Snapshot de unidad (Task 4): lo que mandó el payload, o si no vino,
+            # la del catálogo (solo aplica cuando hay producto — fantasma/servicio
+            # no tienen unidad de catálogo de la cual heredar).
+            _unidad = getattr(item, "unidad", None) or (producto.unidad if producto else None)
             db.add(models.DetalleOrden(
                 orden_id=nueva_orden.id,
                 producto_id=producto.id if producto else None,
@@ -820,6 +829,7 @@ def crear_orden(
                 marca=_marca,
                 mostrar_marca=_mostrar_marca,
                 cantidad=item.cantidad,
+                unidad=_unidad,
                 # precio_unitario = bruto pre-descuento (lo que el cliente ve por unidad).
                 # subtotal ya incluye el descuento aplicado.
                 precio_unitario=precio_unit_bruto.quantize(Decimal("0.01")),
@@ -842,10 +852,11 @@ def crear_orden(
                 and producto is not None
                 and tipo_linea == "producto_catalogo"
             ):
+                cantidad_stock = cantidad_entera_para_stock(item.cantidad, producto.sku)
                 reservar_para_cotizacion(
                     db,
                     producto=producto,
-                    cantidad=item.cantidad,
+                    cantidad=cantidad_stock,
                     cotizacion_id=nueva_orden.id,
                     usuario=current_user,
                 )
@@ -1080,6 +1091,8 @@ def actualizar_orden(
             _mostrar_marca = bool(getattr(item, "mostrar_marca", False))
 
             tipo_linea = _resolve_tipo_linea(item, producto)
+            # Snapshot de unidad (Task 4): payload, o fallback al catálogo si no vino.
+            _unidad = getattr(item, "unidad", None) or (producto.unidad if producto else None)
             db.add(models.DetalleOrden(
                 orden_id=orden.id,
                 producto_id=producto.id if producto else None,
@@ -1093,6 +1106,7 @@ def actualizar_orden(
                 marca=_marca,
                 mostrar_marca=_mostrar_marca,
                 cantidad=item.cantidad,
+                unidad=_unidad,
                 precio_unitario=precio_unit_bruto.quantize(Decimal("0.01")),
                 utilidad_aplicada=utilidad_pct,
                 descuento_aplicado=descuento_pct,
@@ -1112,10 +1126,11 @@ def actualizar_orden(
                 and tipo_linea == "producto_catalogo"
                 and orden.estatus == models.EstatusOrden.COTIZACION
             ):
+                cantidad_stock = cantidad_entera_para_stock(item.cantidad, producto.sku)
                 reservar_para_cotizacion(
                     db,
                     producto=producto,
-                    cantidad=item.cantidad,
+                    cantidad=cantidad_stock,
                     cotizacion_id=orden.id,
                     usuario=current_user,
                 )
@@ -1230,6 +1245,7 @@ def recotizar(
                 marca=det.marca,
                 mostrar_marca=det.mostrar_marca,
                 cantidad=det.cantidad,
+                unidad=det.unidad,
                 precio_unitario=det.precio_unitario,
                 utilidad_aplicada=det.utilidad_aplicada,
                 descuento_aplicado=det.descuento_aplicado,
@@ -2045,6 +2061,84 @@ def listar_eventos(
         }
         for ev in eventos
     ]
+
+
+@router.get("/{id}/avance-entrega", dependencies=[Depends(allow_all_staff)])
+def avance_entrega(
+    id: int,
+    current_user: models.Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Avance de entrega por partida de una orden de venta, usando el mismo
+    `repository` de remisiones (Task 5/7): cuánto se cotizó vs. cuánto ya se
+    entregó (remisiones EMITIDA/RECIBIDA) por línea, más el historial de
+    remisiones asociadas a la orden.
+
+    `partidas` (el agregado cotizado/entregado/pendiente) se queda SIN
+    owner-scoping — mismo criterio que `obtener_detalle_orden` (línea
+    ~1549, "detalle-json"), que tampoco filtra por `vendedor_id`: el repo ya
+    trata la cartera de cotizaciones/órdenes como de lectura compartida
+    entre VENTAS.
+
+    `remisiones` (el historial con folio/fecha/estado — identifica quién
+    entregó qué) SÍ se filtra (fix round 1 de Task 7, finding reproducido:
+    sin esto, cualquier VENTAS veía el historial de remisiones de una orden
+    ajena, y OPERATIVO veía remisiones en borrador):
+      - OPERATIVO: nunca ve BORRADOR/CANCELADA (mismo "consulta emitidas"
+        que en `domains/remisiones/router.py`).
+      - VENTAS (`read:own` en remision): si la ORDEN es suya, ve todas las
+        remisiones de la orden (igual que en el router de remisiones —
+        dueño de la orden ve remisiones ajenas creadas sobre ella). Si la
+        orden es ajena, solo ve las remisiones que él mismo creó.
+    """
+    orden = db.query(models.OrdenVenta).filter(models.OrdenVenta.id == id).first()
+    if not orden:
+        raise HTTPException(404, "Orden de venta no encontrada")
+
+    entregado = remisiones_repository.entregado_por_detalle(db, orden.id)
+    partidas = []
+    for d in orden.detalles:
+        cotizado = Decimal(str(d.cantidad))
+        entreg = entregado.get(d.id, Decimal("0"))
+        pendiente = cotizado - entreg
+        if entreg == 0:
+            estado_partida = "NO_ENTREGADA"
+        elif pendiente <= 0:
+            estado_partida = "ENTREGADA"
+        else:
+            estado_partida = "PARCIAL"
+        partidas.append({
+            "detalle_orden_id": d.id,
+            "cotizado": float(cotizado),
+            "entregado": float(entreg),
+            "pendiente": float(pendiente),
+            "estado": estado_partida,
+        })
+
+    remisiones_query = db.query(models.Remision).filter(models.Remision.orden_venta_id == orden.id)
+
+    rol = _normalize_role(getattr(current_user, "rol", None))
+    if rol == models.RolUsuario.OPERATIVO:
+        remisiones_query = remisiones_query.filter(
+            models.Remision.estado.in_([models.EstadoRemision.EMITIDA, models.EstadoRemision.RECIBIDA])
+        )
+    elif is_owner_scoped(current_user, "read", "remision") and orden.vendedor_id != current_user.id:
+        remisiones_query = remisiones_query.filter(models.Remision.creado_por_id == current_user.id)
+
+    remisiones = remisiones_query.order_by(desc(models.Remision.fecha_remision)).all()
+
+    return {
+        "partidas": partidas,
+        "remisiones": [
+            {
+                "id": r.id,
+                "folio": r.folio,
+                "fecha": r.fecha_remision.isoformat() if r.fecha_remision else None,
+                "estado": r.estado.value,
+            }
+            for r in remisiones
+        ],
+    }
 
 
 # --- 7. CANCELAR COTIZACIÓN (libera reservas) ---

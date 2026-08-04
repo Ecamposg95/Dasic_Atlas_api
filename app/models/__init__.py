@@ -22,6 +22,7 @@ from app.models.enums import (  # noqa: F401
     TipoMovimiento,
     TipoLineaCotizacion,
     TipoMovimientoStock,
+    EstadoRemision,
 )
 from app.models.users import Usuario  # noqa: F401
 from app.models.catalog import Producto, Promocion, Marca  # noqa: F401
@@ -62,6 +63,7 @@ from app.models.services import (  # noqa: F401
 from app.models.fantasmas import ProductoFantasma  # noqa: F401
 from app.models.precios import PrecioProveedor  # noqa: F401
 from app.models.remisiones import Remision, DetalleRemision  # noqa: F401
+from app.models.unidades import UnidadMedida  # noqa: F401
 from app.models.reportes_servicio import ReporteServicio  # noqa: F401
 from app.models.platform import PlatformConfig  # noqa: F401
 from app.models.crm import Pipeline, PipelineStage, Deal, DealActividad  # noqa: F401
@@ -71,7 +73,7 @@ from app.models.instalaciones import Planta, ActivoInstalado  # noqa: F401
 __all__ = [
     "Base",
     "RolUsuario", "EstatusOrden", "TipoMovimiento",
-    "TipoLineaCotizacion", "TipoMovimientoStock",
+    "TipoLineaCotizacion", "TipoMovimientoStock", "EstadoRemision",
     "Usuario",
     "Producto", "Promocion", "Marca",
     "Cliente", "Contacto", "Proveedor", "ClienteMergeLog", "NotaEmpresa",
@@ -93,6 +95,7 @@ __all__ = [
     "ProductoFantasma",
     "PrecioProveedor",
     "Remision", "DetalleRemision",
+    "UnidadMedida",
     "ReporteServicio",
     "PlatformConfig",
     "Pipeline", "PipelineStage", "Deal", "DealActividad",

@@ -1,10 +1,11 @@
 """Remision y DetalleRemision — comprobantes de entrega física."""
 
-from sqlalchemy import Boolean, Column, DateTime, DECIMAL, ForeignKey, Integer, String, Text, text
+from sqlalchemy import Boolean, Column, DateTime, DECIMAL, ForeignKey, Integer, Numeric, String, Text, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.db import Base
+from app.models.enums import EstadoRemision, TolerantEnum
 
 
 class Remision(Base):
@@ -24,6 +25,16 @@ class Remision(Base):
     creado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     creado_en = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
+    estado = Column(TolerantEnum(EstadoRemision), nullable=False,
+                     server_default=text("'BORRADOR'"), index=True)
+    emitida_at = Column(DateTime(timezone=True), nullable=True)
+    emitida_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    cancelada_at = Column(DateTime(timezone=True), nullable=True)
+    cancelada_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    motivo_cancelacion = Column(Text, nullable=True)
+    sobre_entrega_autorizada_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    stock_descontado = Column(Boolean, nullable=False, server_default=text("false"))
+
     orden_venta = relationship("OrdenVenta", foreign_keys=[orden_venta_id])
     cliente = relationship("Cliente", foreign_keys=[cliente_id])
     creado_por = relationship("Usuario", foreign_keys=[creado_por_id])
@@ -38,10 +49,16 @@ class DetalleRemision(Base):
     detalle_orden_id = Column(Integer, ForeignKey("detalles_orden.id"), nullable=True)
     descripcion = Column(Text, nullable=False)
     sku = Column(String(80), nullable=True)
-    cantidad = Column(Integer, nullable=False)
+    cantidad = Column(Numeric(12, 3), nullable=False)
+    unidad = Column(String(20), nullable=True)
     observaciones_linea = Column(Text, nullable=True)
     clave_unidad_sat = Column(String(10), nullable=True)
     precio_unitario = Column(DECIMAL(10, 2), nullable=True)
     subtotal = Column(DECIMAL(12, 2), nullable=True)
 
     remision = relationship("Remision", back_populates="detalles")
+    # Sin back_populates: DetalleOrden no necesita navegar a sus remisiones
+    # (el acumulado se calcula vía repository.entregado_por_detalle). Usada
+    # por service._descontar_stock/cancelar para llegar al producto real y
+    # mover/revertir stock físico cuando la línea viene de una orden.
+    detalle_orden = relationship("DetalleOrden", foreign_keys=[detalle_orden_id])

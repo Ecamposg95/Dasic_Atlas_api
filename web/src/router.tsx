@@ -99,6 +99,7 @@ export const router = createBrowserRouter([
       { path: 'compras', lazy: compras },
       { path: 'remisiones', lazy: remisiones },
       { path: 'remisiones-nueva', lazy: crearRemision },
+      { path: 'remisiones/:id/editar', lazy: crearRemision },
       { path: 'gastos', lazy: gastos },
       { path: 'analitica', lazy: analitica },
       { path: 'reportes', element: <Navigate to="/spa/analitica?tab=ventas" replace /> },

@@ -2,7 +2,7 @@
 Sales models: OrdenVenta, DetalleOrden.
 """
 
-from sqlalchemy import Boolean, Column, DateTime, DECIMAL, ForeignKey, Integer, String, Text, text
+from sqlalchemy import Boolean, Column, DateTime, DECIMAL, ForeignKey, Integer, Numeric, String, Text, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -54,6 +54,10 @@ class OrdenVenta(Base):
     # Versionado de cotizaciones
     cotizacion_origen_id = Column(Integer, ForeignKey("ordenes_venta.id"), nullable=True, index=True)
     version = Column(Integer, nullable=False, default=1)
+
+    # Conversión remisión→cotización (Task 6, remisiones v2): si la cotización
+    # nace de una remisión emitida/recibida, referencia su origen.
+    remision_origen_id = Column(Integer, ForeignKey("remisiones.id"), nullable=True, index=True)
 
     # Lifecycle tracking — Fase Cotizador-Edicion (spec 2026-05-19)
     enviada_at = Column(DateTime(timezone=True), nullable=True, index=True)
@@ -109,7 +113,8 @@ class DetalleOrden(Base):
     marca = Column(String(80), nullable=True)
     mostrar_marca = Column(Boolean, nullable=False, server_default=text("false"))
 
-    cantidad = Column(Integer, nullable=False)
+    cantidad = Column(Numeric(12, 3), nullable=False)
+    unidad = Column(String(20), nullable=True)
     precio_unitario = Column(DECIMAL(10, 2), nullable=False)
     utilidad_aplicada = Column(DECIMAL(10, 2), default=0.00)
     descuento_aplicado = Column(DECIMAL(10, 2), default=0.00)

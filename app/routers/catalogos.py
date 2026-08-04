@@ -27,7 +27,8 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.db import get_db
-from app.security import allow_admin_asistente, allow_all_staff
+from app.security import allow_admin_asistente, allow_all_staff, get_current_user
+from app.security.permissions import require
 
 logger = logging.getLogger(__name__)
 
@@ -396,30 +397,115 @@ def eliminar_categoria_producto(nombre: str, db: Session = Depends(get_db)):
 
 
 # ---------------------------------------------------------------------------
-# Unidades comerciales (distinct sobre productos.unidad + sugeridas)
+# Unidades de medida (catálogo administrable — tabla `unidades_medida`)
 # ---------------------------------------------------------------------------
+#
+# Reemplaza el antiguo diccionario "distinct sobre productos.unidad": ahora
+# es una tabla propia, administrable vía POST/PATCH (gateados con
+# require(user, "manage", "unidad") — el recurso "unidad" nunca entró a la
+# matriz de permisos (app/security/permissions.py) a propósito: solo ADMIN/
+# SUPERADMIN pasan por el wildcard *.*, el resto recibe 403. Ese es el
+# comportamiento deseado por el spec, no una tarea pendiente).
+#
+# El PUT /rename masivo de abajo sigue operando sobre `productos.unidad`
+# (dictamen legacy de texto libre) y se conserva intacto por compatibilidad.
 
-UNIDADES_SUGERIDAS = ["PZA", "CAJA", "MTS", "KG", "JUEGO", "PAR", "ROLLO", "LITRO"]
+
+@router.get("/unidades", response_model=List[schemas.UnidadMedidaResponse], dependencies=[Depends(allow_all_staff)])
+def listar_unidades(todas: bool = False, db: Session = Depends(get_db)):
+    """Lista el catálogo `unidades_medida`. Por default solo activas;
+    `?todas=true` (uso admin) incluye también las inactivas."""
+    q = db.query(models.UnidadMedida)
+    if not todas:
+        q = q.filter(models.UnidadMedida.activa.is_(True))
+    return q.order_by(models.UnidadMedida.orden.asc(), models.UnidadMedida.nombre.asc()).all()
 
 
-@router.get("/unidades", dependencies=[Depends(allow_all_staff)])
-def listar_unidades(db: Session = Depends(get_db)):
-    """Unidades en uso + lista sugerida."""
-    rows = (
-        db.query(
-            models.Producto.unidad,
-            func.count(models.Producto.id).label("n"),
+@router.post("/unidades", response_model=schemas.UnidadMedidaResponse)
+def crear_unidad(
+    payload: schemas.UnidadMedidaCreate,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    require(current_user, "manage", "unidad")
+    nombre = payload.nombre.strip()
+    abreviatura = payload.abreviatura.strip().upper()
+    if not nombre or not abreviatura:
+        raise HTTPException(400, "nombre y abreviatura son requeridos")
+
+    existente = db.query(models.UnidadMedida).filter(models.UnidadMedida.nombre == nombre).first()
+    if existente:
+        raise HTTPException(409, f"Ya existe una unidad con nombre '{nombre}'")
+
+    try:
+        u = models.UnidadMedida(
+            nombre=nombre,
+            abreviatura=abreviatura,
+            activa=payload.activa,
+            orden=payload.orden,
         )
-        .filter(models.Producto.unidad.is_not(None))
-        .filter(models.Producto.unidad != "")
-        .group_by(models.Producto.unidad)
-        .order_by(models.Producto.unidad.asc())
-        .all()
-    )
-    return {
-        "en_uso": [{"unidad": u, "n_productos": int(n)} for (u, n) in rows],
-        "sugeridas": UNIDADES_SUGERIDAS,
-    }
+        db.add(u)
+        db.commit()
+        db.refresh(u)
+        return u
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        logger.exception("catalogos.crear_unidad falló")
+        raise HTTPException(status_code=500, detail=f"{type(exc).__name__}: {exc}")
+
+
+@router.patch("/unidades/{unidad_id}", response_model=schemas.UnidadMedidaResponse)
+def editar_unidad(
+    unidad_id: int,
+    payload: schemas.UnidadMedidaUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    require(current_user, "manage", "unidad")
+    u = db.get(models.UnidadMedida, unidad_id)
+    if not u:
+        raise HTTPException(404, "Unidad no encontrada")
+
+    try:
+        if payload.nombre is not None:
+            nuevo_nombre = payload.nombre.strip()
+            if not nuevo_nombre:
+                raise HTTPException(400, "nombre no puede quedar vacío")
+            if nuevo_nombre != u.nombre:
+                colision = (
+                    db.query(models.UnidadMedida)
+                    .filter(
+                        models.UnidadMedida.nombre == nuevo_nombre,
+                        models.UnidadMedida.id != u.id,
+                    )
+                    .first()
+                )
+                if colision:
+                    raise HTTPException(409, f"Ya existe una unidad con nombre '{nuevo_nombre}'")
+            u.nombre = nuevo_nombre
+        if payload.abreviatura is not None:
+            nueva_abrev = payload.abreviatura.strip().upper()
+            if not nueva_abrev:
+                raise HTTPException(400, "abreviatura no puede quedar vacía")
+            u.abreviatura = nueva_abrev
+        if payload.activa is not None:
+            u.activa = payload.activa
+        if payload.orden is not None:
+            u.orden = payload.orden
+
+        db.commit()
+        db.refresh(u)
+        return u
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        logger.exception("catalogos.editar_unidad falló")
+        raise HTTPException(status_code=500, detail=f"{type(exc).__name__}: {exc}")
 
 
 @router.put("/unidades/rename", dependencies=[Depends(allow_admin_asistente)])
