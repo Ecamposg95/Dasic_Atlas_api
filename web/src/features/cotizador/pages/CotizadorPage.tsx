@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Download,
   Upload,
+  MoreVertical,
   Package,
   MessageSquare,
   FileOutput,
@@ -286,12 +287,14 @@ export function CotizadorPage() {
                 <strong className="font-mono">{editingFolio}</strong>
               </span>
             )}
+            {/* Acciones secundarias: inline solo en md+. En móvil colapsan al
+                menú overflow "⋯" de abajo (plan móvil F1). */}
             <button
               type="button"
               onClick={() =>
                 window.dispatchEvent(new CustomEvent('cot:open-borradores'))
               }
-              className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition flex items-center gap-1"
+              className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition hidden md:flex items-center gap-1"
             >
               <ClipboardList className="h-3 w-3" /> Borradores
             </button>
@@ -301,7 +304,7 @@ export function CotizadorPage() {
                 window.dispatchEvent(new CustomEvent('cot:open-preview-oc'))
               }
               title="Preview de OCs que nacerán al guardar"
-              className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition flex items-center gap-1"
+              className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition hidden md:flex items-center gap-1"
             >
               <Truck className="h-3 w-3" /> Preview OC
             </button>
@@ -309,7 +312,7 @@ export function CotizadorPage() {
               type="button"
               onClick={handleExport}
               title="Exportar borrador a JSON"
-              className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition flex items-center gap-1"
+              className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition hidden md:flex items-center gap-1"
             >
               <Download className="h-3 w-3" />
             </button>
@@ -317,7 +320,7 @@ export function CotizadorPage() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               title="Importar borrador desde JSON"
-              className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition flex items-center gap-1"
+              className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition hidden md:flex items-center gap-1"
             >
               <Upload className="h-3 w-3" />
             </button>
@@ -347,11 +350,15 @@ export function CotizadorPage() {
                   }
                 }}
                 title={editingId != null ? 'Ver PDF' : 'Guarda y abre el PDF'}
-                className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition flex items-center gap-1"
+                className="text-[11px] px-2 py-1 min-h-[40px] md:min-h-0 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition flex items-center gap-1"
               >
                 <FileText className="h-3 w-3" /> Ver PDF
               </button>
             )}
+            <AccionesOverflowMovil
+              onExport={handleExport}
+              onImport={() => fileInputRef.current?.click()}
+            />
             </>
           }
         />
@@ -477,6 +484,98 @@ export function CotizadorPage() {
       <AgregarFantasmaModal />
       <GenerarReporteServicioModal />
       {tab === 'editor' && <AtajosPopover atajos={atajos} />}
+    </div>
+  );
+}
+
+/**
+ * Menú overflow "⋯" del header en móvil (< md) — plan móvil F1. Agrupa las
+ * acciones secundarias (Borradores, Preview OC, Export/Import JSON) que en
+ * md+ siguen inline. Mismo patrón de dropdown que DocumentRow (overlay fixed
+ * para click-fuera + cierre por Escape). Solo layout: reutiliza los mismos
+ * window events y handlers que los botones de escritorio.
+ */
+function AccionesOverflowMovil({
+  onExport,
+  onImport,
+}: {
+  onExport: () => void;
+  onImport: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  // Cierre por Escape; el click-fuera lo cubre el overlay `fixed inset-0`.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  const itemClass =
+    'w-full text-left text-xs px-3 py-2 min-h-[40px] hover:bg-surface-2/60 text-foreground flex items-center gap-2';
+
+  return (
+    <div className="relative md:hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Más acciones"
+        className="min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded border border-border-strong text-foreground hover:border-accent-glow hover:text-accent-glow transition"
+      >
+        <MoreVertical className="h-4 w-4" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 z-20 bg-card border border-border rounded-lg shadow-xl py-1 min-w-[180px] text-left">
+            <button
+              type="button"
+              className={itemClass}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('cot:open-borradores'));
+                setOpen(false);
+              }}
+            >
+              <ClipboardList className="h-3.5 w-3.5" /> Borradores
+            </button>
+            <button
+              type="button"
+              className={itemClass}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('cot:open-preview-oc'));
+                setOpen(false);
+              }}
+            >
+              <Truck className="h-3.5 w-3.5" /> Preview OC
+            </button>
+            <button
+              type="button"
+              className={itemClass}
+              onClick={() => {
+                onExport();
+                setOpen(false);
+              }}
+            >
+              <Download className="h-3.5 w-3.5" /> Exportar JSON
+            </button>
+            <button
+              type="button"
+              className={itemClass}
+              onClick={() => {
+                onImport();
+                setOpen(false);
+              }}
+            >
+              <Upload className="h-3.5 w-3.5" /> Importar JSON
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

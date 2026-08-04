@@ -78,10 +78,14 @@ export function HeaderCotizacion() {
       )}
     <div className="bg-card border border-border rounded-xl p-3 space-y-2">
       {/* LÍNEA 1: campos empacados en una fila; Cliente crece para llenar el
-          ancho, el resto (Moneda/TC/fechas) van al tamaño de su contenido. */}
+          ancho, el resto (Moneda/TC/fechas) van al tamaño de su contenido.
+          En < sm (plan móvil F1) apilan a ancho completo con orden fijo:
+          Cliente → (Moneda | TC) → (F. creación | F. vencimiento); los pares
+          van en wrappers `grid grid-cols-2 sm:contents` que desaparecen del
+          layout en sm+ (display: contents), dejando el desktop intacto. */}
       <div className="flex flex-wrap items-start gap-3">
         {/* Cliente (crece) — ClientPicker incluye el sub-selector "Atiende a". */}
-        <div className="flex-1 min-w-[260px]">
+        <div className="w-full min-w-0 sm:flex-1 sm:min-w-[260px]">
           <label className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground mb-1 flex items-center gap-1.5">
             <User className="h-3 w-3" />
             Cliente
@@ -90,8 +94,10 @@ export function HeaderCotizacion() {
           <UltimaCotHint clienteId={clienteId} />
         </div>
 
+        {/* Moneda + TC: dos columnas en < sm; en sm+ el wrapper se disuelve. */}
+        <div className="grid grid-cols-2 gap-3 w-full sm:contents">
         {/* Moneda */}
-        <div className="w-[110px] shrink-0">
+        <div className="w-full sm:w-[110px] sm:shrink-0">
           <label className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground mb-1 flex items-center gap-1.5">
             <Coins className="h-3 w-3" />
             Moneda
@@ -110,7 +116,7 @@ export function HeaderCotizacion() {
               type="button"
               onClick={() => setAvanzadasOpen((v) => !v)}
               aria-expanded={avanzadasOpen}
-              className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 mt-1 whitespace-nowrap"
+              className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 mt-1 whitespace-nowrap min-h-[40px] sm:min-h-0"
             >
               {avanzadasOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               Avanzadas
@@ -120,7 +126,7 @@ export function HeaderCotizacion() {
 
         {/* TC inline cuando aplica — junto a Moneda, en la misma línea. */}
         {tcNecesario && (
-          <div className="w-[120px] shrink-0">
+          <div className="w-full sm:w-[120px] sm:shrink-0">
             <label className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground mb-1 flex items-center gap-1.5">
               <ArrowRightLeft className="h-3 w-3" />
               TC
@@ -128,9 +134,11 @@ export function HeaderCotizacion() {
             {tcInput}
           </div>
         )}
+        </div>
 
-        {/* Fechas */}
-        <div className="w-[150px] shrink-0">
+        {/* Fechas: dos columnas en < sm; en sm+ el wrapper se disuelve. */}
+        <div className="grid grid-cols-2 gap-3 w-full sm:contents">
+        <div className="w-full sm:w-[150px] sm:shrink-0">
           <label className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground mb-1 flex items-center gap-1.5">
             <CalendarPlus className="h-3 w-3" />
             F. creación
@@ -143,7 +151,7 @@ export function HeaderCotizacion() {
           />
         </div>
 
-        <div className="w-[150px] shrink-0">
+        <div className="w-full sm:w-[150px] sm:shrink-0">
           <label className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground mb-1 flex items-center gap-1.5">
             <CalendarClock className="h-3 w-3" />
             F. vencimiento
@@ -154,6 +162,7 @@ export function HeaderCotizacion() {
             onChange={(e) => setFechaVencimiento(e.target.value || null)}
             className="h-8 text-xs w-full"
           />
+        </div>
         </div>
 
         <div className="text-[11px] text-muted-foreground self-stretch flex items-end pb-1 whitespace-nowrap">
@@ -168,7 +177,7 @@ export function HeaderCotizacion() {
       {/* Cot MXN pura: TC + tabla detrás de "Opciones avanzadas" (colapsado). */}
       {!tcNecesario && avanzadasOpen && (
         <div className="flex flex-wrap items-start gap-3">
-          <div className="w-[120px] shrink-0 opacity-60">
+          <div className="w-full sm:w-[120px] sm:shrink-0 opacity-60">
             <label className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground mb-1 flex items-center gap-1.5">
               <ArrowRightLeft className="h-3 w-3" />
               TC
@@ -178,7 +187,7 @@ export function HeaderCotizacion() {
             </label>
             {tcInput}
           </div>
-          <div className="flex-1 min-w-[280px]">
+          <div className="w-full min-w-0 sm:flex-1 sm:min-w-[280px]">
             <TCMiniTable />
           </div>
         </div>

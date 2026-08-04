@@ -331,11 +331,14 @@ export function TotalsBar() {
       }
       actions={
         <>
-          <Button variant="ghost" onClick={onCancel} disabled={guardar.isPending}>Cancelar</Button>
-          <Button onClick={() => onGuardarQuedarse()} disabled={disabled} data-cot-save>
+          {/* En < md apilan (ver DocumentTotalsBar); `order-*` pone el primario
+              arriba: Guardar → Guardar e ir → Cancelar. En md+ `md:order-none`
+              restaura el orden del DOM (fila desktop intacta). */}
+          <Button variant="ghost" onClick={onCancel} disabled={guardar.isPending} className="order-3 md:order-none">Cancelar</Button>
+          <Button onClick={() => onGuardarQuedarse()} disabled={disabled} data-cot-save className="order-1 md:order-none">
             {guardar.isPending ? 'Guardando…' : editingId != null ? 'Actualizar cotización' : 'Guardar cotización'}
           </Button>
-          <Button variant="outline" onClick={onGuardarEIrSeguimiento} disabled={disabled}>
+          <Button variant="outline" onClick={onGuardarEIrSeguimiento} disabled={disabled} className="order-2 md:order-none">
             Guardar e ir a Seguimiento
           </Button>
         </>

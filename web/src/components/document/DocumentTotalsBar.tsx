@@ -45,7 +45,9 @@ export function DocumentTotalsBar({
           ))}
           {trailing}
         </div>
-        <div className="flex gap-2 justify-end">{actions}</div>
+        {/* En < md las acciones apilan a ancho completo (targets táctiles);
+            en md+ vuelven a la fila alineada a la derecha, como siempre. */}
+        <div className="flex flex-col md:flex-row gap-2 md:justify-end">{actions}</div>
       </div>
     </div>
   );
