@@ -15,12 +15,14 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Pagination } from '@/components/ui/pagination';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { SkeletonRows } from '@/components/ui/skeleton';
 import {
   DataTable,
   DataTableHead,
   DataTableBody,
   DataTableRow,
-  DataTableEmpty,
 } from '@/components/ui/data-table';
 import { GastoFormModal } from '../components/GastoFormModal';
 import type { Gasto, GastoCreate } from '../types';
@@ -45,22 +47,6 @@ function fmtFecha(iso: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton
-// ---------------------------------------------------------------------------
-
-function SkeletonRow() {
-  return (
-    <tr className="border-b border-border">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-surface-2 rounded animate-pulse" />
-        </td>
-      ))}
-    </tr>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Fila de gasto
 // ---------------------------------------------------------------------------
 
@@ -76,7 +62,7 @@ function GastoRow({ item, onEdit, onDelete, isDeleting }: RowProps) {
     <DataTableRow>
       <td className="px-4 py-3 text-muted-foreground text-xs">{fmtFecha(item.fecha)}</td>
       <td className="px-4 py-3 text-foreground text-sm">
-        {item.descripcion ?? <span className="text-slate-500 italic">—</span>}
+        {item.descripcion ?? <span className="text-muted-foreground/70 italic">—</span>}
       </td>
       <td className="px-4 py-3">
         <Badge variant="default">{item.categoria}</Badge>
@@ -84,7 +70,7 @@ function GastoRow({ item, onEdit, onDelete, isDeleting }: RowProps) {
       <td className="px-4 py-3 text-right tabular-nums text-foreground font-medium">
         {fmtMonto(item.monto, item.moneda)}
       </td>
-      <td className="px-4 py-3 text-slate-500 text-xs">
+      <td className="px-4 py-3 text-muted-foreground text-xs">
         {item.usuario ?? '—'}
       </td>
       <td className="px-4 py-3">
@@ -228,20 +214,20 @@ export function GastosPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
       {/* Header */}
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-3">
-          <Receipt className="h-6 w-6 text-accent-glow" />
-          <h1 className="text-2xl font-semibold">Gastos</h1>
-          {!isLoading && (
-            <span className="text-slate-500 text-sm">
-              ({total} {total === 1 ? 'gasto' : 'gastos'})
-            </span>
-          )}
-        </div>
-        <Button size="sm" onClick={() => setModalMode('create')}>
-          + Nuevo gasto
-        </Button>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            <Receipt className="h-6 w-6 text-accent-glow" />
+            Gastos
+          </span>
+        }
+        description={!isLoading ? `(${total} ${total === 1 ? 'gasto' : 'gastos'})` : undefined}
+        actions={
+          <Button size="sm" onClick={() => setModalMode('create')}>
+            + Nuevo gasto
+          </Button>
+        }
+      />
 
       {/* Filtros */}
       <div className="flex flex-wrap gap-3">
@@ -297,14 +283,16 @@ export function GastosPage() {
         </DataTableHead>
         <DataTableBody>
           {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+            <SkeletonRows rows={6} cols={6} />
           ) : filtered.length === 0 ? (
-            <DataTableEmpty colSpan={6}>
-              <div className="flex flex-col items-center gap-2 text-slate-500">
-                <Receipt className="h-10 w-10 opacity-30" />
-                <p>{total === 0 && !busquedaDebounced && !filtroCategoria && !fechaDesde && !fechaHasta ? 'No hay gastos registrados' : 'Sin resultados para estos filtros'}</p>
-              </div>
-            </DataTableEmpty>
+            <tr>
+              <td colSpan={6}>
+                <EmptyState
+                  icon={Receipt}
+                  title={total === 0 && !busquedaDebounced && !filtroCategoria && !fechaDesde && !fechaHasta ? 'No hay gastos registrados' : 'Sin resultados para estos filtros'}
+                />
+              </td>
+            </tr>
           ) : (
             filtered.map((item) => (
               <GastoRow

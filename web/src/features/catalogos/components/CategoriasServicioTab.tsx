@@ -21,7 +21,7 @@ export function CategoriasServicioTab() {
         <p className="text-sm text-muted-foreground">
           {items.length} categoría(s) de servicio en uso
         </p>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Solo lectura — se generan al capturar servicios.
         </p>
       </div>

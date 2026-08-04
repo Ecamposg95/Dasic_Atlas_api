@@ -69,13 +69,13 @@ export function AjusteStockModal({ producto, onClose }: Props) {
     <Modal title={`Ajustar stock — ${producto.nombre}`} onClose={onClose} size="sm">
       <div className="space-y-4">
         {/* Resumen actual */}
-        <div className="grid grid-cols-2 gap-3 p-3 bg-slate-100/60 dark:bg-slate-800/50 rounded-lg text-sm">
+        <div className="grid grid-cols-2 gap-3 p-3 bg-surface-2 rounded-lg text-sm">
           <div>
-            <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Stock actual</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Stock actual</div>
             <div className="text-xl font-bold text-foreground">{producto.stock_actual}</div>
           </div>
           <div>
-            <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Stock proyectado</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Stock proyectado</div>
             <div
               className={`text-xl font-bold ${
                 Number.isFinite(deltaNum) && deltaNum < 0 && nuevoStock < producto.stock_minimo

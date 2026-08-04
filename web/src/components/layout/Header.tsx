@@ -4,6 +4,7 @@ import { ChevronDown, LogOut, Menu, Settings, User as UserIcon } from 'lucide-re
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { useAuth, type User } from '@/stores/auth';
+import { branding } from '@/lib/branding';
 import { ThemeToggle } from './ThemeToggle';
 
 function initialsOf(u: User): string {
@@ -64,7 +65,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           <Menu className="h-5 w-5" />
         </button>
         <h2 className="text-sm uppercase tracking-wider text-muted-foreground font-semibold">
-          DASIC <span className="text-accent-glow">·</span> Atlas ONE
+          {branding.organizationName} <span className="text-accent-glow">·</span> {branding.productName}
         </h2>
       </div>
 

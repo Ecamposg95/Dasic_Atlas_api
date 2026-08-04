@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Truck, ArrowLeft, Package, Eye, EyeOff } from 'lucide-react';
+import { Truck, Package, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from '@/lib/toast';
 import { DocumentCartTable } from '@/components/document/DocumentCartTable';
 import { DocumentTotalsBar } from '@/components/document/DocumentTotalsBar';
@@ -50,13 +51,18 @@ export function CrearRemisionPage() {
   if (!ordenId && !libre) {
     return (
       <div className="p-6 max-w-3xl mx-auto space-y-6">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Truck className="h-5 w-5 text-cyan-400" /> Nueva remisión
-        </h1>
+        <PageHeader
+          backTo="/spa/remisiones"
+          title={
+            <span className="flex items-center gap-2">
+              <Truck className="h-5 w-5 text-cyan-400" /> Nueva remisión
+            </span>
+          }
+        />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="border border-border rounded-xl p-4">
             <h2 className="text-sm font-semibold mb-2">Nueva libre (sin orden)</h2>
-            <p className="text-xs text-slate-500 mb-3">Elige un cliente y arma la remisión desde el catálogo.</p>
+            <p className="text-xs text-muted-foreground mb-3">Elige un cliente y arma la remisión desde el catálogo.</p>
             <RemisionClientPicker
               onPick={(c) => {
                 useRemision.getState().hydrateLibre({ id: c.id, nombre: c.nombre_empresa });
@@ -66,20 +72,20 @@ export function CrearRemisionPage() {
           </div>
           <div className="border border-border rounded-xl p-4">
             <h2 className="text-sm font-semibold mb-2">Desde una orden de venta</h2>
-            <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-72 overflow-y-auto">
+            <div className="divide-y divide-border max-h-72 overflow-y-auto">
               {(ordenes ?? []).map((o) => (
                 <button
                   key={o.id}
                   type="button"
                   onClick={() => navigate(`/spa/remisiones-nueva?orden=${o.id}`)}
-                  className="w-full text-left px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between"
+                  className="w-full text-left px-2 py-2 hover:bg-surface-2/60 flex items-center justify-between"
                 >
                   <span className="font-mono text-sm text-accent-glow">{o.folio}</span>
-                  <span className="text-xs text-slate-500">{o.cliente ?? ''}</span>
+                  <span className="text-xs text-muted-foreground">{o.cliente ?? ''}</span>
                 </button>
               ))}
               {(ordenes ?? []).length === 0 && (
-                <div className="px-2 py-6 text-center text-sm text-slate-500">No hay órdenes remisionables.</div>
+                <div className="px-2 py-6 text-center text-sm text-muted-foreground">No hay órdenes remisionables.</div>
               )}
             </div>
           </div>
@@ -88,7 +94,7 @@ export function CrearRemisionPage() {
     );
   }
 
-  if (isLoading) return <div className="p-6 text-sm text-slate-500">Cargando orden…</div>;
+  if (isLoading) return <div className="p-6 text-sm text-muted-foreground/70">Cargando orden…</div>;
 
   const REMISION_CAPS: DocRowCaps = {
     showCosto: false,
@@ -152,33 +158,36 @@ export function CrearRemisionPage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <div className="flex-1 p-4 max-w-7xl mx-auto w-full space-y-3">
-        <header className="flex items-center justify-between gap-2 flex-wrap">
-          <h1 className="text-xl font-semibold flex items-center gap-2">
-            <Truck className="h-5 w-5 text-accent-glow" /> Nueva remisión
-          </h1>
-          <div className="flex items-center gap-1.5">
-            {s.ordenFolio && (
-              <span className="text-xs bg-cyan-900/30 text-cyan-300 border border-cyan-700/50 px-2 py-1 rounded font-mono">
-                {s.ordenFolio}
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={() => s.setMostrarPrecios(!s.mostrarPrecios)}
-              className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition flex items-center gap-1"
-            >
-              {s.mostrarPrecios ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-              {s.mostrarPrecios ? 'Precios visibles' : 'Precios ocultos'}
-            </button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/spa/remisiones')}>
-              <ArrowLeft className="h-4 w-4 mr-1" /> Volver
-            </Button>
-          </div>
-        </header>
+        <PageHeader
+          backTo="/spa/remisiones"
+          backLabel="Volver"
+          title={
+            <span className="flex items-center gap-2">
+              <Truck className="h-5 w-5 text-accent-glow" /> Nueva remisión
+            </span>
+          }
+          actions={
+            <>
+              {s.ordenFolio && (
+                <span className="text-xs bg-cyan-900/30 text-cyan-300 border border-cyan-700/50 px-2 py-1 rounded font-mono">
+                  {s.ordenFolio}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => s.setMostrarPrecios(!s.mostrarPrecios)}
+                className="text-[11px] px-2 py-1 rounded border border-border-strong hover:border-accent-glow text-foreground hover:text-accent-glow transition flex items-center gap-1"
+              >
+                {s.mostrarPrecios ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                {s.mostrarPrecios ? 'Precios visibles' : 'Precios ocultos'}
+              </button>
+            </>
+          }
+        />
 
         {s.clienteNombre && (
-          <div className="text-sm bg-slate-50 dark:bg-slate-900 border border-border rounded-md px-4 py-2 flex items-center gap-3 flex-wrap">
-            <span className="text-slate-500">{s.clienteNombre}</span>
+          <div className="text-sm bg-surface-2 border border-border rounded-md px-4 py-2 flex items-center gap-3 flex-wrap">
+            <span className="text-muted-foreground">{s.clienteNombre}</span>
             {s.modo === 'libre' ? (
               <select
                 value={s.moneda}
@@ -189,7 +198,7 @@ export function CrearRemisionPage() {
                 <option value="USD">USD</option>
               </select>
             ) : (
-              <span className="text-slate-500">{s.moneda}</span>
+              <span className="text-muted-foreground">{s.moneda}</span>
             )}
           </div>
         )}
@@ -200,11 +209,11 @@ export function CrearRemisionPage() {
         <DocumentCartTable rows={rows} caps={REMISION_CAPS} cb={cb} />
 
         <div>
-          <label className="block text-xs text-slate-500 mb-1">Transportista</label>
+          <label className="block text-xs text-muted-foreground mb-1">Transportista</label>
           <Input value={s.transportista} onChange={(e) => s.setTransportista(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-slate-500 mb-1">Observaciones generales</label>
+          <label className="block text-xs text-muted-foreground mb-1">Observaciones generales</label>
           <Input value={s.observaciones} onChange={(e) => s.setObservaciones(e.target.value)} />
         </div>
       </div>

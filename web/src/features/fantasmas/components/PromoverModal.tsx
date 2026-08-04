@@ -55,33 +55,33 @@ export function PromoverModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4">
       <div className="bg-card border border-violet-700/50 rounded-xl shadow-2xl max-w-md w-full">
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <ArrowUp className="h-4 w-4 text-violet-500" /> Promover a producto
           </h3>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="px-5 py-4 space-y-3">
-          <p className="text-xs text-slate-500 truncate" title={fantasma.descripcion}>{fantasma.descripcion}</p>
+          <p className="text-xs text-muted-foreground truncate" title={fantasma.descripcion}>{fantasma.descripcion}</p>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">SKU del producto *</label>
+            <label className="block text-xs text-muted-foreground mb-1">SKU del producto *</label>
             <Input value={sku} onChange={(e) => setSku(e.target.value)} className="font-mono" placeholder="Ej. SCHN-0007" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Cantidad recibida</label>
+              <label className="block text-xs text-muted-foreground mb-1">Cantidad recibida</label>
               <Input type="number" min="0" value={cantidad} onChange={(e) => setCantidad(e.target.value)} className="text-right" />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Stock mínimo (opcional)</label>
+              <label className="block text-xs text-muted-foreground mb-1">Stock mínimo (opcional)</label>
               <Input type="number" min="0" value={stockMinimo} onChange={(e) => setStockMinimo(e.target.value)} className="text-right" />
             </div>
           </div>
-          <p className="text-[11px] text-slate-400">Cantidad 0 crea el producto sin entrada de stock. Cualquier cantidad &gt; 0 registra una ENTRADA auditada en el kardex.</p>
+          <p className="text-[11px] text-muted-foreground">Cantidad 0 crea el producto sin entrada de stock. Cualquier cantidad &gt; 0 registra una ENTRADA auditada en el kardex.</p>
           {err && <div className="text-xs bg-rose-50 dark:bg-rose-900/30 border border-rose-300 dark:border-rose-700/50 rounded p-2 text-rose-700 dark:text-rose-300">{err}</div>}
         </div>
         <div className="flex justify-end gap-2 px-5 py-4 border-t border-border">

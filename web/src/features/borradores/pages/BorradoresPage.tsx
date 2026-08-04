@@ -7,6 +7,9 @@ import { useBorradores, BORRADORES_PAGE_SIZE } from '../hooks/useBorradores';
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { SkeletonRows } from '@/components/ui/skeleton';
 import {
   DataTable,
   DataTableHead,
@@ -49,22 +52,6 @@ function formatTotal(total: number, moneda: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton
-// ---------------------------------------------------------------------------
-
-function SkeletonRow() {
-  return (
-    <tr className="border-b border-border">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-surface-2 rounded animate-pulse" />
-        </td>
-      ))}
-    </tr>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Fila de borrador
 // ---------------------------------------------------------------------------
 
@@ -80,7 +67,7 @@ function BorradorRow({ item, onDiscard, isDiscarding, onContinuar }: RowProps) {
     <DataTableRow>
       <td className="px-4 py-3 font-mono text-xs text-accent-glow">{item.folio}</td>
       <td className="px-4 py-3 text-foreground">
-        {item.cliente_nombre ?? <span className="text-slate-500 italic">Sin cliente</span>}
+        {item.cliente_nombre ?? <span className="text-muted-foreground/70 italic">Sin cliente</span>}
       </td>
       <td className="px-4 py-3 text-right tabular-nums">
         {formatTotal(item.total, item.moneda)}
@@ -151,17 +138,20 @@ export function BorradoresPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto w-full space-y-6">
       {/* Header */}
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-3">
-          <FileClock className="h-6 w-6 text-accent-glow" />
-          <h1 className="text-2xl font-semibold">Borradores de cotizaciones</h1>
-          {!isLoading && (
-            <span className="text-slate-500 text-sm">
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            <FileClock className="h-6 w-6 text-accent-glow" /> Borradores de cotizaciones
+          </span>
+        }
+        description={
+          !isLoading && (
+            <>
               ({total} {total === 1 ? 'borrador' : 'borradores'})
-            </span>
-          )}
-        </div>
-      </header>
+            </>
+          )
+        }
+      />
 
       {/* Tabla — altura acotada + header sticky para que la página no scrollee de más */}
       <DataTable maxBodyHeight="calc(100vh - 16rem)">
@@ -176,16 +166,15 @@ export function BorradoresPage() {
         </DataTableHead>
         <DataTableBody>
           {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+            <SkeletonRows rows={6} cols={5} />
           ) : items.length === 0 ? (
             <DataTableEmpty colSpan={5}>
-              <div className="flex flex-col items-center gap-2 text-slate-500">
-                <FileClock className="h-10 w-10 opacity-30" />
-                <p>No hay borradores pendientes</p>
-                <p className="text-xs">
-                  Las cotizaciones guardadas sin enviar aparecerán aquí.
-                </p>
-              </div>
+              <EmptyState
+                icon={FileClock}
+                title="No hay borradores pendientes"
+                description="Las cotizaciones guardadas sin enviar aparecerán aquí."
+                className="py-0"
+              />
             </DataTableEmpty>
           ) : (
             items.map((item) => (

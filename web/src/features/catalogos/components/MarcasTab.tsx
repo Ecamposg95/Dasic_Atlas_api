@@ -20,13 +20,13 @@ function ModalShell({
 }: { title: string; children: React.ReactNode; onClose: () => void }) {
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-950/80 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">{title}</h3>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100">
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -126,7 +126,7 @@ function MarcaFormModal({
             className={isEdit ? 'opacity-60 cursor-not-allowed' : ''}
           />
           {!isEdit && (
-            <p className="text-xs text-slate-500 mt-1">2-20 chars alfanuméricos. Se normaliza a mayúsculas.</p>
+            <p className="text-xs text-muted-foreground mt-1">2-20 chars alfanuméricos. Se normaliza a mayúsculas.</p>
           )}
         </div>
         <div>
@@ -228,16 +228,16 @@ export function MarcasTab() {
                 <span className="font-mono font-bold text-foreground">{m.abreviatura}</span>
               </td>
               <td className="p-3 text-foreground">{m.nombre}</td>
-              <td className="p-3 text-muted-foreground text-sm">{m.categoria || <span className="text-slate-400 dark:text-slate-600">—</span>}</td>
+              <td className="p-3 text-muted-foreground text-sm">{m.categoria || <span className="text-muted-foreground/70">—</span>}</td>
               <td className="p-3 text-center">
                 <Badge variant={m.n_productos > 0 ? 'cyan' : 'slate'}>{m.n_productos}</Badge>
               </td>
-              <td className="p-3 font-mono text-xs text-slate-500">{m.siguiente_sku ?? '—'}</td>
+              <td className="p-3 font-mono text-xs text-muted-foreground">{m.siguiente_sku ?? '—'}</td>
               <td className="p-3 text-right whitespace-nowrap">
                 <button
                   onClick={() => setModalMarca(m)}
                   title="Editar"
-                  className="text-foreground hover:text-slate-900 dark:hover:text-slate-100 px-1"
+                  className="text-muted-foreground hover:text-foreground px-1"
                 >
                   <Pen className="h-4 w-4 inline" />
                 </button>

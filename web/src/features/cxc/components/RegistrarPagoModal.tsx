@@ -81,7 +81,7 @@ export function RegistrarPagoModal({ clienteId, nombreEmpresa, onClose }: Props)
             disabled={mutation.isPending}
             autoFocus
           />
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-muted-foreground">
             Se distribuirá automáticamente en orden FIFO (más antiguo primero).
           </p>
         </div>

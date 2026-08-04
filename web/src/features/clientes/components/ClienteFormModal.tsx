@@ -139,7 +139,7 @@ export function ClienteFormModal({ mode, cliente, onSave, onClose, busy }: Props
             onChange={(e) => setDireccion(e.target.value)}
             rows={2}
             placeholder="Calle, colonia, ciudad, estado, CP"
-            className="w-full text-sm rounded-md border border-border-strong bg-card px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-accent-glow/40"
+            className="w-full text-sm rounded-md border border-border-strong bg-card px-3 py-2 placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-accent-glow/40"
           />
         </div>
 
@@ -154,7 +154,7 @@ export function ClienteFormModal({ mode, cliente, onSave, onClose, busy }: Props
               value={limiteCredito}
               onChange={(e) => setLimiteCredito(e.target.value)}
             />
-            <div className="text-[10px] text-slate-500 mt-0.5">{limiteDisplay}</div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">{limiteDisplay}</div>
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">Días crédito</label>

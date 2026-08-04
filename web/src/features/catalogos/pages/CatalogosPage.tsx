@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BookMarked, Tags, Layers, Ruler, Wrench, FileSearch } from 'lucide-react';
 import { api } from '@/lib/api';
+import { PageHeader } from '@/components/ui/page-header';
 import type { ResumenCatalogo } from '../types';
 import { MarcasTab } from '../components/MarcasTab';
 import { CategoriasTab } from '../components/CategoriasTab';
@@ -37,28 +38,32 @@ export function CatalogosPage() {
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-5">
       {/* Header */}
-      <header className="flex items-center gap-2">
-        <BookMarked className="h-5 w-5 text-accent-glow" />
-        <h1 className="text-2xl font-semibold">Catálogos</h1>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <BookMarked className="h-5 w-5 text-accent-glow" />
+            Catálogos
+          </span>
+        }
+      />
 
       {/* KPIs */}
       {resumen && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <div className="bg-card border border-border rounded-lg p-3">
-            <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Marcas</div>
+            <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Marcas</div>
             <div className="text-2xl font-bold">{resumen.total_marcas}</div>
           </div>
           <div className="bg-card border border-border rounded-lg p-3">
-            <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Productos</div>
+            <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Productos</div>
             <div className="text-2xl font-bold">{resumen.total_productos}</div>
           </div>
           <div className="bg-card border border-border rounded-lg p-3">
-            <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Categorías</div>
+            <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Categorías</div>
             <div className="text-2xl font-bold">{resumen.total_categorias_producto}</div>
           </div>
           <div className="bg-card border border-border rounded-lg p-3">
-            <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Unidades</div>
+            <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Unidades</div>
             <div className="text-2xl font-bold">{resumen.total_unidades}</div>
           </div>
         </div>
@@ -74,7 +79,7 @@ export function CatalogosPage() {
             className={`px-4 py-2 text-sm font-medium transition border-b-2 -mb-px inline-flex items-center gap-1.5 ${
               tab === key
                 ? 'border-accent-glow text-accent-glow'
-                : 'border-transparent text-muted-foreground hover:text-slate-800 dark:hover:text-slate-200'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             <Icon className="h-3.5 w-3.5" />

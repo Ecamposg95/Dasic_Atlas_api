@@ -7,6 +7,8 @@ import {
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 import { SatCombobox } from '@/components/ui/sat-combobox';
 import {
   DataTable, DataTableBody, DataTableEmpty, DataTableHead, DataTableRow,
@@ -217,17 +219,21 @@ export function FantasmasPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
-      <header className="flex items-center justify-between gap-2 flex-wrap">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Ghost className="h-5 w-5 text-violet-600 dark:text-violet-400" /> Productos Fantasma apilados
-        </h1>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportarCSV}>
-            <FileSpreadsheet className="h-4 w-4 mr-1" /> CSV
-          </Button>
-          <span className="text-xs text-slate-500">{filtrados.length} fantasma(s)</span>
-        </div>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Ghost className="h-5 w-5 text-violet-600 dark:text-violet-400" /> Productos Fantasma apilados
+          </span>
+        }
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={exportarCSV}>
+              <FileSpreadsheet className="h-4 w-4 mr-1" /> CSV
+            </Button>
+            <span className="text-xs text-muted-foreground">{filtrados.length} fantasma(s)</span>
+          </>
+        }
+      />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
@@ -237,7 +243,7 @@ export function FantasmasPage() {
             cyan: 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300',
             emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300',
             violet: 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300',
-            slate: 'bg-slate-100 dark:bg-slate-800/40 text-foreground',
+            slate: 'bg-surface-2 text-foreground',
           };
           return (
             <button
@@ -247,7 +253,7 @@ export function FantasmasPage() {
               className={`p-3 rounded-lg border text-left transition ${
                 filtroEstado === e.key
                   ? 'border-accent-glow ring-2 ring-accent-glow/40'
-                  : 'border-border hover:border-slate-300 dark:hover:border-slate-700'
+                  : 'border-border hover:border-border-strong'
               } ${tone[e.variant]}`}
             >
               <div className="text-[10px] uppercase font-bold opacity-80">{e.label}</div>
@@ -346,10 +352,11 @@ export function FantasmasPage() {
             <DataTableEmpty colSpan={9}>Cargando fantasmas…</DataTableEmpty>
           )}
           {!isLoading && filtrados.length === 0 && (
-            <DataTableEmpty colSpan={9}>
-              <Ghost className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-700 mb-2" />
-              Sin fantasmas que coincidan
-            </DataTableEmpty>
+            <tr>
+              <td colSpan={9}>
+                <EmptyState icon={Ghost} title="Sin fantasmas que coincidan" />
+              </td>
+            </tr>
           )}
           {filtrados.map((f) => (
             <DataTableRow key={f.id}>
@@ -363,7 +370,7 @@ export function FantasmasPage() {
               <td className="p-3 max-w-xs">
                 <div className="truncate text-foreground" title={f.descripcion}>{f.descripcion}</div>
                 {(f.marca || f.clave_prod_serv || f.clave_unidad_sat) && (
-                  <div className="mt-0.5 flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-500">
+                  <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
                     {f.marca && <span>{f.marca}</span>}
                     {f.clave_prod_serv && <span className="font-mono">SAT {f.clave_prod_serv}</span>}
                     {f.clave_unidad_sat && <span className="font-mono">Un {f.clave_unidad_sat}</span>}
@@ -372,7 +379,7 @@ export function FantasmasPage() {
               </td>
               <td className="p-3 font-mono text-xs text-muted-foreground">{f.sku_libre || '—'}</td>
               <td className="p-3 text-xs">
-                {f.proveedor_sugerido_nombre || <span className="text-slate-500">Sin asignar</span>}
+                {f.proveedor_sugerido_nombre || <span className="text-muted-foreground/70">Sin asignar</span>}
               </td>
               <td className="p-3 text-right">
                 <span className="inline-block min-w-[28px] px-1.5 py-0.5 rounded bg-surface-2 text-xs font-bold">
@@ -381,7 +388,7 @@ export function FantasmasPage() {
               </td>
               <td className="p-3 text-right font-mono text-xs">{fmtMoney(f.costo_referencia, f.moneda)}</td>
               <td className="p-3 text-center">{badgeEstado(f.estado)}</td>
-              <td className="p-3 text-xs text-slate-500">{fmtDate(f.ultimo_visto_en)}</td>
+              <td className="p-3 text-xs text-muted-foreground">{fmtDate(f.ultimo_visto_en)}</td>
               <td className="p-3 text-right whitespace-nowrap">
                 <button onClick={() => setModalDetalle(f.id)} title="Ver detalle"
                         className="text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 px-1">
@@ -389,7 +396,7 @@ export function FantasmasPage() {
                 </button>
                 {(f.estado === 'PENDIENTE' || f.estado === 'EN_OC' || f.estado === 'RECIBIDO') && (
                   <button onClick={() => setModalEditar(f)} title="Editar"
-                          className="text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 px-1">
+                          className="text-muted-foreground hover:text-foreground px-1">
                     <Pen className="h-4 w-4 inline" />
                   </button>
                 )}
@@ -484,26 +491,26 @@ function DetalleModal({ id, onClose }: { id: number; onClose: () => void }) {
       {!d && !err && <div className="text-muted-foreground text-sm">Cargando…</div>}
       {d && (
         <div className="text-sm space-y-2">
-          <div><span className="text-slate-500">Descripción:</span> {d.descripcion}</div>
+          <div><span className="text-muted-foreground">Descripción:</span> {d.descripcion}</div>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div><span className="text-slate-500">SKU:</span> {d.sku_libre || '—'}</div>
-            <div><span className="text-slate-500">Estado:</span> {d.estado}</div>
-            <div><span className="text-slate-500">Costo ref:</span> {fmtMoney(d.costo_referencia, d.moneda)}</div>
-            <div><span className="text-slate-500">Veces:</span> {d.veces_solicitado}</div>
-            <div><span className="text-slate-500">Creado:</span> {fmtDate(d.creado_en)}</div>
-            <div><span className="text-slate-500">Actividad:</span> {fmtDate(d.ultimo_visto_en)}</div>
+            <div><span className="text-muted-foreground">SKU:</span> {d.sku_libre || '—'}</div>
+            <div><span className="text-muted-foreground">Estado:</span> {d.estado}</div>
+            <div><span className="text-muted-foreground">Costo ref:</span> {fmtMoney(d.costo_referencia, d.moneda)}</div>
+            <div><span className="text-muted-foreground">Veces:</span> {d.veces_solicitado}</div>
+            <div><span className="text-muted-foreground">Creado:</span> {fmtDate(d.creado_en)}</div>
+            <div><span className="text-muted-foreground">Actividad:</span> {fmtDate(d.ultimo_visto_en)}</div>
           </div>
           <hr className="border-border" />
           <div>
             <div className="font-medium mb-1">Cotizaciones donde aparece ({d.cotizaciones.length}):</div>
             {d.cotizaciones.length === 0 ? (
-              <div className="text-xs text-slate-500">No aparece en ninguna cotización activa.</div>
+              <div className="text-xs text-muted-foreground">No aparece en ninguna cotización activa.</div>
             ) : (
               <ul className="text-xs space-y-1">
                 {d.cotizaciones.map((c) => (
                   <li key={c.id}>
                     <span className="font-mono text-cyan-600 dark:text-cyan-400">{c.folio}</span>
-                    <span className="text-slate-500"> ({c.estatus})</span>
+                    <span className="text-muted-foreground"> ({c.estatus})</span>
                     <span className="text-muted-foreground"> ×{c.cantidad}</span>
                   </li>
                 ))}
@@ -677,13 +684,13 @@ function ModalShell({
 }: { title: string; children: React.ReactNode; onClose: () => void }) {
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-slate-950/80 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-background/70 flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-card border border-border rounded-xl shadow-2xl max-w-lg w-full p-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold">{title}</h3>
-          <button type="button" onClick={onClose} className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>

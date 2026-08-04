@@ -75,7 +75,7 @@ export function RecordatorioFormModal({ ordenId, folio, onClose }: Props) {
         {esLibre && (
           <div className="space-y-1">
             <label className="text-sm font-medium text-foreground" htmlFor="rec-cliente">
-              Cliente <span className="text-slate-400 font-normal">(opcional)</span>
+              Cliente <span className="text-muted-foreground font-normal">(opcional)</span>
             </label>
             <Input
               id="rec-cliente-q"
@@ -136,7 +136,7 @@ export function RecordatorioFormModal({ ordenId, folio, onClose }: Props) {
         {/* Descripción */}
         <div className="space-y-1">
           <label className="text-sm font-medium text-foreground" htmlFor="rec-desc">
-            Descripción <span className="text-slate-400 font-normal">(opcional)</span>
+            Descripción <span className="text-muted-foreground font-normal">(opcional)</span>
           </label>
           <textarea
             id="rec-desc"
@@ -144,7 +144,7 @@ export function RecordatorioFormModal({ ordenId, folio, onClose }: Props) {
             onChange={(e) => setDescripcion(e.target.value)}
             rows={3}
             placeholder="Notas para el seguimiento…"
-            className="flex w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:border-ring/60 ring-offset-white dark:ring-offset-slate-950 transition-[box-shadow,border-color] duration-150 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+            className="flex w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:border-ring/60 ring-offset-background transition-[box-shadow,border-color] duration-150 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
           />
         </div>
 

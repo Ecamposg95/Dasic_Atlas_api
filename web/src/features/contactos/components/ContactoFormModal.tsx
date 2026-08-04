@@ -63,7 +63,7 @@ export function ContactoFormModal({
       <div className="space-y-3">
         {clienteIdFijo == null && (
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Empresa *</label>
+            <label className="block text-xs text-muted-foreground mb-1">Empresa *</label>
             {editing ? (
               <div className="text-sm text-foreground">{(editing as ContactoGlobal).empresa_nombre}</div>
             ) : (
@@ -82,19 +82,19 @@ export function ContactoFormModal({
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Nombre *</label>
+            <label className="block text-xs text-muted-foreground mb-1">Nombre *</label>
             <Input value={nombre} onChange={(e) => setNombre(e.target.value)} />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Cargo</label>
+            <label className="block text-xs text-muted-foreground mb-1">Cargo</label>
             <Input value={cargo} onChange={(e) => setCargo(e.target.value)} />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Email</label>
+            <label className="block text-xs text-muted-foreground mb-1">Email</label>
             <Input value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Teléfono</label>
+            <label className="block text-xs text-muted-foreground mb-1">Teléfono</label>
             <Input value={telefono} onChange={(e) => setTelefono(e.target.value)} />
           </div>
         </div>

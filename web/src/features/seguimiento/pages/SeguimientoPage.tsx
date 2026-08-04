@@ -25,6 +25,7 @@ import {
   DataTableRow,
   DataTableEmpty,
 } from '@/components/ui/data-table';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from '@/lib/toast';
 import { confirm } from '@/lib/confirm';
 import { api, type ApiError } from '@/lib/api';
@@ -111,7 +112,7 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
         variant="ghost"
         size="icon"
         title="Ver PDF"
-        className="h-7 w-7 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        className="h-7 w-7 text-muted-foreground hover:text-foreground"
         onClick={() => window.open(`/api/ventas/${item.id}/pdf`, '_blank', 'noreferrer')}
       >
         <FileText className="h-3.5 w-3.5" />
@@ -123,7 +124,7 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
           variant="ghost"
           size="icon"
           title="Editar cotización"
-          className="h-7 w-7 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="h-7 w-7 text-muted-foreground hover:text-foreground"
           onClick={() => onEditar(item.id)}
         >
           <Pencil className="h-3.5 w-3.5" />
@@ -136,7 +137,7 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
           variant="ghost"
           size="icon"
           title="Recotizar (nueva versión)"
-          className="h-7 w-7 text-slate-600 hover:text-cyan-600 dark:text-slate-400 dark:hover:text-cyan-300"
+          className="h-7 w-7 text-muted-foreground hover:text-cyan-600 dark:hover:text-cyan-300"
           disabled={isBusy}
           onClick={() => onRecotizar(item.id)}
         >
@@ -154,7 +155,7 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
           variant="ghost"
           size="icon"
           title="Convertir a venta"
-          className="h-7 w-7 text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-300"
+          className="h-7 w-7 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-300"
           disabled={isBusy}
           onClick={() => onConvertir(item)}
         >
@@ -168,7 +169,7 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
           variant="ghost"
           size="icon"
           title="Cancelar cotización"
-          className="h-7 w-7 text-slate-600 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400"
+          className="h-7 w-7 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400"
           disabled={isBusy}
           onClick={() => onCancelar(item)}
         >
@@ -182,7 +183,7 @@ function RowActions({ item, onRecotizar, onConvertir, onCancelar, onEditar, onRe
           variant="ghost"
           size="icon"
           title="Recordar seguimiento"
-          className="h-7 w-7 text-slate-600 hover:text-cyan-600 dark:text-slate-400 dark:hover:text-cyan-300"
+          className="h-7 w-7 text-muted-foreground hover:text-cyan-600 dark:hover:text-cyan-300"
           onClick={() => onRecordar(item)}
         >
           <BellPlus className="h-3.5 w-3.5" />
@@ -337,10 +338,13 @@ export function SeguimientoPage() {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <div className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-4">
         {/* Header */}
-        <header className="flex items-center gap-3">
-          <ListChecks className="h-6 w-6 text-accent-glow" />
-          <h1 className="text-2xl font-semibold">Seguimiento de cotizaciones</h1>
-        </header>
+        <PageHeader
+          title={
+            <span className="flex items-center gap-3">
+              <ListChecks className="h-6 w-6 text-accent-glow" /> Seguimiento de cotizaciones
+            </span>
+          }
+        />
 
         {/* Error banner */}
         {showError && (
@@ -383,7 +387,7 @@ export function SeguimientoPage() {
           </select>
 
           {historial && (
-            <span className="text-xs text-slate-500 ml-auto">
+            <span className="text-xs text-muted-foreground ml-auto">
               {filtered.length} registro(s){page > 1 ? ` — p. ${page}` : ''}
             </span>
           )}
@@ -448,14 +452,14 @@ export function SeguimientoPage() {
                       {/* Vencimiento */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         {item.fecha_vencimiento == null ? (
-                          <span className="text-xs text-slate-400 dark:text-slate-600">—</span>
+                          <span className="text-xs text-muted-foreground/70">—</span>
                         ) : item.esta_vencida ? (
                           <StatusBadge tone="danger" label="Vencida" />
                         ) : (
                           <span className="flex items-center gap-1.5">
                             <StatusBadge tone="success" label="Vigente" />
                             {item.dias_restantes !== null && (
-                              <span className="text-[10px] text-slate-500">
+                              <span className="text-[10px] text-muted-foreground">
                                 {item.dias_restantes}d
                               </span>
                             )}

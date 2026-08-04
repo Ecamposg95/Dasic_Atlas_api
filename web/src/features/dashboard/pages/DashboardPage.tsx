@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { LayoutDashboard, AlertTriangle, TrendingUp, Package, CreditCard, BellRing } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from '@/lib/toast';
 import { useHero } from '../hooks/useHero';
 import { usePipeline } from '../hooks/usePipeline';
@@ -121,7 +122,7 @@ export function DashboardPage() {
         key: `saldo-${c.id}`,
         severity,
         text: `${c.empresa}: saldo ${fmtMoney(c.saldo)} sin pago hace ${c.dias_sin_pago} días`,
-        link: `/spa/clientes`,
+        link: `/spa/cuentas-por-cobrar`,
       });
     });
 
@@ -130,6 +131,7 @@ export function DashboardPage() {
         key: `oc-${oc.id}`,
         severity: 'info',
         text: `OC borrador ${oc.folio}${oc.proveedor ? ` (${oc.proveedor})` : ''} — ${fmtMoney(oc.total, oc.moneda)}`,
+        link: `/spa/compras`,
       });
     });
   }
@@ -137,14 +139,20 @@ export function DashboardPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <header className="flex items-center gap-2">
-        <LayoutDashboard className="h-5 w-5 text-accent-glow" />
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-      </header>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <LayoutDashboard className="h-5 w-5 text-accent-glow" />
+            Dashboard
+          </span>
+        }
+        description="Centro de trabajo — cada indicador navega a su vista de detalle"
+        className="mb-0"
+      />
 
       {/* Row 1: KPIs hero */}
       <section>
-        <h2 className="text-xs text-slate-500 uppercase font-semibold tracking-wide mb-3">
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3">
           Ventas — mes actual
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -156,12 +164,14 @@ export function DashboardPage() {
             spark={hero?.ventas.sparkline_30d?.map((p) => p.v)}
             tone="emerald"
             loading={heroQ.isLoading}
+            to="/spa/analitica?tab=ventas"
           />
           <KpiCard
             label="Pipeline abierto"
             value={fmtMoney(hero?.pipeline.monto_mxn ?? 0)}
             sub={hero ? `${fmtInt(hero.pipeline.count)} cotizaciones · ticket prom. ${fmtMoney(hero.pipeline.ticket_promedio_mxn)}` : undefined}
             loading={heroQ.isLoading}
+            to="/spa/seguimiento"
           />
           <KpiCard
             label="Conversión 30d"
@@ -170,6 +180,7 @@ export function DashboardPage() {
             spark={hero?.conversion.sparkline_4w}
             tone="cyan"
             loading={heroQ.isLoading}
+            to="/spa/analitica?tab=ventas"
           />
           <KpiCard
             label="Margen prom."
@@ -182,7 +193,7 @@ export function DashboardPage() {
 
       {/* Row 2: Tendencia */}
       <section>
-        <h2 className="text-xs text-slate-500 uppercase font-semibold tracking-wide mb-3">
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3">
           Tendencia (12 meses)
         </h2>
         <TendenciaChart series={tendenciaQ.data?.series ?? []} loading={tendenciaQ.isLoading} />
@@ -203,14 +214,14 @@ export function DashboardPage() {
 
       {/* Row 4: Alertas */}
       <section>
-        <h2 className="text-xs text-slate-500 uppercase font-semibold tracking-wide mb-3 flex items-center gap-1">
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3 flex items-center gap-1">
           <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
           Alertas
         </h2>
         {alertasQ.isLoading ? (
-          <div className="text-slate-400 dark:text-slate-600 text-sm">Cargando alertas…</div>
+          <div className="text-muted-foreground/70 text-sm">Cargando alertas…</div>
         ) : alertItems.length === 0 ? (
-          <p className="text-sm text-slate-500">Sin alertas activas.</p>
+          <p className="text-sm text-muted-foreground">Sin alertas activas.</p>
         ) : (
           <div className="space-y-2">
             {alertItems.map((a) => (
@@ -223,9 +234,9 @@ export function DashboardPage() {
                 </Badge>
                 <span className="text-sm text-foreground flex-1 leading-snug">{a.text}</span>
                 {a.link && (
-                  <a href={a.link} className="text-xs text-cyan-400 hover:text-cyan-300 shrink-0 self-center">
+                  <Link to={a.link} className="text-xs text-cyan-400 hover:text-cyan-300 shrink-0 self-center">
                     ver →
-                  </a>
+                  </Link>
                 )}
               </div>
             ))}
@@ -235,7 +246,7 @@ export function DashboardPage() {
 
       {/* Row 5: Recordatorios */}
       <section>
-        <h2 className="text-xs text-slate-500 uppercase font-semibold tracking-wide mb-3 flex items-center gap-1">
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3 flex items-center gap-1">
           <BellRing className="h-3.5 w-3.5 text-cyan-400" />
           Recordatorios
         </h2>
@@ -245,15 +256,15 @@ export function DashboardPage() {
             <div className="flex flex-wrap gap-3">
               <div className="flex items-center gap-1.5">
                 <Badge variant="rose">{resumenRecQ.data?.vencidos ?? 0}</Badge>
-                <span className="text-xs text-slate-500">vencidos</span>
+                <span className="text-xs text-muted-foreground">vencidos</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Badge variant="amber">{resumenRecQ.data?.hoy ?? 0}</Badge>
-                <span className="text-xs text-slate-500">hoy</span>
+                <span className="text-xs text-muted-foreground">hoy</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Badge variant="slate">{resumenRecQ.data?.proximos_7d ?? 0}</Badge>
-                <span className="text-xs text-slate-500">próximos 7d</span>
+                <span className="text-xs text-muted-foreground">próximos 7d</span>
               </div>
               <Link
                 to="/spa/recordatorios"
@@ -265,7 +276,7 @@ export function DashboardPage() {
 
             {/* Top 5 overdue + today items */}
             {(vencidosRecQ.isLoading || hoyRecQ.isLoading) ? (
-              <p className="text-xs text-slate-400">Cargando…</p>
+              <p className="text-xs text-muted-foreground/70">Cargando…</p>
             ) : (
               (() => {
                 const items = [
@@ -273,7 +284,7 @@ export function DashboardPage() {
                   ...(hoyRecQ.data ?? []),
                 ].slice(0, 5);
                 if (items.length === 0) return (
-                  <p className="text-xs text-slate-500">Sin recordatorios urgentes.</p>
+                  <p className="text-xs text-muted-foreground">Sin recordatorios urgentes.</p>
                 );
                 return (
                   <ul className="space-y-1.5">
@@ -286,7 +297,7 @@ export function DashboardPage() {
                         <span className="text-foreground truncate flex-1">
                           {r.cliente ?? '—'}
                         </span>
-                        <span className="text-slate-400 shrink-0">
+                        <span className="text-muted-foreground/70 shrink-0">
                           {r.dias < 0 ? `−${Math.abs(r.dias)}d` : 'hoy'}
                         </span>
                       </li>
@@ -301,7 +312,7 @@ export function DashboardPage() {
 
       {/* Row 6: Tops */}
       <section>
-        <h2 className="text-xs text-slate-500 uppercase font-semibold tracking-wide mb-3">
+        <h2 className="text-xs text-muted-foreground uppercase font-semibold tracking-wide mb-3">
           Tops del mes
         </h2>
         <div className={`grid gap-4 ${tops?.ve_equipo ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
@@ -315,23 +326,23 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               {topsQ.isLoading ? (
-                <p className="text-slate-400 dark:text-slate-600 text-sm">Cargando…</p>
+                <p className="text-muted-foreground/70 text-sm">Cargando…</p>
               ) : !tops?.productos.length ? (
-                <p className="text-slate-500 text-sm">Sin datos</p>
+                <p className="text-muted-foreground text-sm">Sin datos</p>
               ) : (
                 <ol className="space-y-2">
                   {tops.productos.map((p, i) => (
                     <li key={p.id} className="flex items-start gap-2 text-sm">
-                      <span className="text-xs text-slate-400 dark:text-slate-600 w-4 pt-0.5">{i + 1}.</span>
+                      <span className="text-xs text-muted-foreground/70 w-4 pt-0.5">{i + 1}.</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1 flex-wrap">
                           <span className="font-medium text-foreground truncate">{p.nombre}</span>
                           {p.stock_riesgo && <Badge variant="rose">Stock bajo</Badge>}
                         </div>
-                        <p className="text-xs text-slate-500 font-mono">
+                        <p className="text-xs text-muted-foreground font-mono">
                           {p.sku}{p.marca ? ` · ${p.marca}` : ''}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           {fmtInt(p.cantidad_total)} uds en {p.apariciones} cot.
                         </p>
                       </div>
@@ -352,17 +363,17 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               {topsQ.isLoading ? (
-                <p className="text-slate-400 dark:text-slate-600 text-sm">Cargando…</p>
+                <p className="text-muted-foreground/70 text-sm">Cargando…</p>
               ) : !tops?.clientes.length ? (
-                <p className="text-slate-500 text-sm">Sin datos</p>
+                <p className="text-muted-foreground text-sm">Sin datos</p>
               ) : (
                 <ol className="space-y-2">
                   {tops.clientes.map((c, i) => (
                     <li key={c.id} className="flex items-start gap-2 text-sm">
-                      <span className="text-xs text-slate-400 dark:text-slate-600 w-4 pt-0.5">{i + 1}.</span>
+                      <span className="text-xs text-muted-foreground/70 w-4 pt-0.5">{i + 1}.</span>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate">{c.empresa}</p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           {fmtMoney(c.monto_mxn)} · {fmtInt(c.orden_count)} orden(es)
                         </p>
                         {c.saldo > 0 && (
@@ -387,17 +398,17 @@ export function DashboardPage() {
               </CardHeader>
               <CardContent className="px-4 pb-4">
                 {topsQ.isLoading ? (
-                  <p className="text-slate-400 dark:text-slate-600 text-sm">Cargando…</p>
+                  <p className="text-muted-foreground/70 text-sm">Cargando…</p>
                 ) : !tops.vendedores.length ? (
-                  <p className="text-slate-500 text-sm">Sin datos</p>
+                  <p className="text-muted-foreground text-sm">Sin datos</p>
                 ) : (
                   <ol className="space-y-2">
                     {tops.vendedores.map((v, i) => (
                       <li key={v.id} className="flex items-start gap-2 text-sm">
-                        <span className="text-xs text-slate-400 dark:text-slate-600 w-4 pt-0.5">{i + 1}.</span>
+                        <span className="text-xs text-muted-foreground/70 w-4 pt-0.5">{i + 1}.</span>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-foreground">{v.nombre}</p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-muted-foreground">
                             {fmtMoney(v.monto_mxn)} · {fmtInt(v.orden_count)} venta(s)
                           </p>
                         </div>

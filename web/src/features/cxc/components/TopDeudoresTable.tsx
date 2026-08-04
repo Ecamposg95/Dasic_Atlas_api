@@ -11,6 +11,8 @@ import {
   DataTableRow,
   DataTableEmpty,
 } from '@/components/ui/data-table';
+import { EmptyState } from '@/components/ui/empty-state';
+import { SkeletonRows } from '@/components/ui/skeleton';
 import { RegistrarPagoModal } from './RegistrarPagoModal';
 import { useIsAdminOrGerente } from '@/lib/permissions';
 import type { TopDeudor } from '../types';
@@ -29,18 +31,6 @@ function DiasBadge({ dias }: { dias: number }) {
 interface PagoModal {
   clienteId: number;
   nombreEmpresa: string;
-}
-
-function SkeletonRow() {
-  return (
-    <tr className="border-b border-border">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-surface-2 rounded animate-pulse" />
-        </td>
-      ))}
-    </tr>
-  );
 }
 
 interface Props {
@@ -66,13 +56,10 @@ export function TopDeudoresTable({ deudores, loading }: Props) {
         </DataTableHead>
         <DataTableBody>
           {loading ? (
-            Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+            <SkeletonRows rows={5} cols={5} />
           ) : deudores.length === 0 ? (
             <DataTableEmpty colSpan={5}>
-              <div className="flex flex-col items-center gap-2 text-slate-500">
-                <Users className="h-10 w-10 opacity-30" />
-                <p>Sin cuentas por cobrar</p>
-              </div>
+              <EmptyState icon={Users} title="Sin cuentas por cobrar" className="py-0" />
             </DataTableEmpty>
           ) : (
             deudores.map((d) => (

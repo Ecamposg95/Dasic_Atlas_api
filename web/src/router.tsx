@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { NotFound } from '@/components/NotFound';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 
 // Code-split: cada página se carga on-demand al navegar a ella.
@@ -31,7 +32,6 @@ const lazyPage = <K extends string>(loader: () => Promise<Record<K, React.Compon
     }
   };
 
-const hello = lazyPage(() => import('@/features/hello/pages/HelloPage'), 'HelloPage');
 const dashboard = lazyPage(() => import('@/features/dashboard/pages/DashboardPage'), 'DashboardPage');
 const cotizador = lazyPage(() => import('@/features/cotizador/pages/CotizadorPage'), 'CotizadorPage');
 const borradores = lazyPage(() => import('@/features/borradores/pages/BorradoresPage'), 'BorradoresPage');
@@ -84,7 +84,6 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/spa/dashboard" replace /> },
       { path: 'login', element: <LoginPage /> },
-      { path: 'hello', lazy: hello },
       { path: 'dashboard', lazy: dashboard },
       { path: 'cotizador', lazy: cotizador },
       { path: 'borradores', lazy: borradores },
@@ -117,6 +116,7 @@ export const router = createBrowserRouter([
       { path: 'superadmin/usuarios', lazy: superadminUsuarios },
       { path: 'crm', lazy: crm },
       { path: 'recordatorios', lazy: recordatorios },
+      { path: '*', element: <NotFound /> },
     ],
   },
   // Rutas legacy — FastAPI sirve el mismo dist/index.html para estas URLs.
@@ -144,4 +144,6 @@ export const router = createBrowserRouter([
   legacyRoute('/precios', precios),
   legacyRoute('/usuarios', usuarios),
   legacyRoute('/servicios', servicios),
+  // Catch-all: cualquier URL desconocida cae en el 404 dentro del shell.
+  { path: '*', element: <Layout />, children: [{ path: '*', element: <NotFound /> }] },
 ]);

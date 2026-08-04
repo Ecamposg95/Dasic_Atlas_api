@@ -1,6 +1,7 @@
 // 4 tarjetas de resumen por bucket de aging.
 
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { AgingBucket } from '../types';
 
 const BUCKET_META: Record<
@@ -47,9 +48,9 @@ function BucketSkeleton() {
     <Card>
       <CardContent className="pt-5">
         <div className="space-y-2">
-          <div className="h-3 w-20 bg-surface-2 rounded animate-pulse" />
-          <div className="h-7 w-32 bg-surface-2 rounded animate-pulse" />
-          <div className="h-3 w-16 bg-surface-2 rounded animate-pulse" />
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-7 w-32" />
+          <Skeleton className="h-3 w-16" />
         </div>
       </CardContent>
     </Card>
@@ -72,9 +73,9 @@ export function AgingBuckets({ buckets, loading }: Props) {
       {buckets.map((bucket) => {
         const meta = BUCKET_META[bucket.rango] ?? {
           label: bucket.rango,
-          accentClass: 'bg-slate-500',
+          accentClass: 'bg-muted-foreground',
           textClass: 'text-muted-foreground',
-          borderClass: 'border-l-slate-500',
+          borderClass: 'border-l-muted-foreground',
         };
         return (
           <Card
@@ -88,7 +89,7 @@ export function AgingBuckets({ buckets, loading }: Props) {
               <p className={`text-xl font-bold tabular-nums ${meta.textClass}`}>
                 ${fmtMXN(bucket.monto)}
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {bucket.count} cargo{bucket.count !== 1 ? 's' : ''}
               </p>
             </CardContent>

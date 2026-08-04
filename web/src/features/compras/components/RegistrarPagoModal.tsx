@@ -94,7 +94,7 @@ export function RegistrarPagoModal({ orden, onClose }: Props) {
           OC: <span className="font-mono text-cyan-700 dark:text-cyan-300">{orden.folio ?? `#${orden.id}`}</span> —{' '}
           Proveedor:{' '}
           {cargandoDetalle ? (
-            <span className="inline-block h-3 w-24 align-middle bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+            <span className="inline-block h-3 w-24 align-middle bg-surface-2 rounded animate-pulse" />
           ) : (
             <span className="font-medium text-foreground">{proveedorNombre}</span>
           )}

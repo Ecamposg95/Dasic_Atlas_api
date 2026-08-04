@@ -20,13 +20,13 @@ function ModalShell({
 }: { title: string; children: React.ReactNode; onClose: () => void }) {
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-950/80 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">{title}</h3>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-slate-900 dark:hover:text-slate-100">
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -87,7 +87,7 @@ function RenombrarModal({
             placeholder="Ej: Relés"
             autoFocus
           />
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Se actualizarán {categoria.n_productos} producto(s).
           </p>
         </div>
@@ -167,7 +167,7 @@ export function CategoriasTab() {
                 <button
                   onClick={() => setModalRename(c)}
                   title="Renombrar"
-                  className="text-foreground hover:text-slate-900 dark:hover:text-slate-100 px-1"
+                  className="text-muted-foreground hover:text-foreground px-1"
                 >
                   <Pen className="h-4 w-4 inline" />
                 </button>

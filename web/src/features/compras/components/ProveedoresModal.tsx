@@ -62,7 +62,7 @@ export function ProveedoresModal({ onClose }: Props) {
         {/* Lista */}
         {isLoading && <div className="text-muted-foreground text-sm">Cargando proveedores…</div>}
         {!isLoading && (!proveedores || proveedores.length === 0) && (
-          <div className="text-slate-500 text-sm text-center py-4">Sin proveedores registrados.</div>
+          <div className="text-muted-foreground text-sm text-center py-4">Sin proveedores registrados.</div>
         )}
         {(proveedores ?? []).length > 0 && (
           <table className="w-full text-xs border-collapse">
@@ -76,7 +76,7 @@ export function ProveedoresModal({ onClose }: Props) {
             </thead>
             <tbody>
               {(proveedores ?? []).map((p) => (
-                <tr key={p.id} className="border-b border-slate-200 dark:border-slate-800/50 hover:bg-slate-100/40 dark:hover:bg-slate-800/30">
+                <tr key={p.id} className="border-b border-border hover:bg-surface-2/60">
                   <td className="py-1.5 pr-2 font-medium text-foreground">{p.nombre_empresa}</td>
                   <td className="py-1.5 px-2 text-muted-foreground">{p.contacto_nombre ?? '—'}</td>
                   <td className="py-1.5 px-2 text-muted-foreground">{p.telefono ?? '—'}</td>
@@ -91,7 +91,7 @@ export function ProveedoresModal({ onClose }: Props) {
 
         {/* Formulario nuevo proveedor */}
         {showForm && (
-          <div className="border border-border-strong rounded-lg p-3 space-y-2 bg-slate-50 dark:bg-slate-900/50">
+          <div className="border border-border-strong rounded-lg p-3 space-y-2 bg-surface-2">
             <div className="text-sm font-medium text-foreground mb-2">Nuevo proveedor</div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">

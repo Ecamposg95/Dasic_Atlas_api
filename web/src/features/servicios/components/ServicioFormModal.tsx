@@ -157,7 +157,7 @@ export function ServicioFormModal({ mode, servicio, onSave, onClose, busy }: Pro
             onChange={(e) => setDescripcion(e.target.value)}
             rows={2}
             placeholder="Descripción detallada del servicio"
-            className="w-full text-sm rounded-md border border-border-strong bg-card text-foreground px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-accent-glow/40"
+            className="w-full text-sm rounded-md border border-border-strong bg-card text-foreground px-3 py-2 placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-accent-glow/40"
           />
         </div>
 
@@ -191,7 +191,7 @@ export function ServicioFormModal({ mode, servicio, onSave, onClose, busy }: Pro
                 type="checkbox"
                 checked={activo}
                 onChange={(e) => setActivo(e.target.checked)}
-                className="rounded border-slate-400 dark:border-slate-600"
+                className="rounded border-border-strong bg-card"
               />
               Activo
             </label>

@@ -125,7 +125,7 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
       <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
         {/* Identificación */}
         <section>
-          <h4 className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">Identificación</h4>
+          <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Identificación</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">SKU interno</label>
@@ -158,7 +158,7 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
 
         {/* Clasificación */}
         <section>
-          <h4 className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">Clasificación</h4>
+          <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Clasificación</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">Marca</label>
@@ -195,7 +195,7 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
               type="checkbox"
               checked={esServicio}
               onChange={(e) => setEsServicio(e.target.checked)}
-              className="rounded border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800"
+              className="rounded border-border-strong bg-card"
             />
             <label htmlFor="es_servicio" className="text-sm text-foreground cursor-pointer">
               Es servicio (no gestiona stock)
@@ -205,7 +205,7 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
 
         {/* Stock */}
         <section>
-          <h4 className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">Stock</h4>
+          <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Stock</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">Stock actual</label>
@@ -230,7 +230,7 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
 
         {/* Costos */}
         <section>
-          <h4 className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">Costos y precios</h4>
+          <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Costos y precios</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">Costo de compra *</label>
@@ -286,7 +286,7 @@ export function ProductoFormModal({ producto, marcas, proveedores, onClose }: Pr
 
         {/* Proveedores / logística */}
         <section>
-          <h4 className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">Proveedores y logística</h4>
+          <h4 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Proveedores y logística</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">Proveedor principal</label>

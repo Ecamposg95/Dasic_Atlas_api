@@ -17,22 +17,22 @@ export function ContactoHistorialDrawer({ contacto, onClose }: { contacto: Conta
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="text-lg font-semibold">{contacto.nombre}</h3>
-            <p className="text-xs text-slate-500">{contacto.empresa_nombre}</p>
+            <p className="text-xs text-muted-foreground">{contacto.empresa_nombre}</p>
           </div>
-          <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"><X className="h-4 w-4" /></button>
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
         </div>
-        <h4 className="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-2">Cotizaciones / Órdenes</h4>
+        <h4 className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">Cotizaciones / Órdenes</h4>
         {isLoading ? (
-          <p className="text-sm text-slate-400">Cargando…</p>
+          <p className="text-sm text-muted-foreground/70">Cargando…</p>
         ) : !data?.length ? (
-          <p className="text-sm text-slate-500">Sin documentos para este contacto.</p>
+          <p className="text-sm text-muted-foreground">Sin documentos para este contacto.</p>
         ) : (
           <ul className="space-y-2">
             {data.map((o) => (
               <li key={o.id} className="flex items-center justify-between gap-2 border border-border rounded-lg px-3 py-2">
                 <div className="min-w-0">
                   <a href={`/spa/cotizador?edit=${o.id}`} className="font-mono text-sm text-accent-glow hover:underline">{o.folio}</a>
-                  <div className="text-[11px] text-slate-500">{o.fecha ? o.fecha.slice(0, 10) : ''}</div>
+                  <div className="text-[11px] text-muted-foreground">{o.fecha ? o.fecha.slice(0, 10) : ''}</div>
                 </div>
                 <div className="text-right">
                   <Badge variant="slate">{o.estatus}</Badge>

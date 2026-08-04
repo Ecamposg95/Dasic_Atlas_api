@@ -31,7 +31,7 @@ function SkeletonRow({ cols }: { cols: number }) {
     <tr className="border-b border-border">
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-slate-100/40 dark:bg-slate-800/30 rounded animate-pulse" />
+          <div className="h-4 bg-surface-2 rounded animate-pulse" />
         </td>
       ))}
     </tr>
@@ -76,7 +76,7 @@ function VentasMesSection({
   return (
     <Section title="Ventas por mes">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Mostrando {meses} {meses === 1 ? 'mes' : 'meses'}
         </p>
         {isAdmin && (
@@ -169,14 +169,14 @@ function TopProductosSection({ dias }: { dias: number }) {
           ) : (
             items.map((row, idx) => (
               <DataTableRow key={row.producto_id}>
-                <td className="px-4 py-3 text-slate-500 text-xs">{idx + 1}</td>
+                <td className="px-4 py-3 text-muted-foreground text-xs">{idx + 1}</td>
                 <td className="px-4 py-3">
                   <span className="font-mono text-xs text-accent-glow">
                     {row.sku}
                   </span>
                   <span className="ml-2 text-foreground">{row.nombre}</span>
                   {row.marca && (
-                    <span className="ml-1 text-slate-500 text-xs">
+                    <span className="ml-1 text-muted-foreground text-xs">
                       · {row.marca}
                     </span>
                   )}
@@ -191,7 +191,7 @@ function TopProductosSection({ dias }: { dias: number }) {
                   ${fmt(row.monto_mxn)}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="h-2 bg-slate-100/40 dark:bg-slate-800/30 rounded overflow-hidden">
+                  <div className="h-2 bg-surface-2 rounded overflow-hidden">
                     <div
                       className="h-full bg-cyan-500 rounded"
                       style={{
@@ -243,7 +243,7 @@ function TopClientesSection({ dias }: { dias: number }) {
           ) : (
             items.map((row, idx) => (
               <DataTableRow key={row.cliente_id}>
-                <td className="px-4 py-3 text-slate-500 text-xs">{idx + 1}</td>
+                <td className="px-4 py-3 text-muted-foreground text-xs">{idx + 1}</td>
                 <td className="px-4 py-3 text-foreground">{row.empresa}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-foreground">
                   {row.orden_count}
@@ -255,7 +255,7 @@ function TopClientesSection({ dias }: { dias: number }) {
                   ${fmt(row.saldo_actual)}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="h-2 bg-slate-100/40 dark:bg-slate-800/30 rounded overflow-hidden">
+                  <div className="h-2 bg-surface-2 rounded overflow-hidden">
                     <div
                       className="h-full bg-emerald-500 rounded"
                       style={{
@@ -284,7 +284,7 @@ function RankingVendedoresSection({ dias }: { dias: number }) {
   if (apiError?.status === 403) {
     return (
       <Section title="Ranking vendedores">
-        <p className="text-sm text-slate-500 italic">Solo admin</p>
+        <p className="text-sm text-muted-foreground italic">Solo admin</p>
       </Section>
     );
   }
@@ -318,10 +318,10 @@ function RankingVendedoresSection({ dias }: { dias: number }) {
           ) : (
             items.map((row, idx) => (
               <DataTableRow key={row.usuario_id}>
-                <td className="px-4 py-3 text-slate-500 text-xs">{idx + 1}</td>
+                <td className="px-4 py-3 text-muted-foreground text-xs">{idx + 1}</td>
                 <td className="px-4 py-3">
                   <span className="text-foreground">{row.nombre}</span>
-                  <span className="ml-2 text-slate-500 text-xs">
+                  <span className="ml-2 text-muted-foreground text-xs">
                     {row.email}
                   </span>
                 </td>
@@ -332,7 +332,7 @@ function RankingVendedoresSection({ dias }: { dias: number }) {
                   ${fmt(row.monto_mxn)}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="h-2 bg-slate-100/40 dark:bg-slate-800/30 rounded overflow-hidden">
+                  <div className="h-2 bg-surface-2 rounded overflow-hidden">
                     <div
                       className="h-full bg-violet-500 rounded"
                       style={{
@@ -378,7 +378,7 @@ export function ReportesPage({ embedded = false }: { embedded?: boolean }) {
           className={`px-3 py-1.5 rounded-lg text-sm transition ${
             dias === r.value
               ? 'bg-accent-glow/20 text-accent-glow font-semibold border border-accent-glow/40'
-              : 'bg-slate-100/40 text-muted-foreground hover:bg-slate-200/60 dark:bg-slate-800 dark:hover:bg-slate-700'
+              : 'bg-surface-2 text-muted-foreground hover:bg-border'
           }`}
         >
           {r.label}
