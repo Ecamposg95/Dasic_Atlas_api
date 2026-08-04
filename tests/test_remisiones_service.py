@@ -225,6 +225,24 @@ def test_crear_cotizacion_desde_copia_snapshot_completo(db, orden):
     assert linea_fantasma.tipo_linea == "producto_fantasma"
 
 
+def test_armar_linea_respeta_unidad_del_payload_en_linea_de_orden(db, orden):
+    """Remate: el selector de unidad de la UI persiste también en partidas
+    ligadas a orden — si el payload trae `unidad` no-vacía, se usa esa; si
+    viene None/vacía, snapshot desde DetalleOrden (comportamiento previo)."""
+    o, d, admin = orden  # d.unidad == "MTS"
+    payload = RemisionCreate(orden_venta_id=o.id, detalles=[
+        DetalleRemisionInput(detalle_orden_id=d.id, descripcion="Cable",
+                             cantidad=Decimal("2"), unidad="KG")])
+    rem = service.crear_borrador(db, payload, admin)
+    assert rem.detalles[0].unidad == "KG"
+
+    payload_sin = RemisionCreate(orden_venta_id=o.id, detalles=[
+        DetalleRemisionInput(detalle_orden_id=d.id, descripcion="Cable",
+                             cantidad=Decimal("2"), unidad="   ")])
+    rem_sin = service.crear_borrador(db, payload_sin, admin)
+    assert rem_sin.detalles[0].unidad == "MTS"  # fallback al snapshot de la orden
+
+
 def test_crear_cotizacion_desde_preserva_servicio(db, orden):
     """Fix round 2 (B): una línea cuyo DetalleOrden origen es un servicio
     de catálogo (servicio_id no nulo, tipo_linea='servicio_catalogo') SÍ

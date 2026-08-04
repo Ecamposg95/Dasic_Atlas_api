@@ -442,9 +442,18 @@ def ordenes_pendientes_entrega(
         q = _scope_ventas(q, current_user)
         ordenes = q.all()
 
-        # Cargar remisiones existentes en un solo query
+        # Cargar remisiones existentes en un solo query. Solo cuentan como
+        # entrega las remisiones en estados que entregan (EMITIDA/RECIBIDA)
+        # — borradores y canceladas NO quitan la orden del pendiente
+        # (mismo criterio que app/domains/remisiones/repository.py).
+        from app.domains.remisiones.repository import ESTADOS_QUE_ENTREGAN
+
         remisiones_por_orden: dict[int, int] = {}
-        for r in db.query(models.Remision).all():
+        for r in (
+            db.query(models.Remision)
+            .filter(models.Remision.estado.in_(ESTADOS_QUE_ENTREGAN))
+            .all()
+        ):
             remisiones_por_orden[r.orden_venta_id] = remisiones_por_orden.get(r.orden_venta_id, 0) + 1
 
         def _aware(dt):

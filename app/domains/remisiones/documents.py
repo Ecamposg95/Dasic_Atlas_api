@@ -46,6 +46,10 @@ def _es_borrador(rem: models.Remision) -> bool:
     return rem.estado.value == models.EstadoRemision.BORRADOR.value
 
 
+def _es_cancelada(rem: models.Remision) -> bool:
+    return rem.estado.value == models.EstadoRemision.CANCELADA.value
+
+
 def _fecha_str(rem: models.Remision) -> str:
     fecha_base = rem.fecha_remision or getattr(rem, "creado_en", None)
     if not fecha_base:
@@ -68,15 +72,17 @@ def render_html(db: Session, rem: models.Remision) -> str:
         rem=rem,
         empresa_nombre=config_service.empresa_nombre(db),
         es_borrador=_es_borrador(rem),
+        es_cancelada=_es_cancelada(rem),
     )
 
 
 def render_word(db: Session, rem: models.Remision) -> bytes:
     """Genera la remisión como .docx editable (`GET /{id}/word`).
 
-    python-docx no soporta overlays tipo marca de agua — para un borrador,
-    `build_remision_docx` antepone "BORRADOR — SIN VALIDEZ" al subtítulo en
-    vez de superponer texto sobre el contenido (ver docstring del módulo).
+    python-docx no soporta overlays tipo marca de agua — para un borrador o
+    una cancelada, `build_remision_docx` antepone "BORRADOR — SIN VALIDEZ" /
+    "CANCELADA — SIN VALIDEZ" al subtítulo en vez de superponer texto sobre
+    el contenido (ver docstring del módulo).
     """
     return build_remision_docx(
         remision=rem,
@@ -84,4 +90,5 @@ def render_word(db: Session, rem: models.Remision) -> bytes:
         fecha_str=_fecha_str(rem),
         empresa_nombre=config_service.empresa_nombre(db),
         es_borrador=_es_borrador(rem),
+        es_cancelada=_es_cancelada(rem),
     )

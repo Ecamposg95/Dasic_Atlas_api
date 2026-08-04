@@ -131,8 +131,22 @@ def empresas_duplicadas(db: Session = Depends(get_db)):
 
     n_ord = counts_for(models.OrdenVenta)
     n_trx = counts_for(models.TransaccionCliente)
-    n_rem = counts_for(models.Remision)
     n_con = counts_for(models.Contacto)
+
+    # Remisiones: las creadas desde orden llevan cliente_id NULL — se
+    # atribuyen al cliente de su orden (coalesce: cliente directo si existe,
+    # si no el de la orden). Mismo criterio que el timeline de actividad.
+    _cliente_rem = func.coalesce(models.Remision.cliente_id, models.OrdenVenta.cliente_id)
+    n_rem = {
+        cid: n
+        for cid, n in (
+            db.query(_cliente_rem, func.count())
+            .outerjoin(models.OrdenVenta, models.Remision.orden_venta_id == models.OrdenVenta.id)
+            .filter(_cliente_rem.in_(ids))
+            .group_by(_cliente_rem)
+            .all()
+        )
+    }
 
     grupos: dict = {}
     for c in miembros:
@@ -199,6 +213,11 @@ def merge_empresas(
         remapped = {
             "ordenes": db.query(models.OrdenVenta).filter(models.OrdenVenta.cliente_id.in_(payload.loser_ids)).update({models.OrdenVenta.cliente_id: survivor.id}, synchronize_session=False),
             "transacciones": db.query(models.TransaccionCliente).filter(models.TransaccionCliente.cliente_id.in_(payload.loser_ids)).update({models.TransaccionCliente.cliente_id: survivor.id}, synchronize_session=False),
+            # Remisiones: solo hay que remapear las de cliente directo (modo
+            # libre, cliente_id no nulo). Las creadas desde orden llevan
+            # cliente_id NULL y se relacionan vía orden_venta_id — como las
+            # órdenes ("ordenes" arriba) ya se remapean al sobreviviente,
+            # esas remisiones siguen al cliente correcto automáticamente.
             "remisiones": db.query(models.Remision).filter(models.Remision.cliente_id.in_(payload.loser_ids)).update({models.Remision.cliente_id: survivor.id}, synchronize_session=False),
             "contactos": db.query(models.Contacto).filter(models.Contacto.cliente_id.in_(payload.loser_ids)).update({models.Contacto.cliente_id: survivor.id}, synchronize_session=False),
             # deals (CRM Pipeline) también referencia cliente_id con ON DELETE
@@ -525,7 +544,19 @@ def empresa_actividad(
             "moneda": o.moneda,
             "descripcion": f"{'Cotización' if es_cot else 'Venta'} {o.folio} ({o.estatus})",
         })
-    for r in db.query(models.Remision).filter(models.Remision.cliente_id == cliente_id).all():
+    # Remisiones del cliente: directas (modo libre → cliente_id) O creadas
+    # desde una orden del cliente (esas llevan cliente_id NULL y solo se
+    # relacionan vía orden_venta_id → OrdenVenta.cliente_id).
+    remisiones = (
+        db.query(models.Remision)
+        .outerjoin(models.OrdenVenta, models.Remision.orden_venta_id == models.OrdenVenta.id)
+        .filter(or_(
+            models.Remision.cliente_id == cliente_id,
+            models.OrdenVenta.cliente_id == cliente_id,
+        ))
+        .all()
+    )
+    for r in remisiones:
         eventos.append({
             "tipo": "remision",
             "fecha": r.creado_en.isoformat() if getattr(r, "creado_en", None) else None,

@@ -95,7 +95,10 @@ def _armar_linea(item: DetalleRemisionInput, det_orden: dict) -> models.DetalleR
         sku = base.sku_libre or (prod.sku_comercial if prod else None) or (prod.sku if prod else None)
         clave_unidad = base.clave_unidad_sat or (prod.clave_unidad_sat if prod else None)
         precio = base.precio_unitario or Decimal("0")
-        unidad = base.unidad or (prod.unidad if prod else None)
+        # La UI permite sobrescribir la unidad por línea (selector de
+        # unidad): si el payload trae una unidad no-vacía, se respeta; si
+        # no, snapshot desde la orden/producto (comportamiento previo).
+        unidad = (item.unidad or "").strip() or base.unidad or (prod.unidad if prod else None)
     else:
         descripcion = item.descripcion
         sku = item.sku

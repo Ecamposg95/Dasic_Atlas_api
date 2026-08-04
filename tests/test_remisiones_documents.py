@@ -1,8 +1,11 @@
 """Tests de `app/domains/remisiones/documents.py` (Task 8): plantilla en
 archivo (`templates/remision.html.j2`), branding configurable vía
 `config_service.empresa_nombre`, unidad real por línea (no siempre 'PZA' /
-clave SAT), y marca de agua "BORRADOR" cuando `rem.estado == BORRADOR`.
+clave SAT), marca de agua "BORRADOR" cuando `rem.estado == BORRADOR`,
+marca de agua "CANCELADA" cuando `rem.estado == CANCELADA`, y línea de
+recepción (recibido_por + fecha) cuando existe.
 """
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from app import models
@@ -72,6 +75,59 @@ def test_emitida_no_lleva_marca_de_agua(db):
     html = documents.render_html(db, rem)
 
     assert "BORRADOR" not in html
+
+
+def test_cancelada_lleva_marca_de_agua(db):
+    rem = _remision(db, estado="cancelada")
+
+    html = documents.render_html(db, rem)
+
+    assert "CANCELADA" in html
+    assert "BORRADOR" not in html
+
+
+def test_emitida_no_lleva_marca_de_agua_cancelada(db):
+    rem = _remision(db, estado="emitida")
+
+    html = documents.render_html(db, rem)
+
+    assert "CANCELADA" not in html
+
+
+def test_html_incluye_linea_de_recepcion_cuando_existe(db):
+    rem = _remision(db, estado="recibida")
+    rem.recibido_por = "Juan Pérez"
+    rem.recibido_at = datetime(2026, 8, 1, 13, 30, tzinfo=timezone.utc)
+    db.commit()
+    db.refresh(rem)
+
+    html = documents.render_html(db, rem)
+
+    assert "Recibido por:" in html
+    assert "Juan Pérez" in html
+    assert "01/08/2026" in html
+
+
+def test_html_sin_recepcion_no_imprime_linea(db):
+    rem = _remision(db, estado="emitida")
+
+    html = documents.render_html(db, rem)
+
+    assert "Recibido por:" not in html
+
+
+def test_word_cancelada_lleva_prefijo(db):
+    # El .docx no soporta marca de agua superpuesta (python-docx) — el
+    # sustituto es el prefijo en el subtítulo, análogo al de borrador.
+    import io
+    import zipfile
+
+    rem = _remision(db, estado="cancelada")
+
+    data = documents.render_word(db, rem)
+
+    xml = zipfile.ZipFile(io.BytesIO(data)).read("word/document.xml").decode("utf-8")
+    assert "CANCELADA — SIN VALIDEZ" in xml
 
 
 def test_render_word_usa_branding_y_unidad(db):

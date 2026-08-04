@@ -145,6 +145,7 @@ def build_remision_docx(
     fecha_str: str,
     empresa_nombre: str,
     es_borrador: bool = False,
+    es_cancelada: bool = False,
 ) -> bytes:
     """Genera una remisión como .docx editable.
 
@@ -164,6 +165,10 @@ def build_remision_docx(
     "BORRADOR — SIN VALIDEZ · " al subtítulo — decisión documentada: un
     prefijo visible en el encabezado basta para que el documento no se
     confunda con una remisión válida.
+
+    ``es_cancelada``: mismo mecanismo que ``es_borrador`` — antepone
+    "CANCELADA — SIN VALIDEZ · " al subtítulo (el HTML lleva marca de agua
+    "CANCELADA" superpuesta, análoga a la de borrador).
     """
     doc = Document()
 
@@ -173,9 +178,13 @@ def build_remision_docx(
     r.bold = True
     r.font.size = Pt(18)
 
-    prefijo_borrador = "BORRADOR — SIN VALIDEZ · " if es_borrador else ""
+    prefijo_estado = ""
+    if es_borrador:
+        prefijo_estado = "BORRADOR — SIN VALIDEZ · "
+    elif es_cancelada:
+        prefijo_estado = "CANCELADA — SIN VALIDEZ · "
     sub = doc.add_paragraph()
-    sr = sub.add_run(f"{prefijo_borrador}REMISIÓN · {remision.folio or 'SIN FOLIO'}")
+    sr = sub.add_run(f"{prefijo_estado}REMISIÓN · {remision.folio or 'SIN FOLIO'}")
     sr.bold = True
     sr.font.size = Pt(12)
 

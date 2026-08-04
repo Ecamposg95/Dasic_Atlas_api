@@ -19,6 +19,7 @@
   .firma div { width:45%; border-top:1px solid #64748b; padding-top:4px; text-align:center; font-size:10px; color:#64748b; }
 </style></head><body>
   {% if es_borrador %}<div style="position:fixed;top:40%;left:15%;font-size:80px;color:rgba(200,0,0,.15);transform:rotate(-30deg);font-weight:800">BORRADOR</div>{% endif %}
+  {% if es_cancelada %}<div style="position:fixed;top:40%;left:15%;font-size:80px;color:rgba(200,0,0,.15);transform:rotate(-30deg);font-weight:800">CANCELADA</div>{% endif %}
   <div class="head">
     <div><div class="title">REMISIÓN</div><div class="meta">{{ empresa_nombre }}</div></div>
     <div style="text-align:right">
@@ -28,7 +29,8 @@
   </div>
   <div class="meta">
     <strong>Cliente:</strong> {{ (rem.orden_venta.cliente.nombre_empresa if rem.orden_venta and rem.orden_venta.cliente else (rem.cliente.nombre_empresa if rem.cliente else '—')) }}<br>
-    {% if rem.transportista %}<strong>Transportista:</strong> {{ rem.transportista }}{% endif %}
+    {% if rem.transportista %}<strong>Transportista:</strong> {{ rem.transportista }}<br>{% endif %}
+    {% if rem.recibido_por %}<strong>Recibido por:</strong> {{ rem.recibido_por }}{% if rem.recibido_at %} — {{ rem.recibido_at.strftime('%d/%m/%Y %H:%M') }}{% endif %}{% endif %}
   </div>
   <table>
     <thead><tr>
