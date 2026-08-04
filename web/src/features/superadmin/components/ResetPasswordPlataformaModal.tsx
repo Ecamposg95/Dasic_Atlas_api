@@ -39,7 +39,7 @@ export function ResetPasswordPlataformaModal({ usuario, onSave, onClose, busy }:
       size="sm"
     >
       <div className="space-y-3">
-        <p className="font-mono text-[11px] text-slate-400">
+        <p className="font-mono text-[11px] text-muted-foreground">
           {usuario.email} · {usuario.rol}
         </p>
 

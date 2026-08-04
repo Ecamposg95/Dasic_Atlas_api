@@ -46,7 +46,7 @@ export function SuperAdminPage() {
   return (
     <PlatformShell title="Consola de plataforma">
       <div className="max-w-4xl">
-        <p className="font-mono text-xs text-slate-500 mb-6">
+        <p className="font-mono text-xs text-muted-foreground mb-6">
           Acceso restringido al super-administrador. Módulos de configuración, auditoría y mantenimiento.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -60,12 +60,12 @@ export function SuperAdminPage() {
                 'text-left rounded-xl p-4 transition-all',
                 c.activo
                   ? 'border border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/50 hover:bg-emerald-500/10 cursor-pointer'
-                  : 'border border-dashed border-slate-700 opacity-50 cursor-not-allowed',
+                  : 'border border-dashed border-border opacity-50 cursor-not-allowed',
               ].join(' ')}
             >
               <c.icon className="h-5 w-5 text-emerald-400 mb-3" />
-              <div className="font-mono text-sm font-semibold text-slate-200">{c.title}</div>
-              <div className="font-mono text-[11px] text-slate-500 mt-1">{c.desc}</div>
+              <div className="font-mono text-sm font-semibold text-foreground">{c.title}</div>
+              <div className="font-mono text-[11px] text-muted-foreground mt-1">{c.desc}</div>
             </button>
           ))}
         </div>

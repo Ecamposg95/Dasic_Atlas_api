@@ -17,7 +17,7 @@ function Row({ item }: { item: ConfigItem }) {
   return (
     <div className="flex items-end gap-3 flex-wrap border-b border-emerald-500/10 py-3 last:border-0">
       <div className="flex-1 min-w-[200px]">
-        <label className="block font-mono text-[11px] text-slate-500 mb-1">
+        <label className="block font-mono text-[11px] text-muted-foreground mb-1">
           {LABELS[item.clave] ?? item.clave}
         </label>
         <Input
@@ -25,7 +25,7 @@ function Row({ item }: { item: ConfigItem }) {
           onChange={(e) => setVal(e.target.value)}
           className="max-w-[200px] font-mono text-sm border-emerald-500/20 focus-visible:ring-emerald-500"
         />
-        <div className="font-mono text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+        <div className="font-mono text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
           Default: {item.default}{' '}
           {item.overrideado ? (
             <Badge variant="emerald">override activo</Badge>
@@ -73,7 +73,7 @@ function Row({ item }: { item: ConfigItem }) {
                 },
               )
             }
-            className="text-slate-400 hover:text-slate-200"
+            className="text-muted-foreground hover:text-foreground"
           >
             Restaurar default
           </Button>
@@ -89,12 +89,12 @@ export function ConfigPlataformaPage() {
   return (
     <PlatformShell title="Configuración de plataforma">
       <div className="max-w-2xl">
-        <p className="font-mono text-[11px] text-slate-500 mb-6">
+        <p className="font-mono text-[11px] text-muted-foreground mb-6">
           Cambios aplican sin redeploy. Afectan cotizaciones nuevas y comportamiento global del sistema.
         </p>
-        <div className="rounded-xl border border-emerald-500/20 bg-slate-900/30 divide-y divide-emerald-500/10 overflow-hidden">
+        <div className="rounded-xl border border-emerald-500/20 bg-card divide-y divide-emerald-500/10 overflow-hidden">
           {isLoading ? (
-            <p className="font-mono text-sm text-slate-400 px-4 py-6">Cargando configuración…</p>
+            <p className="font-mono text-sm text-muted-foreground px-4 py-6">Cargando configuración…</p>
           ) : (
             <div className="px-4 py-2">
               {(data?.items ?? []).map((it) => <Row key={it.clave} item={it} />)}

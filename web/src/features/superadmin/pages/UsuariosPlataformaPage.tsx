@@ -174,7 +174,7 @@ export function UsuariosPlataformaPage() {
       <div className="max-w-5xl space-y-4">
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <p className="font-mono text-xs text-slate-500">
+          <p className="font-mono text-xs text-muted-foreground">
             {items.length} usuario(s) registrado(s) · incluye todos los roles
           </p>
           <button
@@ -189,7 +189,7 @@ export function UsuariosPlataformaPage() {
 
         {/* Loading / Error */}
         {isLoading && (
-          <p className="font-mono text-sm text-slate-400">Cargando usuarios…</p>
+          <p className="font-mono text-sm text-muted-foreground">Cargando usuarios…</p>
         )}
         {isError && (
           <div className="font-mono text-sm text-rose-400 flex items-center gap-2">
@@ -224,8 +224,8 @@ export function UsuariosPlataformaPage() {
               <DataTableBody>
                 {items.length === 0 && (
                   <DataTableEmpty colSpan={5}>
-                    <UserCog className="h-8 w-8 mx-auto text-slate-700 mb-2" />
-                    <span className="font-mono text-xs text-slate-500">Sin usuarios registrados</span>
+                    <UserCog className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                    <span className="font-mono text-xs text-muted-foreground">Sin usuarios registrados</span>
                   </DataTableEmpty>
                 )}
                 {items.map((u) => (
@@ -236,7 +236,7 @@ export function UsuariosPlataformaPage() {
                     {/* Nombre */}
                     <td className="p-3">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-sm font-medium text-slate-200">
+                        <span className="font-mono text-sm font-medium text-foreground">
                           {u.nombre}
                         </span>
                         {isSelf(u) && (
@@ -249,7 +249,7 @@ export function UsuariosPlataformaPage() {
 
                     {/* Email */}
                     <td className="p-3">
-                      <span className="font-mono text-xs text-slate-400">{u.email}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{u.email}</span>
                     </td>
 
                     {/* Rol */}
@@ -273,7 +273,7 @@ export function UsuariosPlataformaPage() {
                       <button
                         type="button"
                         onClick={() => setModalEditar(u)}
-                        className="font-mono text-xs text-slate-400 hover:text-emerald-400 px-1.5 transition-colors"
+                        className="font-mono text-xs text-muted-foreground hover:text-emerald-400 px-1.5 transition-colors"
                       >
                         Editar
                       </button>
@@ -288,7 +288,7 @@ export function UsuariosPlataformaPage() {
                         type="button"
                         onClick={() => handleToggleActivo(u)}
                         disabled={editarMut.isPending || isSelf(u)}
-                        className="font-mono text-xs text-slate-400 hover:text-cyan-400 px-1.5 transition-colors disabled:opacity-40"
+                        className="font-mono text-xs text-muted-foreground hover:text-cyan-400 px-1.5 transition-colors disabled:opacity-40"
                         title={isSelf(u) ? 'No puedes desactivarte a ti mismo' : u.activo ? 'Desactivar' : 'Activar'}
                       >
                         {u.activo ? 'Desactivar' : 'Activar'}
@@ -311,7 +311,7 @@ export function UsuariosPlataformaPage() {
         )}
 
         {/* Note */}
-        <p className="font-mono text-[10px] text-slate-600">
+        <p className="font-mono text-[10px] text-muted-foreground/70">
           Los cambios de rol se aplican en el siguiente login del usuario afectado. Los guard-errors del backend (último superadmin, auto-degradación) aparecen como toast.
         </p>
       </div>

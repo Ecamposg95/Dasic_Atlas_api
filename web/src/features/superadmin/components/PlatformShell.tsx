@@ -38,7 +38,7 @@ export function PlatformShell({ title, children }: PlatformShellProps) {
 
   if (!isSuperadmin) {
     return (
-      <div className="p-6 text-sm text-slate-500">
+      <div className="p-6 text-sm text-muted-foreground">
         Solo el super-administrador puede acceder a esta consola.
       </div>
     );
@@ -74,7 +74,7 @@ export function PlatformShell({ title, children }: PlatformShellProps) {
           </span>
         )}
         {shortSha && (
-          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-500/10 text-slate-400 border border-slate-500/20">
+          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted-foreground/10 text-muted-foreground border border-muted-foreground/20">
             {shortSha}
           </span>
         )}
@@ -92,7 +92,7 @@ export function PlatformShell({ title, children }: PlatformShellProps) {
                 'font-mono text-xs px-3 py-1.5 rounded-md whitespace-nowrap transition-colors',
                 isActive
                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                  : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10',
+                  : 'text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10',
               ].join(' ')
             }
           >

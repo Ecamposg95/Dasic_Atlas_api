@@ -47,7 +47,7 @@ export function AuditPage() {
   return (
     <PlatformShell title="Auditoría global">
       <div className="max-w-6xl space-y-4">
-        <p className="font-mono text-[11px] text-slate-500">
+        <p className="font-mono text-[11px] text-muted-foreground">
           Actividad registrada en el sistema (cotizaciones y fusiones de empresas).
         </p>
 
@@ -59,8 +59,8 @@ export function AuditPage() {
             </span>
             {config.items.map((c) => (
               <span key={c.clave} className="flex items-center gap-1">
-                <span className="text-slate-500">{c.clave}:</span>
-                <span className="font-medium text-slate-200">{String(c.valor_efectivo)}</span>
+                <span className="text-muted-foreground">{c.clave}:</span>
+                <span className="font-medium text-foreground">{String(c.valor_efectivo)}</span>
                 <Badge variant={c.overrideado ? 'emerald' : 'slate'}>
                   {c.overrideado ? 'override' : 'default'}
                 </Badge>
@@ -72,11 +72,11 @@ export function AuditPage() {
         {/* Filtros */}
         <div className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block font-mono text-[10px] text-slate-500 mb-1 uppercase">Fuente</label>
+            <label className="block font-mono text-[10px] text-muted-foreground mb-1 uppercase">Fuente</label>
             <select
               value={fuente}
               onChange={(e) => resetPage(setFuente)(e.target.value as AuditFuente | '')}
-              className="border border-emerald-500/20 bg-slate-900/60 text-slate-300 rounded-md px-2 py-1.5 font-mono text-xs"
+              className="border border-emerald-500/20 bg-card text-foreground rounded-md px-2 py-1.5 font-mono text-xs"
             >
               <option value="">Todas</option>
               <option value="cotizacion">Cotizaciones</option>
@@ -84,11 +84,11 @@ export function AuditPage() {
             </select>
           </div>
           <div>
-            <label className="block font-mono text-[10px] text-slate-500 mb-1 uppercase">Usuario</label>
+            <label className="block font-mono text-[10px] text-muted-foreground mb-1 uppercase">Usuario</label>
             <select
               value={usuarioId}
               onChange={(e) => resetPage(setUsuarioId)(e.target.value)}
-              className="border border-emerald-500/20 bg-slate-900/60 text-slate-300 rounded-md px-2 py-1.5 font-mono text-xs"
+              className="border border-emerald-500/20 bg-card text-foreground rounded-md px-2 py-1.5 font-mono text-xs"
             >
               <option value="">Todos</option>
               {(usuarios ?? []).map((u) => (
@@ -99,27 +99,27 @@ export function AuditPage() {
             </select>
           </div>
           <div>
-            <label className="block font-mono text-[10px] text-slate-500 mb-1 uppercase">Desde</label>
+            <label className="block font-mono text-[10px] text-muted-foreground mb-1 uppercase">Desde</label>
             <input
               type="date"
               value={desde}
               onChange={(e) => resetPage(setDesde)(e.target.value)}
-              className="border border-emerald-500/20 bg-slate-900/60 text-slate-300 rounded-md px-2 py-1.5 font-mono text-xs"
+              className="border border-emerald-500/20 bg-card text-foreground rounded-md px-2 py-1.5 font-mono text-xs"
             />
           </div>
           <div>
-            <label className="block font-mono text-[10px] text-slate-500 mb-1 uppercase">Hasta</label>
+            <label className="block font-mono text-[10px] text-muted-foreground mb-1 uppercase">Hasta</label>
             <input
               type="date"
               value={hasta}
               onChange={(e) => resetPage(setHasta)(e.target.value)}
-              className="border border-emerald-500/20 bg-slate-900/60 text-slate-300 rounded-md px-2 py-1.5 font-mono text-xs"
+              className="border border-emerald-500/20 bg-card text-foreground rounded-md px-2 py-1.5 font-mono text-xs"
             />
           </div>
         </div>
 
         {/* Tabla */}
-        <div className="border border-emerald-500/20 rounded-xl overflow-x-auto bg-slate-900/30">
+        <div className="border border-emerald-500/20 rounded-xl overflow-x-auto bg-card">
           <table className="w-full text-sm">
             <thead className="bg-emerald-500/5 font-mono text-[10px] uppercase tracking-widest text-emerald-500/70">
               <tr>
@@ -133,13 +133,13 @@ export function AuditPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-6 text-center font-mono text-xs text-slate-500">
+                  <td colSpan={5} className="px-3 py-6 text-center font-mono text-xs text-muted-foreground">
                     Cargando…
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-6 text-center font-mono text-xs text-slate-500">
+                  <td colSpan={5} className="px-3 py-6 text-center font-mono text-xs text-muted-foreground">
                     Sin actividad para estos filtros.
                   </td>
                 </tr>
@@ -149,10 +149,10 @@ export function AuditPage() {
                     key={`${e.fuente}-${e.fecha}-${i}`}
                     className="border-t border-emerald-500/10 align-top"
                   >
-                    <td className="px-3 py-2 whitespace-nowrap font-mono text-[11px] text-slate-500">
+                    <td className="px-3 py-2 whitespace-nowrap font-mono text-[11px] text-muted-foreground">
                       {fmtFecha(e.fecha)}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap font-mono text-[11px] text-slate-300">
+                    <td className="px-3 py-2 whitespace-nowrap font-mono text-[11px] text-muted-foreground">
                       {e.usuario ?? '—'}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
@@ -160,7 +160,7 @@ export function AuditPage() {
                         {e.accion}
                       </Badge>
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap font-mono text-xs font-medium text-slate-200">
+                    <td className="px-3 py-2 whitespace-nowrap font-mono text-xs font-medium text-foreground">
                       {e.link ? (
                         <Link to={e.link} className="text-emerald-400 hover:underline">
                           {e.entidad}
@@ -169,7 +169,7 @@ export function AuditPage() {
                         e.entidad
                       )}
                     </td>
-                    <td className="px-3 py-2 font-mono text-[11px] text-slate-400">{e.detalle}</td>
+                    <td className="px-3 py-2 font-mono text-[11px] text-muted-foreground">{e.detalle}</td>
                   </tr>
                 ))
               )}
@@ -178,7 +178,7 @@ export function AuditPage() {
         </div>
 
         {/* Paginación */}
-        <div className="flex items-center justify-between font-mono text-xs text-slate-500">
+        <div className="flex items-center justify-between font-mono text-xs text-muted-foreground">
           <span>{total} evento(s)</span>
           <div className="flex items-center gap-2">
             <Button

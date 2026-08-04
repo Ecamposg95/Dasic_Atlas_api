@@ -122,7 +122,7 @@ export function UsuarioPlataformaModal({ mode, usuario, onSave, onClose, busy }:
           <select
             value={rol}
             onChange={(e) => setRol(e.target.value as RolUsuario)}
-            className="h-10 w-full rounded-md border border-emerald-500/30 bg-slate-900 px-3 font-mono text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="h-10 w-full rounded-md border border-emerald-500/30 bg-card px-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500"
           >
             {ROL_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -146,7 +146,7 @@ export function UsuarioPlataformaModal({ mode, usuario, onSave, onClose, busy }:
             onChange={(e) => setActivo(e.target.checked)}
             className="rounded border-emerald-500/40"
           />
-          <label htmlFor="plat-activo-check" className="font-mono text-xs text-slate-300">
+          <label htmlFor="plat-activo-check" className="font-mono text-xs text-foreground">
             Usuario activo
           </label>
         </div>

@@ -24,16 +24,16 @@ function PanelHeader({ label }: { label: string }) {
 
 function Row({ label, value, mono = true }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 px-3 py-1.5 border-b border-slate-700/20 last:border-0">
-      <span className="font-mono text-[11px] text-slate-400 shrink-0">{label}</span>
-      <span className={`${mono ? 'font-mono' : ''} text-xs text-slate-200 text-right`}>{value}</span>
+    <div className="flex items-baseline justify-between gap-4 px-3 py-1.5 border-b border-border/60 last:border-0">
+      <span className="font-mono text-[11px] text-muted-foreground shrink-0">{label}</span>
+      <span className={`${mono ? 'font-mono' : ''} text-xs text-foreground text-right`}>{value}</span>
     </div>
   );
 }
 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-xl border border-emerald-500/20 bg-slate-900/40 overflow-hidden ${className}`}>
+    <div className={`rounded-xl border border-emerald-500/20 bg-card overflow-hidden ${className}`}>
       {children}
     </div>
   );
@@ -64,7 +64,7 @@ export function SaludPage() {
       <div className="max-w-5xl space-y-6">
         {/* Toolbar */}
         <div className="flex items-center justify-between">
-          <p className="font-mono text-xs text-slate-500">
+          <p className="font-mono text-xs text-muted-foreground">
             Actualización automática cada 30s
           </p>
           <button
@@ -78,7 +78,7 @@ export function SaludPage() {
         </div>
 
         {isLoading && (
-          <p className="font-mono text-sm text-slate-400">Cargando datos de salud…</p>
+          <p className="font-mono text-sm text-muted-foreground">Cargando datos de salud…</p>
         )}
 
         {isError && (
@@ -145,7 +145,7 @@ export function SaludPage() {
             <Panel>
               <PanelHeader label="Tipo de cambio (FX)" />
               {data.fx == null ? (
-                <p className="font-mono text-xs text-slate-500 px-3 py-2">Sin datos de FX.</p>
+                <p className="font-mono text-xs text-muted-foreground px-3 py-2">Sin datos de FX.</p>
               ) : (
                 <>
                   <Row label="USD/MXN" value={`$${data.fx.usd_mxn.toFixed(4)}`} />
@@ -153,7 +153,7 @@ export function SaludPage() {
                   <Row label="fecha" value={data.fx.fecha} />
                   <Row label="obtenido_en" value={fmtDate(data.fx.obtenido_en)} />
                   <div className="px-3 py-1.5 flex items-center gap-2">
-                    <span className="font-mono text-[11px] text-slate-400">age</span>
+                    <span className="font-mono text-[11px] text-muted-foreground">age</span>
                     <span
                       className={`font-mono text-xs font-bold ${
                         data.fx.age_horas > 24 ? 'text-amber-400' : 'text-emerald-400'
@@ -178,7 +178,7 @@ export function SaludPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-0 divide-x divide-y divide-emerald-500/10">
                 {Object.entries(data.counts).map(([key, val]) => (
                   <div key={key} className="px-3 py-2 flex flex-col gap-0.5">
-                    <span className="font-mono text-[10px] text-slate-500 uppercase">
+                    <span className="font-mono text-[10px] text-muted-foreground uppercase">
                       {COUNT_LABELS[key] ?? key}
                     </span>
                     <span
@@ -197,18 +197,18 @@ export function SaludPage() {
             {data.runtime_config.length > 0 && (
               <Panel className="md:col-span-2">
                 <PanelHeader label="Runtime config" />
-                <div className="divide-y divide-slate-700/20">
+                <div className="divide-y divide-border/60">
                   {data.runtime_config.map((item: RuntimeConfigItem) => (
                     <div key={item.clave} className="flex items-center justify-between gap-4 px-3 py-2">
-                      <span className="font-mono text-xs text-slate-400">{item.clave}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{item.clave}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs text-slate-200 font-bold">
+                        <span className="font-mono text-xs text-foreground font-bold">
                           {String(item.valor_efectivo)}
                         </span>
                         <Badge variant={item.overrideado ? 'emerald' : 'slate'}>
                           {item.overrideado ? 'override' : 'default'}
                         </Badge>
-                        <span className="font-mono text-[10px] text-slate-500">
+                        <span className="font-mono text-[10px] text-muted-foreground">
                           dflt: {String(item.default)}
                         </span>
                       </div>
