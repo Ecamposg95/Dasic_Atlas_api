@@ -19,7 +19,7 @@ def upgrade() -> None:
     op.add_column("detalles_remision", sa.Column("unidad", sa.String(20), nullable=True))
     op.create_table(
         "unidades_medida",
-        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("id", sa.Integer(), primary_key=True, index=True),
         sa.Column("nombre", sa.String(40), nullable=False, unique=True),
         sa.Column("abreviatura", sa.String(20), nullable=False),
         sa.Column("activa", sa.Boolean(), nullable=False, server_default="true"),

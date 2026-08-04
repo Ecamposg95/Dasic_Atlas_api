@@ -473,6 +473,17 @@ def editar_unidad(
             nuevo_nombre = payload.nombre.strip()
             if not nuevo_nombre:
                 raise HTTPException(400, "nombre no puede quedar vacío")
+            if nuevo_nombre != u.nombre:
+                colision = (
+                    db.query(models.UnidadMedida)
+                    .filter(
+                        models.UnidadMedida.nombre == nuevo_nombre,
+                        models.UnidadMedida.id != u.id,
+                    )
+                    .first()
+                )
+                if colision:
+                    raise HTTPException(409, f"Ya existe una unidad con nombre '{nuevo_nombre}'")
             u.nombre = nuevo_nombre
         if payload.abreviatura is not None:
             nueva_abrev = payload.abreviatura.strip().upper()

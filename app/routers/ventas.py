@@ -811,6 +811,10 @@ def crear_orden(
             _mostrar_marca = bool(getattr(item, "mostrar_marca", False))
 
             tipo_linea = _resolve_tipo_linea(item, producto)
+            # Snapshot de unidad (Task 4): lo que mandó el payload, o si no vino,
+            # la del catálogo (solo aplica cuando hay producto — fantasma/servicio
+            # no tienen unidad de catálogo de la cual heredar).
+            _unidad = getattr(item, "unidad", None) or (producto.unidad if producto else None)
             db.add(models.DetalleOrden(
                 orden_id=nueva_orden.id,
                 producto_id=producto.id if producto else None,
@@ -824,6 +828,7 @@ def crear_orden(
                 marca=_marca,
                 mostrar_marca=_mostrar_marca,
                 cantidad=item.cantidad,
+                unidad=_unidad,
                 # precio_unitario = bruto pre-descuento (lo que el cliente ve por unidad).
                 # subtotal ya incluye el descuento aplicado.
                 precio_unitario=precio_unit_bruto.quantize(Decimal("0.01")),
@@ -1085,6 +1090,8 @@ def actualizar_orden(
             _mostrar_marca = bool(getattr(item, "mostrar_marca", False))
 
             tipo_linea = _resolve_tipo_linea(item, producto)
+            # Snapshot de unidad (Task 4): payload, o fallback al catálogo si no vino.
+            _unidad = getattr(item, "unidad", None) or (producto.unidad if producto else None)
             db.add(models.DetalleOrden(
                 orden_id=orden.id,
                 producto_id=producto.id if producto else None,
@@ -1098,6 +1105,7 @@ def actualizar_orden(
                 marca=_marca,
                 mostrar_marca=_mostrar_marca,
                 cantidad=item.cantidad,
+                unidad=_unidad,
                 precio_unitario=precio_unit_bruto.quantize(Decimal("0.01")),
                 utilidad_aplicada=utilidad_pct,
                 descuento_aplicado=descuento_pct,
@@ -1236,6 +1244,7 @@ def recotizar(
                 marca=det.marca,
                 mostrar_marca=det.mostrar_marca,
                 cantidad=det.cantidad,
+                unidad=det.unidad,
                 precio_unitario=det.precio_unitario,
                 utilidad_aplicada=det.utilidad_aplicada,
                 descuento_aplicado=det.descuento_aplicado,
