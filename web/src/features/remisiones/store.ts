@@ -10,6 +10,7 @@ export type RemisionLinea = {
   descripcion: string;
   sku: string | null;
   clave_unidad_sat: string | null;
+  unidad: string | null;
   precio_unitario: number;
   productCurrency: string;
   cantidad: number;
@@ -81,6 +82,7 @@ export const useRemision = create<RemisionState>((set) => ({
         descripcion: l.descripcion,
         sku: l.sku,
         clave_unidad_sat: l.clave_unidad_sat,
+        unidad: l.unidad,
         precio_unitario: l.precio_unitario,
         productCurrency: b.moneda || 'MXN',
         cantidad: l.cantidad_orden,
@@ -130,6 +132,7 @@ export const useRemision = create<RemisionState>((set) => ({
           descripcion: p.nombre,
           sku: p.sku_comercial || p.sku,
           clave_unidad_sat: null,
+          unidad: null,
           // El catálogo es cost-first (no hay precio de venta); NO sembramos el
           // costo de DASIC como precio al cliente. Arranca en 0 → el usuario lo
           // captura si va a mostrar precios.
@@ -153,6 +156,7 @@ export const useRemision = create<RemisionState>((set) => ({
           descripcion: svc.nombre,
           sku: svc.codigo,
           clave_unidad_sat: null,
+          unidad: null,
           precio_unitario: 0,
           productCurrency: (svc.moneda || 'MXN').toUpperCase(),
           cantidad: qty,
@@ -173,6 +177,7 @@ export const useRemision = create<RemisionState>((set) => ({
           descripcion: f.descripcion,
           sku: f.sku_libre || null,
           clave_unidad_sat: null,
+          unidad: null,
           precio_unitario: 0,
           productCurrency: (f.moneda || 'MXN').toUpperCase(),
           cantidad: qty,
@@ -193,6 +198,7 @@ export const useRemision = create<RemisionState>((set) => ({
           descripcion: input.descripcion,
           sku: input.sku,
           clave_unidad_sat: input.clave_unidad_sat,
+          unidad: null,
           precio_unitario: input.precio_unitario,
           productCurrency: 'MXN',
           cantidad: input.cantidad,

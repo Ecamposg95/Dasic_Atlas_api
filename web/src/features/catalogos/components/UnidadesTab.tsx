@@ -25,9 +25,15 @@ function RenombrarModal({
   onSaved: () => void;
 }) {
   const qc = useQueryClient();
-  const [nuevo, setNuevo] = useState(unidad.unidad);
+  const [nuevo, setNuevo] = useState(unidad.nombre);
   const [err, setErr] = useState<string | null>(null);
 
+  // NOTA (Task 9, ajuste mínimo de compile): este PUT sigue siendo el
+  // endpoint legacy `/unidades/rename`, que muta `productos.unidad` (texto
+  // libre) — NO el catálogo administrable `unidades_medida` que ahora lista
+  // este tab (Task 4). Quedó desacoplado desde entonces; migrar este flujo
+  // al PATCH /unidades/{id} es trabajo de UI pendiente (Task 10/11), fuera
+  // del alcance de tipos/store/hooks de este task.
   const renameMut = useMutation<unknown, { status?: number; detail?: string }, { antiguo: string; nuevo: string }>({
     mutationFn: (payload) => api.put('/api/catalogos/unidades/rename', payload),
     onSuccess: () => {
@@ -45,8 +51,8 @@ function RenombrarModal({
     setErr(null);
     const nuevoTrim = nuevo.trim().toUpperCase();
     if (!nuevoTrim) { setErr('El nombre no puede estar vacío.'); return; }
-    if (nuevoTrim === unidad.unidad) { onClose(); return; }
-    renameMut.mutate({ antiguo: unidad.unidad, nuevo: nuevoTrim });
+    if (nuevoTrim === unidad.nombre) { onClose(); return; }
+    renameMut.mutate({ antiguo: unidad.nombre, nuevo: nuevoTrim });
   }
 
   return (
@@ -54,7 +60,7 @@ function RenombrarModal({
       <div className="space-y-3">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">Unidad actual</label>
-          <p className="text-sm font-mono font-bold text-foreground">{unidad.unidad}</p>
+          <p className="text-sm font-mono font-bold text-foreground">{unidad.nombre}</p>
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">Nueva unidad *</label>
@@ -64,9 +70,7 @@ function RenombrarModal({
             placeholder="Ej: PZA"
             autoFocus
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            Se actualizarán {unidad.n_productos} producto(s). Se normaliza a mayúsculas.
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">Se normaliza a mayúsculas.</p>
         </div>
         {err && (
           <div className="text-xs bg-rose-100 border border-rose-300 text-rose-700 dark:bg-rose-900/30 dark:border-rose-700/50 dark:text-rose-300 rounded p-2">{err}</div>
@@ -88,38 +92,40 @@ export function UnidadesTab() {
   const { data, isLoading } = useUnidades();
   const [modalRename, setModalRename] = useState<Unidad | null>(null);
 
-  const enUso = data?.en_uso ?? [];
-  const sugeridas = data?.sugeridas ?? [];
-
-  // Sugeridas que aún no están en uso
-  const sugieridasNoEnUso = sugeridas.filter(
-    (s) => !enUso.some((u) => u.unidad === s),
-  );
+  // GET /api/catalogos/unidades ahora devuelve directamente el arreglo del
+  // catálogo `unidades_medida` (Task 4) — ya no { en_uso, sugeridas }. El
+  // conteo de productos por unidad y la lista de "sugeridas" (derivados del
+  // viejo diccionario distinct) no tienen equivalente en el nuevo shape.
+  const unidades = data ?? [];
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">{enUso.length} unidad(es) en uso</p>
+      <p className="text-sm text-muted-foreground">{unidades.length} unidad(es)</p>
 
       <DataTable>
         <DataTableHead>
           <tr>
             <th className="p-3 text-left">Unidad</th>
-            <th className="p-3 text-center"># Productos</th>
+            <th className="p-3 text-center">Abreviatura</th>
+            <th className="p-3 text-center">Estado</th>
             <th className="p-3 text-right">Acciones</th>
           </tr>
         </DataTableHead>
         <DataTableBody>
           {isLoading && (
-            <DataTableEmpty colSpan={3}>Cargando unidades…</DataTableEmpty>
+            <DataTableEmpty colSpan={4}>Cargando unidades…</DataTableEmpty>
           )}
-          {!isLoading && enUso.length === 0 && (
-            <DataTableEmpty colSpan={3}>Sin unidades en uso</DataTableEmpty>
+          {!isLoading && unidades.length === 0 && (
+            <DataTableEmpty colSpan={4}>Sin unidades registradas</DataTableEmpty>
           )}
-          {enUso.map((u) => (
-            <DataTableRow key={u.unidad}>
-              <td className="p-3 font-mono font-bold text-foreground">{u.unidad}</td>
+          {unidades.map((u) => (
+            <DataTableRow key={u.id}>
+              <td className="p-3 font-mono font-bold text-foreground">{u.nombre}</td>
               <td className="p-3 text-center">
-                <Badge variant={u.n_productos > 0 ? 'cyan' : 'slate'}>{u.n_productos}</Badge>
+                <Badge variant="cyan">{u.abreviatura}</Badge>
+              </td>
+              <td className="p-3 text-center">
+                <Badge variant={u.activa ? 'cyan' : 'slate'}>{u.activa ? 'Activa' : 'Inactiva'}</Badge>
               </td>
               <td className="p-3 text-right">
                 <button
@@ -134,22 +140,6 @@ export function UnidadesTab() {
           ))}
         </DataTableBody>
       </DataTable>
-
-      {sugieridasNoEnUso.length > 0 && (
-        <div>
-          <p className="text-xs text-muted-foreground mb-2">Sugeridas (aún no en uso):</p>
-          <div className="flex flex-wrap gap-1.5">
-            {sugieridasNoEnUso.map((s) => (
-              <span
-                key={s}
-                className="px-2 py-0.5 rounded border border-border-strong font-mono text-xs text-muted-foreground"
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
 
       {modalRename && (
         <RenombrarModal

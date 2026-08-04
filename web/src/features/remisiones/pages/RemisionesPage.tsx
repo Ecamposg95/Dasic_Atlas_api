@@ -18,7 +18,7 @@ import {
   DataTableBody,
   DataTableRow,
 } from '@/components/ui/data-table';
-import type { RemisionItem } from '../types';
+import type { RemisionItem, RemisionEstado } from '../types';
 
 const PAGE_SIZE = 50;
 
@@ -53,7 +53,7 @@ function fmtFecha(iso: string | null): string {
 
 interface RecepcionModalProps {
   remisionId: number;
-  folio: string;
+  folio: string | null;
   onClose: () => void;
 }
 
@@ -67,7 +67,7 @@ function RecepcionModal({ remisionId, folio, onClose }: RecepcionModalProps) {
       { id: remisionId, recibido_por: recibidoPor.trim() },
       {
         onSuccess: () => {
-          toast({ kind: 'success', title: `Recepción registrada para ${folio}` });
+          toast({ kind: 'success', title: `Recepción registrada para ${folio ?? 'la remisión'}` });
           onClose();
         },
         onError: (err) => {
@@ -79,7 +79,7 @@ function RecepcionModal({ remisionId, folio, onClose }: RecepcionModalProps) {
   }
 
   return (
-    <Modal title={`Registrar recepción — ${folio}`} onClose={onClose} size="sm">
+    <Modal title={`Registrar recepción — ${folio ?? 'sin folio'}`} onClose={onClose} size="sm">
       <div className="space-y-3">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
@@ -122,7 +122,7 @@ function DetalleModal({ remisionId, onClose }: DetalleModalProps) {
   const { data, isLoading } = useRemisionDetalle(remisionId);
 
   return (
-    <Modal title={`Detalle remisión${data ? ` — ${data.folio}` : ''}`} onClose={onClose} size="lg">
+    <Modal title={`Detalle remisión${data ? ` — ${data.folio ?? 'sin folio'}` : ''}`} onClose={onClose} size="lg">
       {isLoading || !data ? (
         <div className="space-y-2 py-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -210,7 +210,7 @@ function DetalleModal({ remisionId, onClose }: DetalleModalProps) {
 interface RowProps {
   item: RemisionItem;
   onVerDetalle: (id: number) => void;
-  onRecepcion: (id: number, folio: string) => void;
+  onRecepcion: (id: number, folio: string | null) => void;
 }
 
 function RemisionRow({ item, onVerDetalle, onRecepcion }: RowProps) {
@@ -298,11 +298,15 @@ export function RemisionesPage() {
   const [search, setSearch] = useState('');
   const [recibidaFiltro, setRecibidaFiltro] = useState<RecibidaFiltro>('todas');
   const [detalleId, setDetalleId] = useState<number | null>(null);
-  const [recepcionTarget, setRecepcionTarget] = useState<{ id: number; folio: string } | null>(null);
+  const [recepcionTarget, setRecepcionTarget] = useState<{ id: number; folio: string | null } | null>(null);
 
   const searchDebounced = useDebounced(search);
-  const recibidaParam =
-    recibidaFiltro === 'recibida' ? true : recibidaFiltro === 'pendiente' ? false : null;
+  // v2: el GET / ya no acepta `recibida` (boolean) — filtra por `estado`.
+  // Mapeo mínimo que preserva el toggle existente: "pendiente" ahora
+  // significa "emitida" (emitida y aún no recibida); el rediseño completo
+  // del filtro (incluyendo borrador/cancelada) es de Task 10/11.
+  const estadoParam: RemisionEstado | undefined =
+    recibidaFiltro === 'recibida' ? 'recibida' : recibidaFiltro === 'pendiente' ? 'emitida' : undefined;
 
   // Reset page when filters change
   const prevFilters = useRef({ q: searchDebounced, recibida: recibidaFiltro });
@@ -313,7 +317,9 @@ export function RemisionesPage() {
     }
   }, [searchDebounced, recibidaFiltro]);
 
-  const { data, isLoading, isPlaceholderData } = useRemisiones(page, searchDebounced, recibidaParam);
+  const { data, isLoading, isPlaceholderData } = useRemisiones(page, searchDebounced, {
+    estado: estadoParam,
+  });
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;

@@ -9,7 +9,7 @@ import { DocumentCartTable } from '@/components/document/DocumentCartTable';
 import { DocumentTotalsBar } from '@/components/document/DocumentTotalsBar';
 import { DocumentSectionDivider } from '@/components/document/DocumentSectionDivider';
 import type { DocRowCaps, DocRowCallbacks, DocRowVM } from '@/components/document/types';
-import { useRemisionBorrador, useCrearRemision, useOrdenesRemisionables } from '../hooks/useRemisiones';
+import { useRemisionBorrador, useCrearBorrador, useOrdenesRemisionables } from '../hooks/useRemisiones';
 import { useRemision } from '../store';
 import { remisionLineaToVM } from '../lib/vm';
 import { RemisionProductSearch } from '../components/RemisionProductSearch';
@@ -29,7 +29,7 @@ export function CrearRemisionPage() {
 
   const { data: borrador, isLoading } = useRemisionBorrador(ordenId);
   const { data: ordenes } = useOrdenesRemisionables();
-  const crear = useCrearRemision();
+  const crear = useCrearBorrador();
   const [modalFantasma, setModalFantasma] = useState(false);
 
   const s = useRemision();
@@ -135,14 +135,19 @@ export function CrearRemisionPage() {
           descripcion: l.descripcion,
           sku: l.sku,
           cantidad: l.cantidad,
+          unidad: l.unidad,
           observaciones_linea: l.observaciones_linea || null,
           clave_unidad_sat: l.clave_unidad_sat,
           precio_unitario: l.detalle_orden_id == null ? l.precio_unitario : null,
         })),
       },
       {
+        // v2: POST /api/remisiones/ solo crea el BORRADOR (sin folio — lo
+        // asigna /emitir). El flujo de dos pasos (guardar borrador → emitir
+        // desde el listado) lo rediseña Task 10/11; aquí solo se ajustan los
+        // campos de la respuesta para que compile contra el shape real.
         onSuccess: (r) => {
-          toast({ kind: 'success', title: `Remisión ${r.folio} creada` });
+          toast({ kind: 'success', title: 'Borrador de remisión guardado' });
           window.open(`/api/remisiones/${r.id}/imprimir`, '_blank');
           navigate('/spa/remisiones');
         },
