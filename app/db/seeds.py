@@ -543,6 +543,10 @@ _BACKFILL_DDL = [
         activa BOOLEAN NOT NULL DEFAULT true,
         orden INTEGER NOT NULL DEFAULT 0
     )""",
+
+    # 20260803_03: conversión remisión→cotización
+    "ALTER TABLE IF EXISTS ordenes_venta ADD COLUMN IF NOT EXISTS remision_origen_id INTEGER REFERENCES remisiones(id)",
+    "CREATE INDEX IF NOT EXISTS ix_ordenes_venta_remision_origen_id ON ordenes_venta (remision_origen_id)",
 ]
 
 

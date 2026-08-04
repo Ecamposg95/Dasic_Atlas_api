@@ -55,6 +55,10 @@ class OrdenVenta(Base):
     cotizacion_origen_id = Column(Integer, ForeignKey("ordenes_venta.id"), nullable=True, index=True)
     version = Column(Integer, nullable=False, default=1)
 
+    # Conversión remisión→cotización (Task 6, remisiones v2): si la cotización
+    # nace de una remisión emitida/recibida, referencia su origen.
+    remision_origen_id = Column(Integer, ForeignKey("remisiones.id"), nullable=True, index=True)
+
     # Lifecycle tracking — Fase Cotizador-Edicion (spec 2026-05-19)
     enviada_at = Column(DateTime(timezone=True), nullable=True, index=True)
     pdf_generado_at = Column(DateTime(timezone=True), nullable=True)

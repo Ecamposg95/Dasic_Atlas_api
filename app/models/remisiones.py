@@ -57,3 +57,8 @@ class DetalleRemision(Base):
     subtotal = Column(DECIMAL(12, 2), nullable=True)
 
     remision = relationship("Remision", back_populates="detalles")
+    # Sin back_populates: DetalleOrden no necesita navegar a sus remisiones
+    # (el acumulado se calcula vía repository.entregado_por_detalle). Usada
+    # por service._descontar_stock/cancelar para llegar al producto real y
+    # mover/revertir stock físico cuando la línea viene de una orden.
+    detalle_orden = relationship("DetalleOrden", foreign_keys=[detalle_orden_id])
