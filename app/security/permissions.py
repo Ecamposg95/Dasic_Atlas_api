@@ -71,6 +71,10 @@ PERMISSIONS: dict[RolUsuario, set[tuple[str, str]]] = {
         ("read", "reportes"), ("export", "reportes"),
         ("read", "gasto"), ("write", "gasto"),
         ("read", "fx"),
+        # remisiones: gestión completa
+        ("read", "remision"), ("create", "remision"), ("write", "remision"),
+        ("emitir", "remision"), ("cancel", "remision"), ("sobreentrega", "remision"),
+        ("convertir", "remision"),
     },
 
     RolUsuario.VENTAS: {
@@ -92,6 +96,9 @@ PERMISSIONS: dict[RolUsuario, set[tuple[str, str]]] = {
         # reportes propios
         ("read:own", "reportes"),
         ("read", "fx"),
+        # remisiones: solo las propias, sin cancelar ni sobre-entrega
+        ("read:own", "remision"), ("create", "remision"), ("write:own", "remision"),
+        ("emitir:own", "remision"), ("convertir:own", "remision"),
     },
 
     RolUsuario.OPERATIVO: {
@@ -104,6 +111,8 @@ PERMISSIONS: dict[RolUsuario, set[tuple[str, str]]] = {
         ("read", "dashboard:inventory"),
         # Proveedores: solo lectura
         ("read", "proveedor"),
+        # remisiones: consulta de emitidas/recibidas + recepción física
+        ("read", "remision"), ("recibir", "remision"),
     },
 }
 
@@ -211,6 +220,13 @@ CAPABILITY_FLAGS: dict[str, tuple[str, str]] = {
     "registrar_pago": ("pago", "cliente"),
     "gestionar_usuarios": ("manage", "usuario"),
     "ver_fx": ("read", "fx"),
+    "ver_remisiones": ("read", "remision"),
+    "crear_remision": ("create", "remision"),
+    "emitir_remision": ("emitir", "remision"),
+    "recibir_remision": ("recibir", "remision"),
+    "cancelar_remision": ("cancel", "remision"),
+    "sobre_entrega_remision": ("sobreentrega", "remision"),
+    "remision_a_cotizacion": ("convertir", "remision"),
 }
 
 # Módulos de sidebar. El frontend filtra por estos.
@@ -218,21 +234,26 @@ MODULOS_VISIBLES_BY_ROL: dict[RolUsuario, list[str]] = {
     RolUsuario.ADMINISTRADOR: [
         "dashboard", "cotizador", "seguimiento", "inventario",
         "clientes", "compras", "gastos", "reportes", "usuarios", "catalogos",
+        "remisiones",
     ],
     RolUsuario.SUPERADMIN: [
         "dashboard", "cotizador", "seguimiento", "inventario",
         "clientes", "compras", "gastos", "reportes", "usuarios", "catalogos",
+        "remisiones",
     ],
     RolUsuario.GERENTE_COMERCIAL: [
         "dashboard", "cotizador", "seguimiento", "inventario",
         "clientes", "compras", "gastos", "reportes", "catalogos",
+        "remisiones",
     ],
     RolUsuario.VENTAS: [
         "dashboard", "cotizador", "seguimiento", "inventario",
         "clientes", "compras", "reportes", "catalogos",
+        "remisiones",
     ],
     RolUsuario.OPERATIVO: [
         "dashboard", "inventario", "compras", "catalogos",
+        "remisiones",
     ],
 }
 

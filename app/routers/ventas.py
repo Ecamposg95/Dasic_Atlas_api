@@ -16,6 +16,7 @@ from app import models
 from app import schemas
 from app.core.config import get_settings
 from app.db import get_db, SessionLocal
+from app.domains.remisiones import repository as remisiones_repository
 from app.security import allow_all_staff, get_current_user
 from app.security.permissions import _normalize_role, is_owner_scoped, require
 from app.services.email_service import (
@@ -2060,6 +2061,60 @@ def listar_eventos(
         }
         for ev in eventos
     ]
+
+
+@router.get("/{id}/avance-entrega", dependencies=[Depends(allow_all_staff)])
+def avance_entrega(
+    id: int,
+    db: Session = Depends(get_db),
+):
+    """Avance de entrega por partida de una orden de venta, usando el mismo
+    `repository` de remisiones (Task 5/7): cuánto se cotizó vs. cuánto ya se
+    entregó (remisiones EMITIDA/RECIBIDA) por línea, más el historial de
+    remisiones asociadas a la orden."""
+    orden = db.query(models.OrdenVenta).filter(models.OrdenVenta.id == id).first()
+    if not orden:
+        raise HTTPException(404, "Orden de venta no encontrada")
+
+    entregado = remisiones_repository.entregado_por_detalle(db, orden.id)
+    partidas = []
+    for d in orden.detalles:
+        cotizado = Decimal(str(d.cantidad))
+        entreg = entregado.get(d.id, Decimal("0"))
+        pendiente = cotizado - entreg
+        if entreg == 0:
+            estado_partida = "NO_ENTREGADA"
+        elif pendiente <= 0:
+            estado_partida = "ENTREGADA"
+        else:
+            estado_partida = "PARCIAL"
+        partidas.append({
+            "detalle_orden_id": d.id,
+            "cotizado": float(cotizado),
+            "entregado": float(entreg),
+            "pendiente": float(pendiente),
+            "estado": estado_partida,
+        })
+
+    remisiones = (
+        db.query(models.Remision)
+        .filter(models.Remision.orden_venta_id == orden.id)
+        .order_by(desc(models.Remision.fecha_remision))
+        .all()
+    )
+
+    return {
+        "partidas": partidas,
+        "remisiones": [
+            {
+                "id": r.id,
+                "folio": r.folio,
+                "fecha": r.fecha_remision.isoformat() if r.fecha_remision else None,
+                "estado": r.estado.value,
+            }
+            for r in remisiones
+        ],
+    }
 
 
 # --- 7. CANCELAR COTIZACIÓN (libera reservas) ---

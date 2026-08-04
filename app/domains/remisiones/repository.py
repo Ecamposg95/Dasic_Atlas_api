@@ -37,14 +37,22 @@ def pendientes_por_detalle(db: Session, orden) -> dict[int, Decimal]:
 
 
 def listar(db: Session, *, q: Optional[str] = None, orden_venta_id: Optional[int] = None,
-           estado: Optional[str] = None, desde=None, hasta=None,
+           estado=None, desde=None, hasta=None,
            creado_por_id: Optional[int] = None, owner_id: Optional[int] = None,
            page: int = 1, page_size: int = 100):
+    """`estado` acepta un solo valor (equality) o un iterable de valores
+    (IN) — este segundo caso lo usa el router para el filtro "OPERATIVO solo
+    ve emitida/recibida" sin tener que abrir dos queries y fusionar
+    paginación a mano."""
     query = db.query(models.Remision)
     if orden_venta_id:
         query = query.filter(models.Remision.orden_venta_id == orden_venta_id)
     if estado:
-        query = query.filter(models.Remision.estado == models.EstadoRemision(estado))
+        if isinstance(estado, (list, tuple, set, frozenset)):
+            query = query.filter(
+                models.Remision.estado.in_([models.EstadoRemision(e) for e in estado]))
+        else:
+            query = query.filter(models.Remision.estado == models.EstadoRemision(estado))
     if desde is not None:
         query = query.filter(models.Remision.fecha_remision >= desde)
     if hasta is not None:

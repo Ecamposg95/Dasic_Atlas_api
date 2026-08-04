@@ -1,0 +1,453 @@
+"""Router v2 de remisiones — delgado a propósito: valida permisos/scoping y
+delega toda la lógica de negocio a `service`/`repository`.
+
+Reglas de permisos (matriz completa en `app/security/permissions.py`):
+
+- GERENTE_COMERCIAL / ADMIN: gestión completa de remisiones.
+- VENTAS: `:own` en read/write/emitir/convertir — el `service` YA aplica
+  `require()` en `cancelar` ("cancel") y `crear_cotizacion_desde`
+  ("convertir"), y `can()` en la sobre-entrega ("sobreentrega") dentro de
+  `emitir`. Este router NO duplica esos gates — solo agrega los suyos
+  (read/create/write/emitir/recibir) y el owner-scoping que el service no
+  hace (el service nunca compara `creado_por_id` contra el user).
+- OPERATIVO: "consulta emitidas" — ve y recibe remisiones EMITIDA/RECIBIDA,
+  nunca BORRADOR ni CANCELADA (su permiso es de recepción física, no de
+  gestión del ciclo de vida completo).
+
+`_check_owner` sigue el patrón exacto del brief: recibe `db, remision_id,
+user, action` y hace su PROPIA consulta (mínima: solo el dueño) — así una
+llamada de un rol sin scope (:own no aplica) no toca la base de datos en lo
+absoluto, y una remisión inexistente para un rol sin permiso ni siquiera
+llega a evaluarse (el `require()` de la action base corre primero).
+"""
+from datetime import datetime
+from decimal import Decimal
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import HTMLResponse, Response
+from jinja2 import BaseLoader, Environment
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from app import models
+from app.db import get_db
+from app.domains.remisiones import repository, service
+from app.domains.remisiones.schemas import RemisionCreate, RemisionUpdate
+from app.models.enums import RolUsuario
+from app.security import get_current_user
+from app.security.permissions import _normalize_role, is_owner_scoped, require
+from app.services.word_service import build_remision_docx
+
+router = APIRouter(prefix="/api/remisiones", tags=["Remisiones"])
+
+_ESTADOS_OPERATIVO = ("emitida", "recibida")
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _get_or_404(db: Session, remision_id: int) -> models.Remision:
+    rem = db.query(models.Remision).filter(models.Remision.id == remision_id).first()
+    if not rem:
+        raise HTTPException(404, "Remisión no encontrada")
+    return rem
+
+
+def _check_owner(db: Session, remision_id: int, user, action: str) -> None:
+    """Si el permiso efectivo del user es la versión `:own` de `action`,
+    verifica que la remisión sea suya — 403 si no. Si el user tiene el
+    permiso amplio (o ninguno — eso ya lo filtró `require()`), no toca la
+    base de datos."""
+    if not is_owner_scoped(user, action, "remision"):
+        return
+    rem = _get_or_404(db, remision_id)
+    if rem.creado_por_id != user.id:
+        raise HTTPException(403, f"No tienes permiso para {action} esta remisión")
+
+
+def _es_operativo(user) -> bool:
+    return _normalize_role(getattr(user, "rol", None)) == RolUsuario.OPERATIVO
+
+
+def _aplicar_filtro_operativo(user, estado: Optional[str]):
+    """OPERATIVO nunca ve BORRADOR ni CANCELADA. Si no pidió un `estado`
+    explícito, se le restringe a (emitida, recibida). Si sí pidió uno fuera
+    de ese conjunto, 403 explícito — mejor que devolver una lista vacía que
+    parezca "no hay resultados"."""
+    if not _es_operativo(user):
+        return estado
+    if estado:
+        if estado.lower() not in _ESTADOS_OPERATIVO:
+            raise HTTPException(403, "No tienes permiso para ver remisiones en ese estado")
+        return estado
+    return list(_ESTADOS_OPERATIVO)
+
+
+def _item(r: models.Remision) -> dict:
+    return {
+        "id": r.id,
+        "folio": r.folio,
+        "orden_venta_id": r.orden_venta_id,
+        "orden_folio": r.orden_venta.folio if r.orden_venta else None,
+        "cliente_nombre": (
+            r.orden_venta.cliente.nombre_empresa if r.orden_venta and r.orden_venta.cliente
+            else (r.cliente.nombre_empresa if r.cliente else None)
+        ),
+        "fecha_remision": r.fecha_remision.isoformat() if r.fecha_remision else None,
+        "transportista": r.transportista,
+        "recibido_por": r.recibido_por,
+        "recibido_at": r.recibido_at.isoformat() if r.recibido_at else None,
+        "estado": r.estado.value,
+        "creado_por_id": r.creado_por_id,
+        "lineas_count": len(r.detalles),
+    }
+
+
+def _detalle(rem: models.Remision) -> dict:
+    return {
+        **_item(rem),
+        "observaciones": rem.observaciones,
+        "moneda": rem.moneda,
+        "mostrar_precios": bool(rem.mostrar_precios),
+        "motivo_cancelacion": rem.motivo_cancelacion,
+        "detalles": [
+            {
+                "id": d.id,
+                "detalle_orden_id": d.detalle_orden_id,
+                "descripcion": d.descripcion,
+                "sku": d.sku,
+                "cantidad": d.cantidad,
+                "unidad": d.unidad,
+                "observaciones_linea": d.observaciones_linea,
+                "clave_unidad_sat": d.clave_unidad_sat,
+                "precio_unitario": float(d.precio_unitario) if d.precio_unitario is not None else None,
+                "subtotal": float(d.subtotal) if d.subtotal is not None else None,
+            }
+            for d in rem.detalles
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Listado / detalle
+# ---------------------------------------------------------------------------
+
+@router.get("/")
+def listar(
+    q: Optional[str] = None,
+    orden_venta_id: Optional[int] = None,
+    estado: Optional[str] = None,
+    desde: Optional[datetime] = None,
+    hasta: Optional[datetime] = None,
+    creado_por_id: Optional[int] = None,
+    page: int = 1,
+    page_size: int = 100,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    require(current_user, "read", "remision")
+    if page < 1 or page_size < 1 or page_size > 500:
+        raise HTTPException(400, "page o page_size inválido")
+
+    estado_filtrado = _aplicar_filtro_operativo(current_user, estado)
+    owner_id = current_user.id if is_owner_scoped(current_user, "read", "remision") else None
+
+    total, rows = repository.listar(
+        db, q=q, orden_venta_id=orden_venta_id, estado=estado_filtrado,
+        desde=desde, hasta=hasta, creado_por_id=creado_por_id, owner_id=owner_id,
+        page=page, page_size=page_size,
+    )
+    return {
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "items": [_item(r) for r in rows],
+    }
+
+
+@router.get("/orden/{orden_id}/borrador")
+def borrador_desde_orden(
+    orden_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Arma el draft de una remisión desde una orden: una línea por cada
+    DetalleOrden con snapshot de precio/unidad/SAT, cuánto ya se entregó
+    (repository.entregado_por_detalle) y cuánto queda pendiente
+    (repository.pendientes_por_detalle)."""
+    require(current_user, "create", "remision")
+    orden = db.query(models.OrdenVenta).filter(models.OrdenVenta.id == orden_id).first()
+    if not orden:
+        raise HTTPException(404, "Orden de venta no encontrada")
+    if orden.estatus == models.EstatusOrden.COTIZACION:
+        raise HTTPException(400, "La orden todavía es cotización — convierte a venta antes de remisionar")
+
+    entregado = repository.entregado_por_detalle(db, orden.id)
+    pendiente = repository.pendientes_por_detalle(db, orden)
+
+    lineas = []
+    for d in orden.detalles:
+        prod = d.producto
+        descripcion = d.descripcion_libre or (prod.nombre if prod else None) or "Producto"
+        sku = d.sku_libre or (prod.sku_comercial if prod else None) or (prod.sku if prod else None)
+        clave_unidad = d.clave_unidad_sat or (prod.clave_unidad_sat if prod else None)
+        unidad = d.unidad or (prod.unidad if prod else None)
+        lineas.append({
+            "detalle_orden_id": d.id,
+            "descripcion": descripcion,
+            "sku": sku,
+            "clave_unidad_sat": clave_unidad,
+            "unidad": unidad,
+            "precio_unitario": float(d.precio_unitario or 0),
+            "cantidad_orden": float(d.cantidad),
+            "entregado": float(entregado.get(d.id, Decimal("0"))),
+            "cantidad_pendiente": float(pendiente.get(d.id, Decimal("0"))),
+        })
+
+    return {
+        "orden_venta_id": orden.id,
+        "orden_folio": orden.folio,
+        "cliente_nombre": orden.cliente.nombre_empresa if orden.cliente else None,
+        "moneda": orden.moneda,
+        "lineas": lineas,
+    }
+
+
+@router.get("/{id}")
+def obtener(
+    id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    require(current_user, "read", "remision")
+    _check_owner(db, id, current_user, "read")
+    rem = _get_or_404(db, id)
+    if _es_operativo(current_user) and rem.estado.value not in _ESTADOS_OPERATIVO:
+        raise HTTPException(404, "Remisión no encontrada")
+    return _detalle(rem)
+
+
+# ---------------------------------------------------------------------------
+# CRUD de borrador
+# ---------------------------------------------------------------------------
+
+@router.post("/")
+def crear(
+    payload: RemisionCreate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    require(current_user, "create", "remision")
+    rem = service.crear_borrador(db, payload, current_user)
+    return {"id": rem.id, "estado": rem.estado.value}
+
+
+@router.put("/{id}")
+def actualizar(
+    id: int,
+    payload: RemisionUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    require(current_user, "write", "remision")
+    _check_owner(db, id, current_user, "write")
+    rem = service.actualizar_borrador(db, id, payload, current_user)
+    return {"id": rem.id, "estado": rem.estado.value}
+
+
+@router.delete("/{id}", status_code=204)
+def eliminar(
+    id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    require(current_user, "write", "remision")
+    _check_owner(db, id, current_user, "write")
+    service.eliminar_borrador(db, id, current_user)
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Transiciones de estado
+# ---------------------------------------------------------------------------
+
+@router.post("/{id}/emitir")
+def emitir(
+    id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    require(current_user, "emitir", "remision")
+    _check_owner(db, id, current_user, "emitir")
+    rem = service.emitir(db, id, current_user)
+    return {"id": rem.id, "folio": rem.folio, "estado": rem.estado.value}
+
+
+class RecepcionInput(BaseModel):
+    recibido_por: str
+
+
+@router.patch("/{id}/recepcion")
+def recepcion(
+    id: int,
+    payload: RecepcionInput,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # "recibir" no tiene variante :own en la matriz (OPERATIVO la tiene
+    # plana, GERENTE_COMERCIAL/ADMIN tienen wildcard) — sin owner-scoping.
+    require(current_user, "recibir", "remision")
+    rem = service.registrar_recepcion(db, id, payload.recibido_por, current_user)
+    return {
+        "id": rem.id,
+        "estado": rem.estado.value,
+        "recibido_por": rem.recibido_por,
+        "recibido_at": rem.recibido_at.isoformat() if rem.recibido_at else None,
+    }
+
+
+class CancelarInput(BaseModel):
+    motivo: str
+
+
+@router.post("/{id}/cancelar")
+def cancelar(
+    id: int,
+    payload: CancelarInput,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # El service YA aplica require(user, "cancel", "remision") — sin
+    # variante :own en la matriz, así que tampoco hay owner-scoping que
+    # agregar aquí. El router delega directo.
+    rem = service.cancelar(db, id, payload.motivo, current_user)
+    return {"id": rem.id, "estado": rem.estado.value}
+
+
+@router.post("/{id}/crear-cotizacion")
+def crear_cotizacion(
+    id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # El service YA aplica require(user, "convertir", "remision") — pero
+    # NO compara ownership (VENTAS tiene "convertir:own"), así que el
+    # router agrega ese único gate antes de delegar.
+    _check_owner(db, id, current_user, "convertir")
+    cot = service.crear_cotizacion_desde(db, id, current_user)
+    return {"orden_venta_id": cot.id, "folio": cot.folio}
+
+
+# ---------------------------------------------------------------------------
+# Documentos — provisional (Task 8 los reemplaza por app/routers/documents.py)
+# ---------------------------------------------------------------------------
+
+meses_es = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+]
+
+
+@router.get("/{id}/word")
+def generar_word_remision(
+    id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Genera la remisión como .docx editable (descarga). Provisional —
+    Task 8 lo reemplaza por `app/routers/documents.py`."""
+    require(current_user, "read", "remision")
+    _check_owner(db, id, current_user, "read")
+    rem = _get_or_404(db, id)
+
+    fecha_base = rem.fecha_remision or getattr(rem, "creado_en", None)
+    if fecha_base:
+        fecha_str = f"{fecha_base.day} de {meses_es[fecha_base.month - 1]} de {fecha_base.year}"
+    else:
+        fecha_str = "—"
+
+    simbolo = "US$" if (rem.moneda or "").upper() == "USD" else "$"
+
+    data = build_remision_docx(remision=rem, simbolo=simbolo, fecha_str=fecha_str)
+    filename = f"remision_{rem.folio or rem.id}.docx"
+    return Response(
+        content=data,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+PDF_TEMPLATE_REMISION = """<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Remisión {{ rem.folio }}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#0f172a; font-size:12px; margin:24px; }
+  .head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #0f172a; padding-bottom:8px; margin-bottom:12px; }
+  .title { font-size:20px; font-weight:800; letter-spacing:1px; }
+  .folio { font-family:monospace; font-size:14px; color:#b45309; font-weight:700; }
+  .meta { margin:8px 0 14px; font-size:11px; color:#334155; line-height:1.5; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:#0f172a; color:#fff; font-size:10px; text-transform:uppercase; padding:6px 8px; text-align:left; }
+  td { border-bottom:1px solid #e2e8f0; padding:6px 8px; vertical-align:top; }
+  .right { text-align:right; }
+  .center { text-align:center; }
+  .nota { font-size:9px; color:#64748b; font-style:italic; margin-top:2px; }
+  tfoot td { font-weight:700; border-top:2px solid #0f172a; }
+  .obs { margin-top:16px; font-size:11px; color:#334155; white-space:pre-line; }
+  .firma { margin-top:48px; display:flex; justify-content:space-between; }
+  .firma div { width:45%; border-top:1px solid #64748b; padding-top:4px; text-align:center; font-size:10px; color:#64748b; }
+</style></head><body>
+  <div class="head">
+    <div><div class="title">REMISIÓN</div><div class="meta">DASIC Industrial</div></div>
+    <div style="text-align:right">
+      <div class="folio">{{ rem.folio }}</div>
+      <div class="meta">Orden: {{ rem.orden_venta.folio if rem.orden_venta else '—' }}<br>Fecha: {{ rem.fecha_remision.strftime('%d/%m/%Y') if rem.fecha_remision else '' }}</div>
+    </div>
+  </div>
+  <div class="meta">
+    <strong>Cliente:</strong> {{ (rem.orden_venta.cliente.nombre_empresa if rem.orden_venta and rem.orden_venta.cliente else (rem.cliente.nombre_empresa if rem.cliente else '—')) }}<br>
+    {% if rem.transportista %}<strong>Transportista:</strong> {{ rem.transportista }}{% endif %}
+  </div>
+  <table>
+    <thead><tr>
+      <th class="center" style="width:30px">#</th>
+      <th>Descripción</th>
+      <th class="center" style="width:90px">Cantidad</th>
+      {% if rem.mostrar_precios %}<th class="right" style="width:90px">P. Unit</th><th class="right" style="width:100px">Subtotal</th>{% endif %}
+    </tr></thead>
+    <tbody>
+      {% for d in rem.detalles %}
+      <tr>
+        <td class="center">{{ loop.index }}</td>
+        <td>{{ d.descripcion }}{% if d.sku %} <span style="color:#64748b;font-family:monospace">({{ d.sku }})</span>{% endif %}{% if d.observaciones_linea %}<div class="nota">{{ d.observaciones_linea }}</div>{% endif %}</td>
+        <td class="center">{{ d.cantidad }} ({{ d.clave_unidad_sat or 'PZA' }})</td>
+        {% if rem.mostrar_precios %}<td class="right">{{ rem.moneda or '' }} {{ "{:,.2f}".format(d.precio_unitario or 0) }}</td><td class="right">{{ rem.moneda or '' }} {{ "{:,.2f}".format(d.subtotal or 0) }}</td>{% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+    {% if rem.mostrar_precios %}
+    <tfoot><tr>
+      <td colspan="4" class="right">Total</td>
+      <td class="right">{{ rem.moneda or '' }} {{ "{:,.2f}".format(rem.detalles | sum(attribute='subtotal') or 0) }}</td>
+    </tr></tfoot>
+    {% endif %}
+  </table>
+  {% if rem.observaciones %}<div class="obs"><strong>Observaciones:</strong> {{ rem.observaciones }}</div>{% endif %}
+  <div class="firma"><div>Entregó</div><div>Recibió</div></div>
+</body></html>"""
+
+
+@router.get("/{id}/imprimir", response_class=HTMLResponse)
+def imprimir_remision(
+    id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Provisional — Task 8 lo reemplaza por `app/routers/documents.py`."""
+    require(current_user, "read", "remision")
+    _check_owner(db, id, current_user, "read")
+    rem = _get_or_404(db, id)
+    env = Environment(loader=BaseLoader())
+    return env.from_string(PDF_TEMPLATE_REMISION).render(rem=rem)
