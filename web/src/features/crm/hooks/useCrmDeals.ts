@@ -10,6 +10,7 @@ export function useCreateDeal() {
     mutationFn: (payload: DealCreate) => api.post<Deal>('/api/crm/deals', payload),
     onSuccess: (deal) => {
       void qc.invalidateQueries({ queryKey: ['crm', 'board', deal.pipeline_id] });
+      void qc.invalidateQueries({ queryKey: ['crm', 'metricas', deal.pipeline_id] });
     },
     onError: (err: unknown) => {
       const detail = (err as { detail?: unknown })?.detail;
@@ -25,6 +26,7 @@ export function useUpdateDeal() {
       api.patch<Deal>(`/api/crm/deals/${id}`, payload),
     onSuccess: (deal) => {
       void qc.invalidateQueries({ queryKey: ['crm', 'board', deal.pipeline_id] });
+      void qc.invalidateQueries({ queryKey: ['crm', 'metricas', deal.pipeline_id] });
     },
     onError: (err: unknown) => {
       const detail = (err as { detail?: unknown })?.detail;
@@ -98,6 +100,7 @@ export function useMoveDeal(pipelineId: number | null) {
     onSettled: () => {
       if (pipelineId != null) {
         void qc.invalidateQueries({ queryKey: ['crm', 'board', pipelineId] });
+        void qc.invalidateQueries({ queryKey: ['crm', 'metricas', pipelineId] });
       }
     },
   });
@@ -110,6 +113,7 @@ export function useDeleteDeal() {
       api.delete<void>(`/api/crm/deals/${id}`).then(() => ({ pipelineId })),
     onSuccess: ({ pipelineId }) => {
       void qc.invalidateQueries({ queryKey: ['crm', 'board', pipelineId] });
+      void qc.invalidateQueries({ queryKey: ['crm', 'metricas', pipelineId] });
     },
     onError: (err: unknown) => {
       const detail = (err as { detail?: unknown })?.detail;

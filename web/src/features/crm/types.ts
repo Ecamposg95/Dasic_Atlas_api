@@ -122,3 +122,45 @@ export type DealMove = {
   stage_id: number;
   orden_en_stage?: number;
 };
+
+// --- Métricas de pipeline (CRM v2) ---
+// GET /api/crm/pipelines/{id}/metricas?dias=90
+// Montos pueden llegar como string (Decimal serializado) y bajo `monto` o
+// `monto_mxn` según versión del backend — coerciona con Number() y usa el que venga.
+
+export type MetricaMonto = {
+  count: number;
+  monto?: number | string;
+  monto_mxn?: number | string;
+};
+
+export type MetricaEtapa = MetricaMonto & {
+  stage_id: number;
+  nombre: string;
+  color: string | null;
+  es_ganado: boolean;
+  es_perdido: boolean;
+};
+
+export type PipelineMetricas = {
+  dias: number;
+  por_etapa: MetricaEtapa[];
+  abiertos: MetricaMonto;
+  ganados: MetricaMonto;
+  perdidos: MetricaMonto;
+  tasa_ganado_pct: number | string;
+};
+
+// --- Configuración de etapas (CRM v2) ---
+
+// POST /api/crm/pipelines/{id}/stages body
+export type StageCreate = {
+  nombre: string;
+  color?: string;
+};
+
+// PATCH /api/crm/stages/{sid} body
+export type StageUpdate = {
+  nombre?: string;
+  color?: string;
+};

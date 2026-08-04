@@ -21,6 +21,7 @@ import { toast } from '@/lib/toast';
 import { useCrmBoard } from '../hooks/useCrmBoard';
 import { useMoveDeal } from '../hooks/useCrmDeals';
 import { useCrearActividad, useDealDetalle, usePatchDealDetalle } from '../hooks/useDealDetalle';
+import { ACCENT_BADGE_CLASS } from '../stageColors';
 import { DealFormModal } from '../components/DealFormModal';
 import type { Actividad, ActividadTipo, Deal } from '../types';
 
@@ -204,7 +205,9 @@ export function DealDetallePage() {
         title={
           <span className="flex items-center gap-2 min-w-0">
             <span className="truncate">{detalle.titulo}</span>
-            {detalle.stage_nombre && <Badge variant="cyan">{detalle.stage_nombre}</Badge>}
+            {detalle.stage_nombre && (
+              <Badge className={ACCENT_BADGE_CLASS}>{detalle.stage_nombre}</Badge>
+            )}
           </span>
         }
         actions={

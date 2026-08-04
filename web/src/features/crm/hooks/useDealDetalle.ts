@@ -40,6 +40,7 @@ export function usePatchDealDetalle(dealId: number) {
     onSuccess: (deal) => {
       void qc.invalidateQueries({ queryKey: ['crm', 'deal', dealId] });
       void qc.invalidateQueries({ queryKey: ['crm', 'board', deal.pipeline_id] });
+      void qc.invalidateQueries({ queryKey: ['crm', 'metricas', deal.pipeline_id] });
     },
     onError: (err: unknown) => {
       const detail = (err as { detail?: unknown })?.detail;

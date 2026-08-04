@@ -1,10 +1,11 @@
 import { useState, useMemo, useCallback } from 'react';
-import { KanbanSquare, Plus } from 'lucide-react';
+import { KanbanSquare, Plus, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { Select } from '@/components/ui/select';
 import { toast } from '@/lib/toast';
 import { confirm } from '@/lib/confirm';
+import { useIsAdminOrGerente } from '@/lib/permissions';
 import { useClientes } from '@/features/clientes/hooks/useClientes';
 import { useUsuarios } from '@/features/usuarios/hooks/useUsuarios';
 import type { Cliente } from '@/features/clientes/types';
@@ -13,10 +14,13 @@ import { useCrmPipelines, useCrmBoard } from '../hooks/useCrmBoard';
 import { useMoveDeal, useDeleteDeal } from '../hooks/useCrmDeals';
 import { KanbanColumn } from '../components/KanbanColumn';
 import { DealFormModal } from '../components/DealFormModal';
+import { PipelineMetricasBar } from '../components/PipelineMetricasBar';
+import { ConfigurarEtapasModal } from '../components/ConfigurarEtapasModal';
 import type { Deal } from '../types';
 
 export function CrmKanbanPage() {
   const { data: pipelines = [], isLoading: loadingPipelines } = useCrmPipelines();
+  const isAdminOrGerente = useIsAdminOrGerente();
 
   // Derive default pipeline id once pipelines load.
   const defaultPipelineId = useMemo(() => {
@@ -51,6 +55,12 @@ export function CrmKanbanPage() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+  const [configOpen, setConfigOpen] = useState(false);
+
+  const activePipeline = useMemo(
+    () => pipelines.find((p) => p.id === activePipelineId) ?? null,
+    [pipelines, activePipelineId],
+  );
 
   function openCreate() {
     setEditingDeal(null);
@@ -146,6 +156,20 @@ export function CrmKanbanPage() {
                 </Select>
               )}
 
+              {/* Configuración de etapas — solo admin/gerente */}
+              {isAdminOrGerente && activePipeline != null && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setConfigOpen(true)}
+                  aria-label="Configurar etapas"
+                  title="Configurar etapas"
+                  className="px-2.5"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              )}
+
               <Button size="sm" onClick={openCreate} className="gap-1.5">
                 <Plus className="h-4 w-4" />
                 Nuevo deal
@@ -154,6 +178,9 @@ export function CrmKanbanPage() {
           }
         />
       </div>
+
+      {/* Franja de métricas del pipeline (compacta, no roba altura al board) */}
+      <PipelineMetricasBar pipelineId={activePipelineId} />
 
       {/* Board area — horizontal scroll */}
       <div className="flex-1 overflow-auto">
@@ -194,6 +221,15 @@ export function CrmKanbanPage() {
           stages={stages}
           deal={editingDeal}
           onClose={closeModal}
+        />
+      )}
+
+      {/* Configurar etapas (admin/gerente) */}
+      {configOpen && activePipeline != null && (
+        <ConfigurarEtapasModal
+          pipeline={activePipeline}
+          stages={stages}
+          onClose={() => setConfigOpen(false)}
         />
       )}
     </div>

@@ -1,32 +1,10 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import type { BadgeProps } from '@/components/ui/badge';
 import { DealCard } from './DealCard';
+import { stageBadgeProps } from '../stageColors';
 import type { Stage, Deal } from '../types';
 import type { Cliente } from '@/features/clientes/types';
 import type { Usuario } from '@/features/usuarios/types';
-
-type BadgeVariant = BadgeProps['variant'];
-
-// Map backend color string → Badge variant token.
-function colorToVariant(color: string | null): BadgeVariant {
-  if (!color) return 'default';
-  const c = color.toLowerCase();
-  if (c.includes('cyan') || c.includes('blue') || c.includes('lead')) return 'cyan';
-  if (c.includes('amber') || c.includes('yellow') || c.includes('orange')) return 'amber';
-  if (c.includes('green') || c.includes('emerald') || c.includes('won') || c.includes('ganado')) return 'emerald';
-  if (c.includes('red') || c.includes('rose') || c.includes('lost') || c.includes('perdido')) return 'rose';
-  if (c.includes('violet') || c.includes('purple')) return 'violet';
-  if (c.includes('slate') || c.includes('gray') || c.includes('grey')) return 'slate';
-  // Fallback: use es_ganado / es_perdido (passed via props)
-  return 'default';
-}
-
-function stageVariant(stage: Stage): BadgeVariant {
-  if (stage.es_ganado) return 'emerald';
-  if (stage.es_perdido) return 'rose';
-  return colorToVariant(stage.color);
-}
 
 function sumMontos(deals: Deal[]): number {
   return deals.reduce((acc, d) => acc + (d.monto ?? 0), 0);
@@ -78,7 +56,7 @@ export function KanbanColumn({ stage, deals, clientesMap, usuariosMap, onEdit, o
     }
   }
 
-  const variant = stageVariant(stage);
+  const badge = stageBadgeProps(stage);
   const total = sumMontos(deals);
 
   return (
@@ -86,7 +64,9 @@ export function KanbanColumn({ stage, deals, clientesMap, usuariosMap, onEdit, o
       {/* Column header */}
       <div className="flex items-center justify-between mb-2 px-1">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Badge variant={variant}>{stage.nombre}</Badge>
+          <Badge variant={badge.variant} className={badge.className} style={badge.style}>
+            {stage.nombre}
+          </Badge>
           <span className="text-[11px] text-muted-foreground font-medium shrink-0">
             {deals.length}
           </span>
