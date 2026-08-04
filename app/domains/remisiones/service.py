@@ -42,19 +42,41 @@ def _refresh_or_404(db, rem: models.Remision) -> None:
     explícito en vez de dejar que SQLAlchemy propague su excepción interna.
 
     Verificado empíricamente contra sqlalchemy==2.0.51 (la versión de este
-    repo) con dos escenarios reales: (1) leer un atributo de `rem` (p.ej.
-    `rem.orden_venta_id`) inmediatamente después de que el propio `locker`
-    hizo un `commit()` ajeno expira `rem` por `expire_on_commit`, y esa
-    lectura implícita revienta con `ObjectDeletedError` si la fila ya no
-    existe; (2) llamar a `db.refresh(rem)` explícitamente sobre una fila
-    borrada da `InvalidRequestError` ("Could not refresh instance"/"is not
-    persistent within this Session"). Ambas son la misma condición real de
-    fondo ("la fila ya no está") — las cubrimos las dos aquí para no
-    depender de en qué punto exacto del código se dispara.
+    repo), dos escenarios reales para la misma condición de fondo ("la fila
+    ya no está"):
+
+    1. Leer un atributo de `rem` (p.ej. `rem.orden_venta_id`) inmediatamente
+       después de que el propio `locker` hizo un `commit()` ajeno expira
+       `rem` por `expire_on_commit`; esa lectura implícita dispara
+       `state._load_expired()` → `loading.load_scalar_attributes()`, que
+       revienta con `ObjectDeletedError` (subclase de `InvalidRequestError`)
+       si la fila ya no existe. Esto ya no debería ocurrir en el código
+       actual — todas las funciones de esta familia refrescan ANTES de
+       tocar cualquier atributo — pero se cubre por si acaso.
+    2. Llamar a `db.refresh(rem)` explícitamente sobre una fila borrada:
+       `Session.refresh()` (ver `sqlalchemy/orm/session.py`) instancia
+       DIRECTAMENTE la clase base `InvalidRequestError("Could not refresh
+       instance ...")` cuando el `SELECT` de recarga no devuelve filas — no
+       existe una subclase más específica para este caso puntual en
+       SQLAlchemy. Es el camino real que toman los tests de este archivo
+       (`test_emitir_404_si_borrador_fue_eliminado_durante_el_lock` y
+       `test_eliminar_borrador_serializa_con_lock`).
+
+    NO atrapamos `InvalidRequestError` por `isinstance`/`except` genérico:
+    eso también atraparía subclases reales de mal uso de la sesión (p.ej.
+    `PendingRollbackError`, que indica una transacción que necesita
+    rollback explícito — un bug de programación, no "la fila ya no está")
+    y las mapearía a un 404 falso con la fila todavía viva. En vez de eso,
+    comparamos el TIPO EXACTO: solo una instancia literal de
+    `InvalidRequestError` (no una subclase) cae en la rama 2 de arriba.
     """
     try:
         db.refresh(rem)
-    except (ObjectDeletedError, InvalidRequestError):
+    except ObjectDeletedError:
+        raise HTTPException(404, "Remisión no encontrada (eliminada por otra operación)")
+    except InvalidRequestError as exc:
+        if type(exc) is not InvalidRequestError:
+            raise
         raise HTTPException(404, "Remisión no encontrada (eliminada por otra operación)")
 
 
@@ -142,8 +164,15 @@ def crear_borrador(db, payload: RemisionCreate, user) -> models.Remision:
     return rem
 
 
-def actualizar_borrador(db, remision_id: int, payload: RemisionUpdate, user) -> models.Remision:
+def actualizar_borrador(db, remision_id: int, payload: RemisionUpdate, user, *,
+                         locker=folio_service.pg_locker) -> models.Remision:
     rem = _get_or_404(db, remision_id)
+    # Misma familia que emitir/cancelar/registrar_recepcion/eliminar_borrador:
+    # sin este lock, una edición concurrente podía colarse entre el refresh
+    # y el commit de `emitir` (líneas nuevas nunca validadas contra
+    # pendientes) o insertar líneas sobre una remisión recién borrada.
+    locker(db, f"remision:{remision_id}")
+    _refresh_or_404(db, rem)
     if rem.estado != EstadoRemision.BORRADOR:
         raise HTTPException(409, "Solo un borrador puede editarse")
 

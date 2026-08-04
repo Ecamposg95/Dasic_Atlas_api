@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from sqlalchemy import text
 from app import models
 from app.domains.remisiones import service, repository
-from app.domains.remisiones.schemas import RemisionCreate, DetalleRemisionInput
+from app.domains.remisiones.schemas import RemisionCreate, RemisionUpdate, DetalleRemisionInput
 
 
 def _noop_locker(db, key):
@@ -282,13 +282,37 @@ def test_eliminar_borrador_serializa_con_lock(db, orden):
     assert exc.value.status_code == 404
 
 
+def test_eliminar_borrador_happy_path(db, orden):
+    """Happy path (no cubierto hasta ahora — solo había test de la ruta de
+    carrera): eliminar_borrador borra la remisión y sus líneas (cascade
+    delete-orphan), y una segunda eliminación sobre el mismo id da 404 (la
+    fila ya no existe, sin necesidad de simular ninguna carrera)."""
+    o, d, admin = orden
+    rem = _borrador(db, o, d, admin)
+    rem_id = rem.id
+    detalle_ids = [det.id for det in rem.detalles]
+    assert detalle_ids
+
+    service.eliminar_borrador(db, rem_id, admin, locker=_noop_locker)
+
+    assert db.query(models.Remision).filter(models.Remision.id == rem_id).first() is None
+    assert db.query(models.DetalleRemision).filter(
+        models.DetalleRemision.id.in_(detalle_ids)).count() == 0
+
+    with pytest.raises(HTTPException) as exc:
+        service.eliminar_borrador(db, rem_id, admin, locker=_noop_locker)
+    assert exc.value.status_code == 404
+
+
 def test_lock_antes_de_refresh_spy(db, orden):
-    """Cobertura D: prueba de orden de llamadas (spy) — emitir, cancelar y
-    registrar_recepcion deben invocar el `locker` ANTES de `db.refresh()`,
-    no al revés (ese es exactamente el defecto TOCTOU de los dos criticals
-    del round 1). Envolvemos `db.refresh` para registrar cada llamada en una
-    lista compartida de eventos junto con las llamadas al locker, y
-    verificamos que el primer "lock" siempre precede al primer "refresh".
+    """Cobertura D: prueba de orden de llamadas (spy) — actualizar_borrador,
+    emitir, cancelar y registrar_recepcion deben invocar el `locker` ANTES
+    de `db.refresh()`, no al revés (ese es exactamente el defecto TOCTOU de
+    los dos criticals del round 1, y el mismo patrón que le faltaba a
+    actualizar_borrador hasta el round 3). Envolvemos `db.refresh` para
+    registrar cada llamada en una lista compartida de eventos junto con las
+    llamadas al locker, y verificamos que el primer "lock" siempre precede
+    al primer "refresh".
 
     Nota: esto prueba el ORDEN de las llamadas dentro del código, no la
     serialización real entre conexiones concurrentes de Postgres — SQLite
@@ -314,6 +338,12 @@ def test_lock_antes_de_refresh_spy(db, orden):
 
     try:
         rem = _borrador(db, o, d, admin)
+
+        eventos.clear()
+        service.actualizar_borrador(db, rem.id, RemisionUpdate(transportista="Fedex"),
+                                     admin, locker=spy_locker)
+        assert eventos.index("lock") < eventos.index("refresh")
+
         eventos.clear()
         service.emitir(db, rem.id, admin, locker=spy_locker)
         assert eventos.index("lock") < eventos.index("refresh")
