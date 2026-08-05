@@ -289,9 +289,23 @@ pytest -q                       # backend (requiere requirements-dev.txt)
   SPA (ver [`deployment.md`](deployment.md)): lo que subes es exactamente lo que
   corre. Si editas `web/` y no reconstruyes, producción queda con la versión
   anterior aunque el backend sí se actualice.
-- **`main` es producción.** Railway hace autodeploy en cada push a `main`; no hay
-  staging. Trabaja en rama y mergea cuando el build esté regenerado y
-  verificado.
+- **`main` es producción.** Railway hace autodeploy en cada push a `main`. Existe
+  un environment `staging` con su propia base de datos para validar antes de
+  mergear (ver [`deployment.md`](deployment.md)). Trabaja en rama y mergea cuando
+  el build esté regenerado y verificado.
+- **El lockfile debe traer todas las plataformas.** npm ≥ 12 poda del
+  `package-lock.json` los binarios opcionales de otras plataformas (los
+  `@esbuild/*`), y entonces el `npm ci` de CI —que corre con el npm 10 que trae
+  Node 22— aborta con `Missing: @esbuild/... from lock file`. Si tu npm es 12 o
+  mayor y `npm install` tocó el lockfile, regenéralo portable antes de commitear:
+
+  ```bash
+  cd web && npx -y npm@10 install --package-lock-only
+  ```
+
+  Solo añade entradas opcionales: no cambia versiones ni resuelve dependencias de
+  nuevo. CI se queda deliberadamente en npm 10 porque es el consumidor más
+  estricto — si pasa ahí, pasa en cualquier máquina del equipo.
 
 ---
 
