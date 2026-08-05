@@ -12,7 +12,7 @@
 | ~~4~~ | ~~ALTO~~ | `compras/hooks/useRecibirParcial.ts` | ✅ **Corregido** (Ola 1). Recibir OC mueve stock y no invalidaba `['productos']`/`['cardex']` |
 | ~~5~~ | ~~ALTO~~ | `fx/pages/FxPage.tsx` | ✅ **Corregido** (Ola 1). Override/refresh de TC no invalidaba `['fx','usd-mxn']` → el cotizador sembraba el TC viejo |
 | ~~6~~ | ~~ALTO~~ | `components/layout/Sidebar.tsx` | ✅ **Corregido** (Ola 1). `modulos_visibles` se ignoraba → menús que el backend rechaza con 403. Los ítems sin clasificar en la matriz siguen visibles a propósito: cubre 11 de 21 módulos |
-| 7 | ALTO | `cotizador/pages/CotizadorPage.tsx:210-212` | Cada refetch re-hidrata el carrito: pisa ediciones en vuelo y colapsa filas expandidas al guardar |
+| 7 | **PARCIAL** | `cotizador/pages/CotizadorPage.tsx:210-212` | ✅ Ya no colapsa las filas expandidas al guardar (`store.ts` conserva `expandedUids` al re-hidratar la misma orden). ⚠️ **Sigue abierto**: un refetch que aterrice mientras se teclea pisa la edición en vuelo. Requiere marcar el estado como sucio y decidir qué gana — el servidor o lo que el usuario está escribiendo—, que es decisión de producto |
 | ~~8~~ | ~~ALTO~~ | `clientes/hooks/useEmpresaDetalle.ts` | ✅ **Corregido** (Ola 1). Registrar pago no invalidaba `['empresa',id,'resumen']` → saldo viejo en la pestaña contigua |
 | ~~9~~ | ~~ALTO~~ | `cxc/hooks/usePagoDistribuido.ts` | ✅ **Corregido** (Ola 1). Espejo del anterior. Ambos usan ahora el helper compartido `lib/cobranza-cache.ts`, porque el bug era la enumeración duplicada de claves |
 | ~~10~~ | ~~ALTO~~ | `remisiones/pages/RemisionesPage.tsx` | ✅ **Corregido** (Ola 1). Recibir/Cancelar/Crear cotización eran visibles para roles que el backend rechaza. Ahora leen los flags `can_*` que `/api/auth/me` ya entregaba |

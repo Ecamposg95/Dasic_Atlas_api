@@ -127,3 +127,31 @@ describe('hydrateFromOrden — TC direccional persistido (veneno V_03)', () => {
     expect(tcs.tc_usd_a_mn).toBeCloseTo(18.35, 10);
   });
 });
+
+describe('hydrateFromOrden — paneles de detalle abiertos', () => {
+  // Guardar invalida ['orden', id] y el detalle se vuelve a pedir, así que
+  // `hydrateFromOrden` corre también sobre la cotización que ya se edita. Antes
+  // vaciaba `expandedUids` siempre, y por eso guardar cerraba de golpe todos
+  // los paneles que el usuario tenía abiertos.
+  it('conserva las filas expandidas al re-hidratar la MISMA orden', () => {
+    const orden = mkOrdenEnvenenada();          // id 42
+    useCotizador.getState().hydrateFromOrden(orden);
+    useCotizador.getState().toggleExpand('linea-0');
+    expect(useCotizador.getState().expandedUids.has('linea-0')).toBe(true);
+
+    useCotizador.getState().hydrateFromOrden(orden);   // refetch tras guardar
+
+    expect(useCotizador.getState().expandedUids.has('linea-0')).toBe(true);
+  });
+
+  it('las limpia al hidratar una orden DISTINTA', () => {
+    useCotizador.getState().hydrateFromOrden(mkOrdenEnvenenada());
+    useCotizador.getState().toggleExpand('linea-0');
+
+    // Otra cotización: los uids son posicionales (`linea-<idx>`), así que
+    // conservarlos apuntaría a líneas ajenas.
+    useCotizador.getState().hydrateFromOrden({ ...mkOrdenEnvenenada(), id: 43 });
+
+    expect(useCotizador.getState().expandedUids.size).toBe(0);
+  });
+});

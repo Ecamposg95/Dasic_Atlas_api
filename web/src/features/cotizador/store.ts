@@ -314,7 +314,15 @@ export const useCotizador = create<CotizadorState>((set) => ({
   reset: () => set({ ...initialState, expandedUids: new Set<string>() }),
 
   hydrateFromOrden: (orden) =>
-    set(() => {
+    set((s) => {
+      // Guardar invalida ['orden', id] y el detalle se vuelve a pedir, así que
+      // esta hidratación corre también sobre la cotización que YA se está
+      // editando —no solo al abrir una distinta—. Vaciar `expandedUids` sin
+      // más cerraba de golpe todos los paneles de detalle cada vez que el
+      // usuario guardaba. Como los uids son deterministas (`linea-<idx>`),
+      // conservarlos al re-hidratar la MISMA orden es seguro; al cambiar de
+      // orden sí hay que limpiarlos, porque apuntarían a líneas ajenas.
+      const mismaOrden = s.editingId === orden.id;
       const monedaOrden = (orden.moneda?.toUpperCase() || 'MXN') as Moneda;
       // El endpoint /detalle-json NO devuelve `id` por detalle. Usamos el
       // índice del array como id sintético — estable dentro de la sesión de
@@ -512,7 +520,7 @@ export const useCotizador = create<CotizadorState>((set) => ({
         pdf_concepto_enabled: orden.pdf_unificado === 1,
         cart,
         lineasNoSoportadas: noSoportadas,
-        expandedUids: new Set<string>(),
+        expandedUids: mismaOrden ? s.expandedUids : new Set<string>(),
       };
     }),
 }));
