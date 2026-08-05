@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/data-table';
 import { PageHeader } from '@/components/ui/page-header';
 import { toast } from '@/lib/toast';
+import { invalidarCobranza } from '@/lib/cobranza-cache';
 import { confirm } from '@/lib/confirm';
 import { api, type ApiError } from '@/lib/api';
 import { RecordatorioFormModal } from '@/features/recordatorios/components/RecordatorioFormModal';
@@ -275,6 +276,12 @@ export function SeguimientoPage() {
     onSuccess: (data) => {
       toast({ kind: 'success', title: `Convertida a venta: ${data.nuevo_folio}` });
       qc.invalidateQueries({ queryKey: ['ventas'] });
+      // `convertir` consume las reservas a SALIDA (fila en movimientos_stock) y
+      // crea el cargo de cobranza — ver `consumir_reservas_a_salida` y
+      // `crear_cargo_por_venta` en routers/ventas.py.
+      qc.invalidateQueries({ queryKey: ['productos'] });
+      qc.invalidateQueries({ queryKey: ['cardex'] });
+      invalidarCobranza(qc);
     },
     onError: (err) => {
       toast({ kind: 'error', title: 'Error al convertir', description: err.detail });
@@ -287,6 +294,10 @@ export function SeguimientoPage() {
     onSuccess: () => {
       toast({ kind: 'success', title: 'Cotización cancelada' });
       qc.invalidateQueries({ queryKey: ['ventas'] });
+      // Cancelar libera las reservas (`liberar_reservas_cotizacion`), así que
+      // el disponible de esos productos cambia. No toca cobranza.
+      qc.invalidateQueries({ queryKey: ['productos'] });
+      qc.invalidateQueries({ queryKey: ['cardex'] });
     },
     onError: (err) => {
       toast({ kind: 'error', title: 'Error al cancelar', description: err.detail });

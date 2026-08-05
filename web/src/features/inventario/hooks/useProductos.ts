@@ -83,6 +83,8 @@ export function useImportProductos() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['productos'] });
+      // La importación masiva altera existencias, así que el kardex cambia.
+      qc.invalidateQueries({ queryKey: ['cardex'] });
     },
   });
 }

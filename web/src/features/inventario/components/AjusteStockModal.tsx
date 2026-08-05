@@ -30,6 +30,9 @@ export function AjusteStockModal({ producto, onClose }: Props) {
       api.post<Producto>(`/api/productos/${producto.id}/ajustar-stock`, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['productos'] });
+      // Ajustar stock deja fila en movimientos_stock (`aplicar_movimiento`):
+      // sin esto el kardex del producto seguía mostrando el historial anterior.
+      qc.invalidateQueries({ queryKey: ['cardex'] });
       toast({ kind: 'success', title: 'Stock ajustado correctamente' });
       onClose();
     },

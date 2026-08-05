@@ -26,9 +26,9 @@
 
 ## Invalidación de caché — mapa completo
 
-Además de los del top: ~~`useCrearCotizacionDesde` crea una orden y solo invalida remisiones~~ (✅ corregido junto con #1 y #2, igual que las invalidaciones de `['productos']`/`['cardex']` al emitir y cancelar, que sí mueven inventario); los tres flujos de `SeguimientoPage.tsx:264,277,289` (recotizar/convertir/cancelar) mueven stock y crean cargos de cobranza sin invalidar `['productos']` ni `['cxc-*']`; los ajustes de inventario (`AjusteStockModal.tsx:32`, `ProductoFormModal.tsx:60`, `useProductos.ts:85`) no invalidan `['cardex']` pese a generar movimientos; las mutaciones de CRM (`useCrmDeals.ts`) no invalidan `['empresa',id,'deals']` ni el dashboard.
+Además de los del top: ~~`useCrearCotizacionDesde` crea una orden y solo invalida remisiones~~ (✅ corregido junto con #1 y #2, igual que las invalidaciones de `['productos']`/`['cardex']` al emitir y cancelar, que sí mueven inventario); ✅ **Corregidos** (P3), con dos precisiones sobre el reporte. De los tres flujos de `SeguimientoPage` **solo dos** tienen efectos: `convertir` consume las reservas a SALIDA y crea el cargo de cobranza, y `cancelar` libera reservas — **`recotizar` no toca ni stock ni cobranza**, así que su invalidación ya era correcta. Los ajustes de inventario y la importación masiva ya invalidan `['cardex']`. Pendiente: las mutaciones de CRM y `['empresa',id,'deals']`.
 
-**Cero invalidaciones de `['dashboard']` en toda la app** — sus alertas (cotizaciones por vencer, stock crítico, saldos vencidos, OC en borrador) pueden estar arbitrariamente viejas.
+✅ **Corregido, y el diagnóstico era otro.** Es cierto que nadie invalida `['dashboard']`, pero con `refetchOnMount` por defecto el dashboard **sí** se refresca al navegar a él: el máximo desfase al entrar era su `staleTime`. El fallo real estaba en el otro lado — es la pantalla que la gente **deja abierta**, y el default global apaga `refetchOnWindowFocus` (correcto en pantallas de edición, donde un refetch pisaría lo que se captura, pero aquí no hay nada que pisar). Sus 6 consultas lo activan ahora. Se prefirió eso a salpicar invalidaciones en 20 sitios, que es justo el patrón que se desincroniza.
 
 ## Manejo de errores
 
