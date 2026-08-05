@@ -115,6 +115,11 @@ export function BorradoresPage() {
     mutationFn: (id: number) => api.post(`/api/ventas/${id}/cancelar`),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['borradores'] });
+      // El mismo endpoint (/api/ventas/borradores) se consulta desde dos
+      // hooks con claves distintas: este módulo usa ['borradores', page] y el
+      // cajón del cotizador usa ['ventas','borradores', page]. Sin invalidar
+      // las dos, descartar aquí dejaba el borrador fantasma en el cajón.
+      void qc.invalidateQueries({ queryKey: ['ventas', 'borradores'] });
       toast({ kind: 'success', title: 'Borrador descartado' });
     },
     onError: () => {

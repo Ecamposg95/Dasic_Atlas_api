@@ -13,11 +13,11 @@
 | ~~5~~ | ~~ALTO~~ | `fx/pages/FxPage.tsx` | ✅ **Corregido** (Ola 1). Override/refresh de TC no invalidaba `['fx','usd-mxn']` → el cotizador sembraba el TC viejo |
 | 6 | ALTO | `components/layout/Sidebar.tsx:20-21` | `modulos_visibles` ignorado → menús que el backend rechaza con 403 |
 | 7 | ALTO | `cotizador/pages/CotizadorPage.tsx:210-212` | Cada refetch re-hidrata el carrito: pisa ediciones en vuelo y colapsa filas expandidas al guardar |
-| 8 | ALTO | `clientes/hooks/useEmpresaDetalle.ts:36-40` | Registrar pago no invalida `['empresa',id,'resumen']` → saldo viejo en la pestaña contigua |
-| 9 | ALTO | `cxc/hooks/usePagoDistribuido.ts:10-15` | Espejo del anterior: no invalida `cxc-cliente`/`estado-cuenta`/`empresa`/`clientes` |
+| ~~8~~ | ~~ALTO~~ | `clientes/hooks/useEmpresaDetalle.ts` | ✅ **Corregido** (Ola 1). Registrar pago no invalidaba `['empresa',id,'resumen']` → saldo viejo en la pestaña contigua |
+| ~~9~~ | ~~ALTO~~ | `cxc/hooks/usePagoDistribuido.ts` | ✅ **Corregido** (Ola 1). Espejo del anterior. Ambos usan ahora el helper compartido `lib/cobranza-cache.ts`, porque el bug era la enumeración duplicada de claves |
 | 10 | ALTO | `remisiones/pages/RemisionesPage.tsx:421,305,314` | Recibir/Cancelar/Crear cotización visibles para roles que el backend rechaza |
 | 11 | ALTO | `servicios/pages/ServiciosPage.tsx:71-79` | Comparaciones de rol sin `'superadmin'` → el superadmin no ve crear/editar/eliminar |
-| 12 | ALTO | `borradores/pages/BorradoresPage.tsx:117` | Dos query keys para el mismo endpoint → descartar en una pantalla deja fantasmas en la otra |
+| ~~12~~ | ~~ALTO~~ | `borradores/pages/BorradoresPage.tsx` | ✅ **Corregido** (Ola 1). Dos query keys para el mismo endpoint → descartar en una pantalla dejaba fantasmas en la otra. Se invalidan ambas; unificar los dos hooks queda pendiente |
 | ~~13~~ | ~~MEDIO~~ | `cotizador/store.ts` + `routers/ventas.py` | ✅ **Corregido** (Ola 1). `max: 0` al re-hidratar → toda cotización guardada mostraba "Sin stock · OC". La causa estaba en el backend: `/detalle-json` no exponía `stock_actual` |
 | 14 | MEDIO | `components/document/DocumentRow.tsx:186-196,479-487` | El input de cantidad se autocorrige en cada tecla; no se puede vaciar para reteclear |
 | 15 | MEDIO | `cotizador/components/HeaderCotizacion.tsx:28-34`, `fx/pages/FxPage.tsx:40` | `toISOString()` usa UTC: tras las 18:00 CDMX los documentos nacen fechados un día adelante |

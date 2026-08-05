@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { invalidarCobranza } from '@/lib/cobranza-cache';
 import type { TransaccionCuenta, CxCClienteResponse } from '../types';
 
 export function useEstadoCuenta(clienteId: number | null) {
@@ -33,10 +34,6 @@ export function useRegistrarPago(clienteId: number) {
       api.post<{ mensaje: string; nuevo_saldo: number }>(
         `/api/clientes/${clienteId}/registrar-pago?monto=${monto}&descripcion=${encodeURIComponent(descripcion)}`,
       ),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['cxc-cliente', clienteId] });
-      qc.invalidateQueries({ queryKey: ['estado-cuenta', clienteId] });
-      qc.invalidateQueries({ queryKey: ['clientes'] });
-    },
+    onSuccess: () => invalidarCobranza(qc, clienteId),
   });
 }
