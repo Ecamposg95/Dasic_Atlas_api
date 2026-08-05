@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { QueryError } from '@/components/ui/query-error';
 import {
   DataTable,
   DataTableHead,
@@ -109,7 +110,7 @@ export function BorradoresPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
 
-  const { data, isLoading, isPlaceholderData } = useBorradores(page);
+  const { data, isLoading, isPlaceholderData, isError, error, refetch } = useBorradores(page);
 
   const cancelar = useMutation({
     mutationFn: (id: number) => api.post(`/api/ventas/${id}/cancelar`),
@@ -172,6 +173,8 @@ export function BorradoresPage() {
         <DataTableBody>
           {isLoading ? (
             <SkeletonRows rows={6} cols={5} />
+          ) : isError ? (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={5} />
           ) : items.length === 0 ? (
             <DataTableEmpty colSpan={5}>
               <EmptyState

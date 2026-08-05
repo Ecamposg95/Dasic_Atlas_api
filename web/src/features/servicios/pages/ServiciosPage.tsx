@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ListToolbar } from '@/components/ui/list-toolbar';
 import { PageHeader } from '@/components/ui/page-header';
+import { QueryError } from '@/components/ui/query-error';
 import { Pagination } from '@/components/ui/pagination';
 import {
   DataTable,
@@ -51,7 +52,7 @@ export function ServiciosPage() {
     setPage(1);
   }, [qDebounced, filtroCategoria]);
 
-  const { data, isLoading, isPlaceholderData, error } = useServicios({
+  const { data, isLoading, isPlaceholderData, isError, error, refetch } = useServicios({
     q: qDebounced || undefined,
     categoria: filtroCategoria || undefined,
     page,
@@ -210,7 +211,12 @@ export function ServiciosPage() {
           {isLoading && (
             <DataTableEmpty colSpan={6}>Cargando servicios…</DataTableEmpty>
           )}
-          {!isLoading && items.length === 0 && (
+          {/* El error va ANTES del vacío: sin esta rama, una consulta caída se
+              veía igual que "sin servicios registrados". */}
+          {!isLoading && isError && (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={6} />
+          )}
+          {!isLoading && !isError && items.length === 0 && (
             <DataTableEmpty colSpan={6}>
               <Wrench className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
               {!qDebounced && !filtroCategoria

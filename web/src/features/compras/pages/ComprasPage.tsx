@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
+import { QueryError } from '@/components/ui/query-error';
 import {
   DataTable, DataTableBody, DataTableEmpty, DataTableHead, DataTableRow,
 } from '@/components/ui/data-table';
@@ -97,7 +98,7 @@ export function ComprasPage() {
     }
   }, [filtroQDebounced, filtroEstatus]);
 
-  const { data: ordenes, isLoading, isPlaceholderData, error } = useOrdenesCompra(page, filtroQDebounced, filtroEstatus);
+  const { data: ordenes, isLoading, isPlaceholderData, isError, error, refetch } = useOrdenesCompra(page, filtroQDebounced, filtroEstatus);
 
   // 401 → login
   useEffect(() => {
@@ -181,7 +182,10 @@ export function ComprasPage() {
           {isLoading && (
             <DataTableEmpty colSpan={7}>Cargando órdenes de compra…</DataTableEmpty>
           )}
-          {!isLoading && filtradas.length === 0 && (
+          {!isLoading && isError && (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={7} />
+          )}
+          {!isLoading && !isError && filtradas.length === 0 && (
             <tr>
               <td colSpan={7}>
                 <EmptyState icon={ShoppingCart} title="Sin órdenes que coincidan" />

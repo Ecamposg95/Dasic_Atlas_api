@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
+import { QueryError } from '@/components/ui/query-error';
 import {
   DataTable,
   DataTableBody,
@@ -96,7 +97,7 @@ export function InventarioPage() {
   // (evita quedar en una página alta que tras el filtro queda vacía).
   useEffect(() => { setPage(1); }, [filtroMarca, filtroCategoria, soloBajoStock]);
 
-  const { data: productos = [], isLoading, isPlaceholderData, error } = useProductos(page, filtroQDebounced);
+  const { data: productos = [], isLoading, isPlaceholderData, isError, error, refetch } = useProductos(page, filtroQDebounced);
   const { data: marcas = [] } = useMarcas();
   const { data: proveedores = [] } = useProveedores();
   // `isAdmin` = superadmin + administrador, que es lo que exige `allow_admin`
@@ -358,8 +359,11 @@ export function InventarioPage() {
               Cargando inventario…
             </DataTableEmpty>
           )}
-          {!isLoading && filtrados.length === 0 && (
-            <DataTableEmpty colSpan={isAdmin ? 10 : 9}>
+          {!isLoading && isError && (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={puedeVerCosto ? 10 : 9} />
+          )}
+          {!isLoading && !isError && filtrados.length === 0 && (
+            <DataTableEmpty colSpan={puedeVerCosto ? 10 : 9}>
               <Package className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
               Sin productos que coincidan con los filtros
             </DataTableEmpty>

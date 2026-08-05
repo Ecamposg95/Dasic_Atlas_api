@@ -15,6 +15,7 @@ import {
   DataTableRow,
 } from '@/components/ui/data-table';
 import { PageHeader } from '@/components/ui/page-header';
+import { QueryError } from '@/components/ui/query-error';
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { useIsAdmin } from '@/lib/permissions';
@@ -90,7 +91,7 @@ export function ClientesPage() {
     }
   }, [filtroQDebounced, estatus]);
 
-  const { data: clientes, isLoading, isPlaceholderData, error } = useClientes({
+  const { data: clientes, isLoading, isPlaceholderData, isError, error, refetch } = useClientes({
     page,
     q: filtroQDebounced,
     pageSize: PAGE_SIZE,
@@ -299,7 +300,10 @@ export function ClientesPage() {
           {isLoading && (
             <DataTableEmpty colSpan={9}>Cargando clientes…</DataTableEmpty>
           )}
-          {!isLoading && filtrados.length === 0 && (
+          {!isLoading && isError && (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={9} />
+          )}
+          {!isLoading && !isError && filtrados.length === 0 && (
             <DataTableEmpty colSpan={9}>
               <Users className="h-8 w-8 mx-auto text-muted-foreground/70 mb-2" />
               {filtroQDebounced || estatus ? 'Sin coincidencias con la búsqueda' : 'Sin clientes registrados'}

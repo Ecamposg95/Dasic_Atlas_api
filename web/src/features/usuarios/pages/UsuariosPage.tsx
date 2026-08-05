@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ListToolbar } from '@/components/ui/list-toolbar';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
+import { QueryError } from '@/components/ui/query-error';
 import {
   DataTable,
   DataTableBody,
@@ -56,7 +57,7 @@ export function UsuariosPage() {
   const [rolFiltro, setRolFiltro] = useState('');
   const [activoFiltro, setActivoFiltro] = useState('');
 
-  const { data: usuarios, isLoading, error } = useUsuarios();
+  const { data: usuarios, isLoading, isError, error, refetch } = useUsuarios();
 
   useEffect(() => {
     const status = (error as ApiErr | undefined)?.status;
@@ -222,7 +223,10 @@ export function UsuariosPage() {
           {isLoading && (
             <DataTableEmpty colSpan={5}>Cargando usuarios…</DataTableEmpty>
           )}
-          {!isLoading && items.length === 0 && (
+          {!isLoading && isError && (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={5} />
+          )}
+          {!isLoading && !isError && items.length === 0 && (
             <DataTableEmpty colSpan={5}>
               <EmptyState
                 icon={UserCog}

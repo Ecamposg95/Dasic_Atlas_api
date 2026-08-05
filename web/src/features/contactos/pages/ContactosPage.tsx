@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { QueryError } from '@/components/ui/query-error';
 import { toast } from '@/lib/toast';
 import { useClientes } from '@/features/clientes/hooks/useClientes';
 import { useEliminarContacto } from '../hooks/useContactoMutations';
@@ -72,7 +73,7 @@ export function ContactosPage() {
     }
   }, [qDebounced, empresaId]);
 
-  const { data, isLoading, isPlaceholderData } = useContactosGlobal(
+  const { data, isLoading, isPlaceholderData, isError, error, refetch } = useContactosGlobal(
     qDebounced,
     empresaId,
     page,
@@ -146,6 +147,8 @@ export function ContactosPage() {
         <DataTableBody>
           {isLoading ? (
             <DataTableEmpty colSpan={6}>Cargando…</DataTableEmpty>
+          ) : isError ? (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={6} />
           ) : contactos.length === 0 ? (
             <DataTableEmpty colSpan={6}>Sin contactos</DataTableEmpty>
           ) : (

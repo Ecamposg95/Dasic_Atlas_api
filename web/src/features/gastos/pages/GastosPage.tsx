@@ -18,6 +18,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { QueryError } from '@/components/ui/query-error';
 import {
   DataTable,
   DataTableHead,
@@ -135,7 +136,7 @@ export function GastosPage() {
     setPage(1);
   }, [busquedaDebounced, filtroCategoria, fechaDesde, fechaHasta]);
 
-  const { data, isLoading, isPlaceholderData } = useGastos(page, filtros);
+  const { data, isLoading, isPlaceholderData, isError, error, refetch } = useGastos(page, filtros);
   const gastos = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / GASTOS_PAGE_SIZE));
@@ -284,6 +285,8 @@ export function GastosPage() {
         <DataTableBody>
           {isLoading ? (
             <SkeletonRows rows={6} cols={6} />
+          ) : isError ? (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={6} />
           ) : filtered.length === 0 ? (
             <tr>
               <td colSpan={6}>
