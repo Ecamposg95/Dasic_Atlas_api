@@ -70,6 +70,7 @@ Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). E
 | `test_postgres_mode.py` | Solo en modo Postgres: que `hashtext`/`pg_advisory_xact_lock` sean reales y que el lock serialice de verdad dos conexiones |
 | `test_remisiones_concurrencia.py` | Solo en modo Postgres: **UAT-05** — dos remisiones que piden el mismo pendiente a la vez (una emite, la otra recibe 400) y cuatro emisiones simultáneas sin repetir folio |
 | `test_cobranza_concurrencia.py` | Solo en modo Postgres: dos pagos simultáneos contra el mismo saldo. **Encontró un bug real de producción** — ver abajo |
+| `test_cobranza_fifo.py` | Reparto de un pago entre cargos abiertos: orden por vencimiento, un pago que cubre varios, sobrante que no infla ningún cargo, orden explícito por encima del FIFO, y transiciones pendiente/parcial/pagado/vencido |
 | `test_endpoints_autenticacion.py` | Barrido de **todas** las rutas montadas: ninguna responde sin credenciales salvo login y logout |
 
 ### Frontend — `web/src/features/cotizador/`
@@ -108,7 +109,9 @@ Por valor descendente:
 
 0. ~~**Concurrencia de cobranza**~~ ✅ **Cubierta, y encontró un bug real.** `aplicar_pago` serializa con `SELECT ... FOR UPDATE` sobre el cliente, y el lock funcionaba — pero los routers cargan el cliente **antes** de llamar al servicio, así que la instancia ya vivía en el identity map de la sesión con el saldo leído antes de esperar el lock. SQLAlchemy devolvía ese objeto **sin refrescar sus atributos**, de modo que el saldo nuevo se calculaba sobre el valor viejo y el segundo pago pisaba al primero: dos pagos de 600 sobre una deuda de 1000 dejaban el saldo en 400 en vez de −200, sin error visible. Se corrigió con `populate_existing()`. **El lock estaba bien puesto; el bug era que no bastaba** — la clase de defecto que ninguna revisión de código detecta y solo aparece con dos conexiones reales.
 1. **Totales de venta en el backend** (`app/routers/ventas.py`) — tests espejo de `calc.test.ts` con los mismos números, para garantizar que servidor y cliente calculan idéntico (folios, `tipo_cambio` obligatorio en USD, versionado de recotizaciones).
-2. **Cobranza FIFO** (`app/services/cuentas_por_cobrar.py`) — aplicación de pagos contra las órdenes más antiguas, saldos parciales, sobrepagos, aging.
+2. ~~**Cobranza FIFO**~~ ✅ **Cubierta** (`test_cobranza_fifo.py`, 11 casos). Validada por mutación: invertir el orden, quitar el tope por saldo del cargo o romper la guarda de 'pagado' hacen fallar la suite. **Queda el aging** (`calcular_aging`, `top_deudores`, `listar_vencimientos`), que son agregados de reporte y no reparto de dinero.
+
+   > **Pregunta para administración:** el orden usa `nullsfirst()`, así que un cargo **sin fecha de vencimiento se cobra antes que uno ya vencido**. Puede ser deliberado o un efecto colateral. El comportamiento vigente quedó fijado en una prueba para que no cambie sin que nadie lo note, pero conviene confirmarlo.
 3. **`stock_service.aplicar_movimiento`** — que todo movimiento genere fila en `movimientos_stock`, disponible = `stock_actual − reservas activas`, y el ciclo reserva → liberación/consumo.
 4. **Componentes React críticos** — hoy ninguno (falta jsdom); candidatos: carrito del cotizador y formularios con validación.
 
