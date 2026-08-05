@@ -19,7 +19,7 @@
 | ~~11~~ | ~~ALTO~~ | `servicios/pages/ServiciosPage.tsx` | ✅ **Corregido** (Ola 1). Comparaciones de rol a mano sin `'superadmin'`. Sustituidas por los helpers centrales, espejo de las guardas del router |
 | ~~12~~ | ~~ALTO~~ | `borradores/pages/BorradoresPage.tsx` | ✅ **Corregido** (Ola 1). Dos query keys para el mismo endpoint → descartar en una pantalla dejaba fantasmas en la otra. Se invalidan ambas; unificar los dos hooks queda pendiente |
 | ~~13~~ | ~~MEDIO~~ | `cotizador/store.ts` + `routers/ventas.py` | ✅ **Corregido** (Ola 1). `max: 0` al re-hidratar → toda cotización guardada mostraba "Sin stock · OC". La causa estaba en el backend: `/detalle-json` no exponía `stock_actual` |
-| 14 | MEDIO | `components/document/DocumentRow.tsx:186-196,479-487` | El input de cantidad se autocorrige en cada tecla; no se puede vaciar para reteclear |
+| ~~14~~ | ~~MEDIO~~ | `components/document/DocumentRow.tsx` | ✅ **Corregido** (Ola 1). El input de cantidad se autocorregía en cada tecla y no se podía vaciar para reteclear. Lógica extraída a `useQtyDraft` (compartida por tabla y tarjeta, donde estaba duplicada) con 12 pruebas |
 | ~~15~~ | ~~MEDIO~~ | `cotizador/components/HeaderCotizacion.tsx`, `fx/pages/FxPage.tsx` | ✅ **Corregido** (Ola 1). `toISOString()` usaba UTC: tras las 18:00 CDMX los documentos nacían fechados un día adelante. Helper `lib/fechas.ts` con 9 pruebas; la suite fija `TZ=America/Mexico_City` para que sean falsificables en CI |
 
 ~~**Bonus trivial:** `seguimiento/types.ts:28` — el toast de convertir a venta imprime `undefined`.~~ ✅ **Corregido** (Ola 1): el tipo declaraba `{id, folio_venta}` y el backend devuelve `{mensaje, nuevo_folio}`.

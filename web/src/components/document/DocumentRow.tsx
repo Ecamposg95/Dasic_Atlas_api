@@ -3,6 +3,7 @@ import { MoreVertical, Pen, Trash2, ChevronDown, ChevronUp, Ghost, Wrench, Messa
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Input } from '@/components/ui/input';
+import { useQtyDraft } from './useQtyDraft';
 import { StockBadge } from '@/features/cotizador/components/StockBadge';
 import { EntregaChip } from '@/features/cotizador/components/EntregaChip';
 import { MargenChip } from '@/features/cotizador/components/MargenChip';
@@ -76,6 +77,12 @@ export function DocumentRow({
   const esServicio = vm.tipo === 'servicio_catalogo';
   const excluida = caps.seleccionable === true && vm.incluida === false;
   const qtyLimit = qtyLimitOf(vm, caps);
+  const qtyDraft = useQtyDraft({
+    qty: vm.qty,
+    decimal: !!caps.decimalQty,
+    limit: qtyLimit,
+    onCommit: (v) => cb.onQty(vm.uid, v),
+  });
 
   const rowClass = `${
     esServicio
@@ -182,15 +189,8 @@ export function DocumentRow({
           min={caps.decimalQty ? '0.001' : '1'}
           step={caps.decimalQty ? '0.001' : undefined}
           max={qtyLimit ?? undefined}
-          value={vm.qty}
           disabled={!caps.editableQty}
-          onChange={(e) => {
-            const min = caps.decimalQty ? 0.001 : 1;
-            const raw = caps.decimalQty ? parseFloat(e.target.value) : parseInt(e.target.value, 10);
-            const v = Math.max(min, raw || min);
-            const capped = qtyLimit != null ? Math.min(v, qtyLimit) : v;
-            cb.onQty(vm.uid, capped);
-          }}
+          {...qtyDraft}
           className="h-7 text-center text-xs px-1"
         />
         {vm.entregas ? (
@@ -433,6 +433,12 @@ export function DocumentRowCard({
   const esServicio = vm.tipo === 'servicio_catalogo';
   const excluida = caps.seleccionable === true && vm.incluida === false;
   const qtyLimit = qtyLimitOf(vm, caps);
+  const qtyDraft = useQtyDraft({
+    qty: vm.qty,
+    decimal: !!caps.decimalQty,
+    limit: qtyLimit,
+    onCommit: (v) => cb.onQty(vm.uid, v),
+  });
   return (
     <div className={`rounded-xl border border-border bg-card p-3 space-y-2${excluida ? ' opacity-40' : ''}`}>
       <div className="flex items-start justify-between gap-2">
@@ -475,14 +481,8 @@ export function DocumentRowCard({
             min={caps.decimalQty ? 0.001 : 1}
             step={caps.decimalQty ? 0.001 : undefined}
             max={qtyLimit ?? undefined}
-            value={vm.qty}
             disabled={!caps.editableQty}
-            onChange={(e) => {
-              const min = caps.decimalQty ? 0.001 : 1;
-              const raw = caps.decimalQty ? parseFloat(e.target.value) : parseInt(e.target.value, 10);
-              const v = Math.max(min, raw || min);
-              cb.onQty(vm.uid, qtyLimit != null ? Math.min(v, qtyLimit) : v);
-            }}
+            {...qtyDraft}
             className="h-7 w-16 text-center text-xs px-1 rounded border border-border bg-card"
           />
           {!vm.entregas && vm.qtyMax != null && (
