@@ -231,3 +231,43 @@ def test_cada_pago_deja_una_fila_de_abono_por_el_monto_completo(db):
     assert sorted(Decimal(a.monto) for a in abonos) == [Decimal("80"), Decimal("120")]
     # 500 − 120 − 80
     assert Decimal(cli.saldo_actual) == Decimal("300")
+
+
+def test_salta_un_cargo_sin_saldo_cuando_se_eligen_las_ventas_a_mano(db):
+    """La guarda de saldo cero dentro de `aplicar_pago` solo es alcanzable por
+    la vía del **orden explícito**: el camino FIFO nunca la toca, porque
+    `_cargos_abiertos` ya descarta antes los cargos sin saldo.
+
+    Cuando el cobrador elige a mano las ventas a las que aplicar, esa criba no
+    corre: si señala una ya liquidada, la guarda es lo único que impide que
+    aparezca en el detalle del pago con 0 aplicados.
+
+    (Encontrada al mutar el servicio: la guarda existía y ninguna prueba la
+    ejercitaba, porque todas iban por FIFO.)
+    """
+    cli = _cliente(db, "200")
+    o_liquidada = models.OrdenVenta(folio="V-L", cliente_id=cli.id,
+                                    estatus=models.EstatusOrden.PENDIENTE, moneda="MXN", total=0)
+    o_abierta = models.OrdenVenta(folio="V-A", cliente_id=cli.id,
+                                  estatus=models.EstatusOrden.PENDIENTE, moneda="MXN", total=0)
+    db.add_all([o_liquidada, o_abierta])
+    db.flush()
+
+    liquidada = _cargo(db, cli, "100", vence=HACE_UN_MES, pagado="100")
+    liquidada.estatus_pago = "vencido"   # estatus viejo: no dice "pagado" pese a estarlo
+    liquidada.orden_venta_id = o_liquidada.id
+    abierta = _cargo(db, cli, "200", vence=AYER)
+    abierta.orden_venta_id = o_abierta.id
+    db.commit()
+
+    res = cxc.aplicar_pago(
+        db, cliente=cli, monto=Decimal("50"),
+        orden_venta_ids=[o_liquidada.id, o_abierta.id])
+    db.commit()
+
+    # La liquidada no se toca ni ensucia el detalle; los 50 van a la abierta.
+    assert Decimal(liquidada.monto_pagado) == Decimal("100")
+    tocados = [d["transaccion_cliente_id"] for d in res["detalle"]]
+    assert liquidada.id not in tocados
+    assert tocados == [abierta.id]
+    assert Decimal(abierta.monto_pagado) == Decimal("50")

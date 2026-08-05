@@ -72,6 +72,7 @@ Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). E
 | `test_cobranza_concurrencia.py` | Solo en modo Postgres: dos pagos simultáneos contra el mismo saldo. **Encontró un bug real de producción** — ver abajo |
 | `test_cobranza_fifo.py` | Reparto de un pago entre cargos abiertos: orden por vencimiento, un pago que cubre varios, sobrante que no infla ningún cargo, orden explícito por encima del FIFO, y transiciones pendiente/parcial/pagado/vencido |
 | `test_ventas_totales.py` | Espejo de `calc.test.ts` contra el endpoint real: costo+utilidad, descuento, suma de líneas, redondeo **por línea** antes de sumar, medio centavo, y USD sin TC rechazado. **Encontró una divergencia de redondeo** — ver abajo |
+| `test_cobranza_aging.py` | Tramos de antigüedad: reparto, los tres bordes (30/31, 60/61, 90/91) por sus dos lados, saldo pendiente y no monto original, y `marcar_vencidos` |
 | `test_stock_service.py` | Rastro auditable: cada movimiento deja fila con su `stock_resultante`, el kardex reconstruye el stock paso a paso, guard de negativo, y el ciclo de reservas (reservar no toca el stock físico; solo cuentan las cotizaciones vivas) |
 | `test_endpoints_autenticacion.py` | Barrido de **todas** las rutas montadas: ninguna responde sin credenciales salvo login y logout |
 
