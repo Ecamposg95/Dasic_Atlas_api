@@ -919,7 +919,7 @@ PDF_TEMPLATE_EDO_CTA = """
 </html>
 """
 
-@router.get("/{cliente_id}/pdf-estado-cuenta", response_class=HTMLResponse)
+@router.get("/{cliente_id}/pdf-estado-cuenta", response_class=HTMLResponse, dependencies=[Depends(allow_all_staff)])
 def generar_pdf_estado_cuenta(
     cliente_id: int,
     db: Session = Depends(get_db),

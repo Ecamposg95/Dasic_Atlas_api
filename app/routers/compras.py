@@ -246,7 +246,7 @@ def _generar_folio_oc(db: Session, vendedor: "models.Usuario | None" = None) -> 
 
 # --- ENDPOINTS ---
 
-@router.get("/proveedores", response_model=List[schemas.ProveedorResponse])
+@router.get("/proveedores", response_model=List[schemas.ProveedorResponse], dependencies=[Depends(allow_admin_asistente)])
 def listar_proveedores(
     skip: int = Query(0, ge=0),
     limit: int = Query(200, ge=1, le=1000),
@@ -260,7 +260,7 @@ def listar_proveedores(
         .all()
     )
 
-@router.post("/proveedores", response_model=schemas.ProveedorResponse)
+@router.post("/proveedores", response_model=schemas.ProveedorResponse, dependencies=[Depends(allow_admin_asistente)])
 def crear_proveedor(proveedor: schemas.ProveedorCreate, db: Session = Depends(get_db)):
     try:
         nuevo = models.Proveedor(**proveedor.model_dump())
@@ -277,8 +277,8 @@ def crear_proveedor(proveedor: schemas.ProveedorCreate, db: Session = Depends(ge
         raise HTTPException(500, detail=f"{type(exc).__name__}: {exc}")
 
 # Listar Historial (alias en "/" para compat con clientes con caché viejo)
-@router.get("/")
-@router.get("/historial")
+@router.get("/", dependencies=[Depends(allow_admin_asistente)])
+@router.get("/historial", dependencies=[Depends(allow_admin_asistente)])
 def listar_historial_compras(
     skip: int = 0,
     limit: int = 50,
@@ -823,7 +823,7 @@ def pagar_proveedor(
         logger.exception("compras.pagar_proveedor falló (proveedor_id=%s)", proveedor_id)
         raise HTTPException(500, detail=f"{type(exc).__name__}: {exc}")
 
-@router.get("/{id}/imprimir", response_class=HTMLResponse)
+@router.get("/{id}/imprimir", response_class=HTMLResponse, dependencies=[Depends(allow_admin_asistente)])
 def imprimir_oc(id: int, db: Session = Depends(get_db)):
     orden = db.query(models.OrdenCompra).filter(models.OrdenCompra.id == id).first()
     if not orden: raise HTTPException(404)
