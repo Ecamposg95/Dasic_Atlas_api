@@ -21,6 +21,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
+import { QueryError } from '@/components/ui/query-error';
 import {
   DataTable,
   DataTableHead,
@@ -505,7 +506,7 @@ export function RemisionesPage() {
     }
   }, [searchDebounced, estadoFiltro, desde, hasta, ordenVentaFiltro, creadorFiltro]);
 
-  const { data, isLoading, isPlaceholderData } = useRemisiones(page, searchDebounced, {
+  const { data, isLoading, isPlaceholderData, isError, error, refetch } = useRemisiones(page, searchDebounced, {
     estado: estadoFiltro === 'todas' ? undefined : estadoFiltro,
     ordenVentaId: ordenVentaFiltro ?? undefined,
     desde: desde || undefined,
@@ -635,6 +636,8 @@ export function RemisionesPage() {
         <DataTableBody>
           {isLoading ? (
             <SkeletonRows rows={6} cols={6} />
+          ) : isError ? (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={6} />
           ) : items.length === 0 ? (
             <tr>
               <td colSpan={6}>

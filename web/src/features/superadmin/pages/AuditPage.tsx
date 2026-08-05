@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { QueryError } from '@/components/ui/query-error';
 import { PlatformShell } from '../components/PlatformShell';
 import { useUsuarios } from '@/features/usuarios/hooks/useUsuarios';
 import { useAudit, type AuditFuente, type AuditFiltros } from '../hooks/useAudit';
@@ -31,7 +32,7 @@ export function AuditPage() {
     hasta: hasta || undefined,
     page,
   };
-  const { data, isLoading } = useAudit(filtros);
+  const { data, isLoading, isError, error, refetch } = useAudit(filtros);
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -137,6 +138,8 @@ export function AuditPage() {
                     Cargando…
                   </td>
                 </tr>
+              ) : isError ? (
+                <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={5} />
               ) : items.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-3 py-6 text-center font-mono text-xs text-muted-foreground">

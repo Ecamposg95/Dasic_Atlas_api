@@ -40,7 +40,9 @@ Además de los del top: ~~`useCrearCotizacionDesde` crea una orden y solo invali
 
 ✅ **Hallazgo adicional, no auditado:** los **47** sitios que redirigen a `/spa/login` resolvían a una ruta **hija de `/spa`**, cuyo elemento es el `Layout` protegido: el login se dibujaba **dentro del shell autenticado** —sidebar, header y footer alrededor del formulario— y disparaba la verificación de sesión del propio Layout, que al recibir otro 401 navegaba a `/`. Se movió al nivel superior, donde se dibuja limpio y sin rebote, y se retiró la hija para no dejar dos rutas compitiendo por el mismo path.
 
-🔵 **En curso — estado de error por página.** Se creó `components/ui/query-error.tsx`: dos formas (bloque suelto y `<tr>` con `asRow`, porque los listados renderizan dentro de un `<tbody>` donde no cabe un `<div>`), y trata el **403 aparte** —lo presenta como falta de acceso y sin botón de reintentar, porque no es un fallo sino una respuesta—. Adoptada en 11 páginas: servicios, contactos, borradores, usuarios, gastos, inventario, clientes, compras, fantasmas, precios y recordatorios. **Cobertura: 14 de 35** (antes 3). La rama de error va siempre antes que la de vacío: confundir "roto" con "vacío" es justo el defecto que corrige.
+🔵 **En curso — estado de error por página.** Se creó `components/ui/query-error.tsx`: dos formas (bloque suelto y `<tr>` con `asRow`, porque los listados renderizan dentro de un `<tbody>` donde no cabe un `<div>`), y trata el **403 aparte** —lo presenta como falta de acceso y sin botón de reintentar, porque no es un fallo sino una respuesta—. La rama de error va siempre antes que la de vacío: confundir "roto" con "vacío" es el defecto que corrige.
+
+**Medición corregida.** El conteo que se venía citando ("14 de 35") salía de buscar `isError`, y por eso no veía las páginas con manejo propio. El reparto real hoy es: **13 con la primitiva**, **6 con banner propio** (login, salud, reportes, detalle de deal, seguimiento y usuarios de plataforma — funcionan, solo no están unificadas) y **16 sin nada**, una de ellas código muerto (`CrearRemisionPage`, sin ruta en el router).
 
 ## Estado obsoleto y carreras
 
