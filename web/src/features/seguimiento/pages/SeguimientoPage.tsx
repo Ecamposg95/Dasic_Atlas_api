@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ChevronLeft,
@@ -232,8 +232,13 @@ export function SeguimientoPage() {
   // Recordatorio modal
   const [recordarOrden, setRecordarOrden] = useState<{ id: number; folio: string } | null>(null);
 
-  // Filtros
-  const [search, setSearch] = useState('');
+  // Filtros. La búsqueda se siembra desde el query string: el cotizador
+  // navega aquí con ?folio= tras guardar y las tarjetas del CRM enlazan con
+  // ?orden=. La página no los leía, así que ambos abrían el historial completo
+  // sin filtrar y el usuario tenía que buscar a mano el documento que acababa
+  // de crear.
+  const [params] = useSearchParams();
+  const [search, setSearch] = useState(() => params.get('folio') ?? params.get('orden') ?? '');
   const [estatusFilter, setEstatusFilter] = useState<EstatusFilter>('TODOS');
   const [vencimientoFilter, setVencimientoFilter] = useState<VencimientoFilter>('TODAS');
   const [page, setPage] = useState(1);

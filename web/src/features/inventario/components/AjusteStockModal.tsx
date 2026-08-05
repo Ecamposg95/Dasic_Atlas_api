@@ -42,7 +42,14 @@ export function AjusteStockModal({ producto, onClose }: Props) {
         return;
       }
       if (e.status === 403) {
-        toast({ kind: 'error', title: 'Solo admin', description: 'Se requiere rol administrador para ajustar stock.' });
+        // El endpoint exige `allow_admin_asistente` (superadmin, administrador
+        // o gerente comercial), no solo administrador: el mensaje anterior
+        // mandaba a pedir un permiso equivocado.
+        toast({
+          kind: 'error',
+          title: 'Sin permiso',
+          description: 'Ajustar stock requiere rol administrador o gerente comercial.',
+        });
         return;
       }
       toast({ kind: 'error', title: 'No se pudo ajustar stock', description: e.detail });

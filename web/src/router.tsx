@@ -89,20 +89,18 @@ export const router = createBrowserRouter([
   // Sirve también la URL `/` (matching el flujo previo de Jinja).
   { path: '/', element: <LoginPage /> },
   { path: '/login', element: <LoginPage /> },
-  // 47 sitios redirigen aquí al recibir un 401. La ruta no existía: caía en el
-  // catch-all `NotFound` de `/spa`, que además vive DENTRO del `Layout`
-  // protegido, así que el usuario terminaba en el login sólo de rebote —
-  // Layout pedía `/api/auth/me`, recibía otro 401 y navegaba a `/`—. Es decir,
-  // una recarga completa y una llamada de más para llegar al mismo sitio.
-  // Declararla estática la resuelve directo: React Router prioriza el segmento
-  // literal sobre el comodín de `/spa`.
+  // 47 sitios redirigen aquí al recibir un 401. Antes se resolvía como hija de
+  // `/spa`, cuyo elemento es el `Layout` protegido: el login se dibujaba DENTRO
+  // del shell autenticado —sidebar, header y footer alrededor del formulario— y
+  // además disparaba la verificación de sesión del propio Layout, que al
+  // recibir otro 401 navegaba a `/`. Aquí, al nivel superior, se dibuja limpio
+  // y sin rebote.
   { path: '/spa/login', element: <LoginPage /> },
   {
     path: '/spa',
     element: <Layout />,
     children: [
       { index: true, element: <Navigate to="/spa/dashboard" replace /> },
-      { path: 'login', element: <LoginPage /> },
       { path: 'dashboard', lazy: dashboard },
       { path: 'cotizador', lazy: cotizador },
       { path: 'borradores', lazy: borradores },
@@ -146,7 +144,9 @@ export const router = createBrowserRouter([
   legacyRedirect('/ventas/cotizador', '/spa/cotizador'),
   legacyRedirect('/dashboard', '/spa/dashboard'),
   legacyRedirect('/borradores', '/spa/borradores'),
-  legacyRedirect('/seguimiento', '/spa/seguimiento'),
+  // Conserva el query string: el cotizador manda ?folio= al guardar y
+  // DealCard enlaza con ?orden=. Con `legacyRedirect` se perdían.
+  { path: '/seguimiento', element: <RedirectConQuery to="/spa/seguimiento" /> },
   legacyRedirect('/fantasmas', '/spa/fantasmas'),
   legacyRedirect('/clientes', '/spa/clientes'),
   legacyRedirect('/inventario', '/spa/inventario'),

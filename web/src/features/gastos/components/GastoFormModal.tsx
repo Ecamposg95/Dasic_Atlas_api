@@ -35,6 +35,12 @@ export function GastoFormModal({ mode, gasto, categorias, onSave, onClose, busy 
       setErr('La categoría es requerida.');
       return;
     }
+    // El backend la limita a 80 caracteres (`GastoCreate` en routers/gastos.py).
+    // Sin este check, pasarse devolvía un 422 con el mensaje crudo de Pydantic.
+    if (efectivaCategoria.length > 80) {
+      setErr(`La categoría no puede pasar de 80 caracteres (van ${efectivaCategoria.length}).`);
+      return;
+    }
     const montoNum = parseFloat(monto);
     if (!Number.isFinite(montoNum) || montoNum <= 0) {
       setErr('El monto debe ser mayor a 0.');

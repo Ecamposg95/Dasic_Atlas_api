@@ -38,7 +38,7 @@ Además de los del top: ~~`useCrearCotizacionDesde` crea una orden y solo invali
 
 ~~`ReportesPage.tsx:292-294`~~ ✅ **Corregido.** Hacía `window.location.href` **durante el render** (efecto secundario en fase de render, que React puede ejecutar dos veces) y recargaba la SPA entera; ahora usa `<Navigate>`.
 
-✅ **Hallazgo adicional, no auditado:** los **47** sitios que redirigen a `/spa/login` apuntaban a una ruta inexistente. Caía en el catch-all `NotFound` de `/spa`, que además vive **dentro del `Layout` protegido**, así que el usuario llegaba al login sólo de rebote — una recarga completa y una llamada a `/api/auth/me` de más. Se declaró la ruta estática.
+✅ **Hallazgo adicional, no auditado:** los **47** sitios que redirigen a `/spa/login` resolvían a una ruta **hija de `/spa`**, cuyo elemento es el `Layout` protegido: el login se dibujaba **dentro del shell autenticado** —sidebar, header y footer alrededor del formulario— y disparaba la verificación de sesión del propio Layout, que al recibir otro 401 navegaba a `/`. Se movió al nivel superior, donde se dibuja limpio y sin rebote, y se retiró la hija para no dejar dos rutas compitiendo por el mismo path.
 
 🔵 **En curso — estado de error por página.** Se creó `components/ui/query-error.tsx`: dos formas (bloque suelto y `<tr>` con `asRow`, porque los listados renderizan dentro de un `<tbody>` donde no cabe un `<div>`), y trata el **403 aparte** —lo presenta como falta de acceso y sin botón de reintentar, porque no es un fallo sino una respuesta—. Adoptada en servicios, contactos, borradores, usuarios, gastos, inventario, clientes y compras. **Cobertura: 11 de 35 páginas** (antes 3). La rama de error va siempre antes que la de vacío: confundir "roto" con "vacío" es justo el defecto que corrige.
 
@@ -54,7 +54,7 @@ Bien resueltos: `useMoveDeal` (cancelQueries + snapshot + rollback) y la guarda 
 
 ## Navegación
 
-`DealCard.tsx:90-91` enlaza a `/spa/seguimiento?orden=<id>` pero **esa página nunca lee query params** → abre el historial completo sin filtrar, y con recarga dura por ser `<a target="_blank">`. `TotalsBar.tsx:220` ("Guardar e ir a Seguimiento") usa una ruta legacy cuyo redirect **descarta el query string**, además de recargar toda la SPA; el "Cancelar" de `:79,84` recarga igual y se salta la confirmación cuando hay una cotización en edición.
+✅ **Corregido.** `SeguimientoPage` ya siembra su búsqueda desde `?folio=` y `?orden=`, así que el enlace de `DealCard` y el "Guardar e ir a Seguimiento" del cotizador abren filtrados en vez del historial completo. `TotalsBar` navega del lado del cliente a la ruta canónica `/spa/seguimiento` —sus tres salidas recargaban la SPA entera— y la ruta legacy `/seguimiento` pasó a usar `RedirectConQuery`, el helper que ya existía en el router, para no descartar el query string. **Pendiente:** el "Cancelar" sigue saltándose la confirmación cuando hay una cotización en edición.
 
 ## Permisos: UI vs matriz del backend
 

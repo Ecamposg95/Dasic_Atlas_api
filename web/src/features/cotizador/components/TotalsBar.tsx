@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { confirm } from '@/lib/confirm';
 import { Sigma, Percent, Coins, TrendingUp, AlertTriangle, Wallet, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ function fmtMoney(n: number, moneda: string) {
 }
 
 export function TotalsBar() {
+  const navigate = useNavigate();
   const [err, setErr] = useState<string | null>(null);
   // Densidad: por defecto la barra muestra solo Total + Margen + acciones.
   // El usuario expande para ver el desglose completo + conteo de OCs.
@@ -76,12 +78,12 @@ export function TotalsBar() {
 
   async function onCancel() {
     if (editingId != null) {
-      window.location.href = '/seguimiento';
+      navigate('/spa/seguimiento');
       return;
     }
     if (cart.length === 0 || (await confirm({ mensaje: '¿Descartar cotización?', tono: 'danger' }))) {
       useCotizador.getState().reset();
-      window.location.href = '/seguimiento';
+      navigate('/spa/seguimiento');
     }
   }
 
@@ -217,7 +219,9 @@ export function TotalsBar() {
     setErr(null);
     if (!(await validar())) { submittingRef.current = false; return; }
     guardar.mutate(snapshot(), {
-      onSuccess: (data) => { window.location.href = `/seguimiento?folio=${encodeURIComponent(data.folio)}`; },
+      // Ruta canónica y navegación de cliente: `/seguimiento` es legacy y
+      // `window.location.href` recargaba la SPA entera para nada.
+      onSuccess: (data) => { navigate(`/spa/seguimiento?folio=${encodeURIComponent(data.folio)}`); },
       onError: (e: { status?: number; detail?: string }) => {
         if (e.status === 401) { window.location.href = '/spa/login'; return; }
         toast({ kind: 'error', title: 'No se pudo guardar', description: e.detail });

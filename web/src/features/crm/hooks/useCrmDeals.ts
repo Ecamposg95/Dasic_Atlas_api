@@ -11,6 +11,12 @@ export function useCreateDeal() {
     onSuccess: (deal) => {
       void qc.invalidateQueries({ queryKey: ['crm', 'board', deal.pipeline_id] });
       void qc.invalidateQueries({ queryKey: ['crm', 'metricas', deal.pipeline_id] });
+      // La ficha de la empresa tiene su propia pestaña de deals
+      // (`['empresa', id, 'deals']`, en useEmpresa360). Sin esto, crear o
+      // editar un deal desde el Kanban dejaba esa pestaña con la lista vieja.
+      if (deal.cliente_id != null) {
+        void qc.invalidateQueries({ queryKey: ['empresa', deal.cliente_id, 'deals'] });
+      }
     },
     onError: (err: unknown) => {
       const detail = (err as { detail?: unknown })?.detail;
@@ -27,6 +33,12 @@ export function useUpdateDeal() {
     onSuccess: (deal) => {
       void qc.invalidateQueries({ queryKey: ['crm', 'board', deal.pipeline_id] });
       void qc.invalidateQueries({ queryKey: ['crm', 'metricas', deal.pipeline_id] });
+      // La ficha de la empresa tiene su propia pestaña de deals
+      // (`['empresa', id, 'deals']`, en useEmpresa360). Sin esto, crear o
+      // editar un deal desde el Kanban dejaba esa pestaña con la lista vieja.
+      if (deal.cliente_id != null) {
+        void qc.invalidateQueries({ queryKey: ['empresa', deal.cliente_id, 'deals'] });
+      }
     },
     onError: (err: unknown) => {
       const detail = (err as { detail?: unknown })?.detail;
