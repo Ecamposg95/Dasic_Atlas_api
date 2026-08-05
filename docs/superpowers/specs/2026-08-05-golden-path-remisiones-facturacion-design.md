@@ -43,9 +43,21 @@ Exigía staging (no existía), migraciones probadas sobre copia de producción (
 
 De las tres brechas del modo SQLite, **dos quedan cerradas** (locks reales y estrictez de PostgreSQL). La de migraciones queda parcial y se reevaluó a la baja: el despliegue tampoco corre Alembic, así que el camino de esquema que CI ejercita es el de producción (ver `docs/development/testing.md`).
 
-**Ola 1 — en curso.** Cerrada toda la clase de invalidación de caché del top de la auditoría: los ocho bugs #1, #2, #3, #4, #5, #8, #9 y #12, más el #13 (stock al reabrir cotización, cuya causa estaba en el backend). Los bugs #8 y #9 se corrigieron extrayendo `web/src/lib/cobranza-cache.ts`, porque el defecto era la enumeración duplicada de claves en dos módulos que no se conocen.
+**Ola 1 — el top 15 de la auditoría queda cerrado**, salvo media entrada. Se corrigieron los bugs #1 a #6 y #8 a #15, más el bonus. Por familias:
 
-Pendientes de la Ola 1: el alineamiento de permisos de UI (#6, #10, #11) y la re-hidratación del cotizador (#7). El primero **no es mecánico**: la propia auditoría detectó que `permissions.py` declara el módulo `compras` visible para Ventas y Operativo mientras sus 11 endpoints exigen admin o gerencia. O se alinea la matriz o se alinean los endpoints, y esa es una decisión de producto, no un arreglo.
+- **Invalidación de caché** (#1, #2, #3, #4, #5, #8, #9, #12). Los espejo #8 y #9 se corrigieron extrayendo `web/src/lib/cobranza-cache.ts`: el defecto era la enumeración duplicada de claves en dos módulos que no se conocen, y parcharla en ambos lados lo habría reproducido en la siguiente pantalla que lea saldo.
+- **Permisos** (#6, #10, #11 y los falsos negativos de inventario). El backend ya resolvía esto: `/api/auth/me` entrega flags `can_*` y `modulos_visibles`, y su docstring dice que existen para que el frontend esconda UI. Nadie los consumía. Se añadieron `useCan()` y `useModuloVisible()` con las capacidades tipadas.
+- **Datos y captura** (#13 stock al reabrir, #14 input de cantidad, #15 fecha local).
+
+**Tres hallazgos que difieren de lo auditado**, todos verificados en el código:
+
+1. El bug del stock (#13) no estaba en el store: `/detalle-json` no exponía `stock_actual`, así que el frontend no tenía de dónde leerlo.
+2. `listar_productos` excluía a **SUPERADMIN** de ver costos, porque `RolUsuario.ADMIN` es un *alias* de `ADMINISTRADOR` y no un tier que lo incluya. Un superadmin caía al esquema de vendedor teniendo más permisos que un administrador.
+3. El botón de ajustar stock **no tenía gateo alguno**: ventas y operativo lo veían y recibían 403 tras capturar el ajuste. La auditoría lo había clasificado como falso negativo; era falso positivo.
+
+**Lo que queda abierto y por qué.** La otra mitad del #7: un refetch que aterrice mientras el usuario teclea sigue pisando la edición en vuelo. Arreglarlo exige marcar el estado como sucio y decidir **qué gana, el servidor o lo que se está escribiendo** — decisión de producto, sobre la pantalla más crítica del sistema. Y la contradicción de la propia matriz: `permissions.py` declara el módulo `compras` visible para Ventas y Operativo mientras sus 11 endpoints exigen admin o gerencia. O se alinea la matriz o se alinean los endpoints.
+
+**Cobertura de pruebas.** 58 tests de vitest (antes 35) y 80 de pytest. Las tres correcciones con riesgo de regresión silenciosa —concurrencia, fechas y filas expandidas— se verificaron **por mutación**: se rompió el arreglo y se comprobó que la prueba falla. Sin eso una prueba verde no dice nada. La suite fija `TZ=America/Mexico_City` justamente por eso: en UTC, donde corre CI, el bug de fechas y su corrección devuelven lo mismo.
 
 ## 2. Alcance
 
