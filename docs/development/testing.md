@@ -68,6 +68,7 @@ Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). E
 | `test_stock_decimal_guard.py` | Rechazo de cantidades fraccionarias en movimientos de stock |
 | `test_unidades.py` | Catálogo de unidades y snapshot de unidad por partida |
 | `test_postgres_mode.py` | Solo en modo Postgres: que `hashtext`/`pg_advisory_xact_lock` sean reales y que el lock serialice de verdad dos conexiones |
+| `test_remisiones_concurrencia.py` | Solo en modo Postgres: **UAT-05** — dos remisiones que piden el mismo pendiente a la vez (una emite, la otra recibe 400) y cuatro emisiones simultáneas sin repetir folio |
 
 ### Frontend — `web/src/features/cotizador/`
 
@@ -82,7 +83,7 @@ Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). E
 
 Las tres brechas históricas se cierran con el modo Postgres + CI (Ola 0 del plan `docs/superpowers/specs/2026-08-05-golden-path-remisiones-facturacion-design.md`):
 
-- ✅ **Concurrencia real de folios y saldos** — en CI los advisory locks son reales; ya no hay parche. `test_postgres_mode.py` demuestra que el lock serializa dos conexiones; las pruebas de sobre-entrega concurrente (UAT-05) pueden escribirse ya, marcadas `@pytest.mark.postgres`.
+- ✅ **Concurrencia real de folios y saldos** — en CI los advisory locks son reales; ya no hay parche. `test_remisiones_concurrencia.py` cubre **UAT-05**: dos hilos, dos conexiones y una barrera que los cita justo antes del lock de orden, así que ambos leerían el mismo pendiente si el lock no existiera. Se verificó por mutación que la prueba **falla** al quitar el lock (entrega 20 sobre una orden de 10), que es lo único que distingue una prueba de concurrencia de una tautología verde.
 - ✅ **Estrictez de Postgres** — la suite corre contra PostgreSQL 16 en cada push y PR, así que un `GROUP BY` inválido (el caso `f501338`, que tumbó gastos en producción) sale en CI y no en producción. Al migrar la suite ya apareció un caso: dos tests borraban una remisión con SQL crudo y SQLite lo aceptaba porque **no valida foreign keys**; Postgres lo rechazó.
 - ⚠️ **Migraciones — parcialmente**. La cadena de Alembic **no es autocontenida**: la primera revisión (`20260428_01`) hace `ALTER TABLE productos …` sobre tablas que ninguna revisión crea, porque Alembic se adoptó cuando producción ya existía. `alembic upgrade head` sobre una base vacía falla, así que el conftest lo intenta y, si no se aplicó **ninguna** revisión, cae al mismo bootstrap que producción (`create_all` + `_BACKFILL_DDL` + `alembic stamp head`) y lo anuncia al final de la corrida. Si la cadena falla **a media corrida** (una migración nueva rota) no hay red: CI se pone en rojo.
 
@@ -101,7 +102,7 @@ Los dos jobs corren en paralelo. Para reproducir el job de backend en local, exp
 
 Por valor descendente:
 
-0. **Concurrencia real** (`@pytest.mark.postgres`, habilitado por la Ola 0) — dos sesiones emitiendo/entregando contra el mismo pendiente: exactamente una confirma y la otra recibe 409 (UAT-05); dos sesiones generando folio a la vez sin repetir consecutivo (`folio_service.generar_folio` con su `pg_locker` real); dos sesiones aplicando pagos contra el mismo saldo. Van con **dos sesiones/conexiones distintas** (`pg_engine`), nunca con la sesión del fixture `db`.
+0. **Concurrencia de cobranza** — dos sesiones aplicando pagos contra el mismo saldo de `cuentas_por_cobrar`. Es lo que queda del eje de concurrencia: la sobre-entrega y el folio ya están cubiertos en `test_remisiones_concurrencia.py`. Va con **dos conexiones distintas** (`pg_engine`), nunca con la sesión del fixture `db`, y marcado `@pytest.mark.postgres`.
 1. **Totales de venta en el backend** (`app/routers/ventas.py`) — tests espejo de `calc.test.ts` con los mismos números, para garantizar que servidor y cliente calculan idéntico (folios, `tipo_cambio` obligatorio en USD, versionado de recotizaciones).
 2. **Cobranza FIFO** (`app/services/cuentas_por_cobrar.py`) — aplicación de pagos contra las órdenes más antiguas, saldos parciales, sobrepagos, aging.
 3. **`stock_service.aplicar_movimiento`** — que todo movimiento genere fila en `movimientos_stock`, disponible = `stock_actual − reservas activas`, y el ciclo reserva → liberación/consumo.
