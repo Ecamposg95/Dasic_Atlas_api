@@ -32,6 +32,21 @@ Exigía staging (no existía), migraciones probadas sobre copia de producción (
 
 **Decisión aprobada:** la Ola 0 crea staging y CI con PostgreSQL real *antes* de tocar el dominio de cantidades.
 
+## 1.4 Estado de ejecución (actualizado 2026-08-05)
+
+**Ola 0 — completa.**
+
+- Environment `staging` en Railway con base propia. Aislamiento **probado, no asumido**: producción devuelve 192 cotizaciones contra 2 en staging. Queda un paso manual en el panel: apuntar el servicio a la rama `staging` (ya creada y subida) en vez de `main`, porque la API rechaza ese cambio desde fuera del panel. Mientras tanto sirve `railway up --environment staging`.
+- CI en GitHub Actions (`.github/workflows/ci.yml`): `postgres:16` con healthcheck, la suite de backend y el `typecheck` + vitest + build del frontend, en cada push a `main` y en cada PR.
+- `tests/conftest.py` en modo dual. Con `TEST_DATABASE_URL` corre sobre PostgreSQL real **sin parchear** `pg_advisory_xact_lock`/`hashtext`; sin ella conserva el modo SQLite para el desarrollo local. La suite pasa igual en ambos.
+- **UAT-05 verificado por primera vez** (`tests/test_remisiones_concurrencia.py`): dos hilos, dos conexiones y una barrera que los cita justo antes del lock de orden. Comprobado por mutación que la prueba **falla** al quitar el lock — entrega 20 sobre una orden de 10. Segunda prueba: cuatro emisiones simultáneas sin repetir consecutivo de folio.
+
+De las tres brechas del modo SQLite, **dos quedan cerradas** (locks reales y estrictez de PostgreSQL). La de migraciones queda parcial y se reevaluó a la baja: el despliegue tampoco corre Alembic, así que el camino de esquema que CI ejercita es el de producción (ver `docs/development/testing.md`).
+
+**Ola 1 — en curso.** Cerrada toda la clase de invalidación de caché del top de la auditoría: los ocho bugs #1, #2, #3, #4, #5, #8, #9 y #12, más el #13 (stock al reabrir cotización, cuya causa estaba en el backend). Los bugs #8 y #9 se corrigieron extrayendo `web/src/lib/cobranza-cache.ts`, porque el defecto era la enumeración duplicada de claves en dos módulos que no se conocen.
+
+Pendientes de la Ola 1: el alineamiento de permisos de UI (#6, #10, #11) y la re-hidratación del cotizador (#7). El primero **no es mecánico**: la propia auditoría detectó que `permissions.py` declara el módulo `compras` visible para Ventas y Operativo mientras sus 11 endpoints exigen admin o gerencia. O se alinea la matriz o se alinean los endpoints, y esa es una decisión de producto, no un arreglo.
+
 ## 2. Alcance
 
 ### Dentro
