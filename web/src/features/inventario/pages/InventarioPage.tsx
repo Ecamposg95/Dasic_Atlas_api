@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/data-table';
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
-import { useIsAdmin } from '@/lib/permissions';
+import { useIsAdmin, useIsAdminOrGerente } from '@/lib/permissions';
 import { useImportProductos, useProductos } from '../hooks/useProductos';
 import { useMarcas } from '../hooks/useMarcas';
 import { useProveedores } from '../hooks/useProveedores';
@@ -99,7 +99,12 @@ export function InventarioPage() {
   const { data: productos = [], isLoading, isPlaceholderData, error } = useProductos(page, filtroQDebounced);
   const { data: marcas = [] } = useMarcas();
   const { data: proveedores = [] } = useProveedores();
+  // `isAdmin` = superadmin + administrador, que es lo que exige `allow_admin`
+  // (eliminar producto). `puedeVerCosto` cubre además a gerente_comercial,
+  // espejo de a quién le manda costos `listar_productos`, y es también el
+  // conjunto de `allow_admin_asistente`, que es lo que exige ajustar stock.
   const isAdmin = useIsAdmin();
+  const puedeVerCosto = useIsAdminOrGerente();
 
   const qc = useQueryClient();
 
@@ -342,14 +347,14 @@ export function InventarioPage() {
             <th className="px-3 py-2 text-left">Categoría</th>
             <th className="px-3 py-2 text-left">SAT</th>
             <th className="px-3 py-2 text-right">Stock</th>
-            {isAdmin && <th className="px-3 py-2 text-right">Costo</th>}
+            {puedeVerCosto && <th className="px-3 py-2 text-right">Costo</th>}
             <th className="px-3 py-2 text-right">Precio público</th>
             <th className="px-3 py-2 text-right">Acciones</th>
           </tr>
         </DataTableHead>
         <DataTableBody>
           {isLoading && (
-            <DataTableEmpty colSpan={isAdmin ? 10 : 9}>
+            <DataTableEmpty colSpan={puedeVerCosto ? 10 : 9}>
               Cargando inventario…
             </DataTableEmpty>
           )}
@@ -383,7 +388,7 @@ export function InventarioPage() {
                 )}
               </td>
               <td className="px-3 py-2 text-right">{stockBadge(p)}</td>
-              {isAdmin && (
+              {puedeVerCosto && (
                 <td className="px-3 py-2 text-right font-mono text-xs text-foreground">
                   {fmtMoney(p.costo_compra, p.moneda_compra)}
                 </td>
@@ -399,7 +404,10 @@ export function InventarioPage() {
                 >
                   <Pencil className="h-4 w-4 inline" />
                 </button>
-                {!p.es_servicio && (
+                {/* Ajustar stock exige allow_admin_asistente en el backend;
+                    sin este gateo, ventas y operativo veían el botón y
+                    recibían 403 tras capturar el ajuste. */}
+                {!p.es_servicio && puedeVerCosto && (
                   <button
                     onClick={() => setModalAjuste(p)}
                     title="Ajustar stock"

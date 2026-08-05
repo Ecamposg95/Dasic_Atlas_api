@@ -9,7 +9,7 @@ import {
   useCrearCotizacionDesde,
 } from '../hooks/useRemisiones';
 import { useUsuarios } from '@/features/usuarios/hooks/useUsuarios';
-import { useIsAdminOrGerente } from '@/lib/permissions';
+import { useCan, useIsAdminOrGerente } from '@/lib/permissions';
 import { toast } from '@/lib/toast';
 import { confirm } from '@/lib/confirm';
 import { Button } from '@/components/ui/button';
@@ -145,6 +145,12 @@ function DetalleModal({ remisionId, onClose, onEditar, onRecepcion, onCancelar }
   const eliminar = useEliminarBorrador();
   const crearCotizacion = useCrearCotizacionDesde();
   const navigate = useNavigate();
+  // Capacidades resueltas por el backend (`/api/auth/me`), no comparaciones de
+  // rol a mano: estas tres acciones se ofrecían a todos y el backend las
+  // rechazaba con 403 — Ventas no puede cancelar y Operativo solo recibe.
+  const puedeRecibir = useCan('recibir_remision');
+  const puedeCancelar = useCan('cancelar_remision');
+  const puedeConvertir = useCan('remision_a_cotizacion');
 
   async function onEliminar() {
     if (!data) return;
@@ -295,12 +301,13 @@ function DetalleModal({ remisionId, onClose, onEditar, onRecepcion, onCancelar }
             )}
             {data && (data.estado === 'emitida' || data.estado === 'recibida') && (
               <>
-                {data.estado === 'emitida' && (
+                {data.estado === 'emitida' && puedeRecibir && (
                   <Button size="sm" variant="outline" onClick={() => onRecepcion(data.id, data.folio)}>
                     <CheckSquare className="h-3.5 w-3.5 mr-1" />
                     Registrar recepción
                   </Button>
                 )}
+                {puedeConvertir && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -311,6 +318,8 @@ function DetalleModal({ remisionId, onClose, onEditar, onRecepcion, onCancelar }
                   <Repeat className="h-3.5 w-3.5 mr-1" />
                   {crearCotizacion.isPending ? 'Creando…' : 'Crear cotización'}
                 </Button>
+                )}
+                {puedeCancelar && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -320,6 +329,7 @@ function DetalleModal({ remisionId, onClose, onEditar, onRecepcion, onCancelar }
                   <Ban className="h-3.5 w-3.5 mr-1" />
                   Cancelar
                 </Button>
+                )}
               </>
             )}
             {data && (
@@ -357,6 +367,9 @@ interface RowProps {
 }
 
 function RemisionRow({ item, onVerDetalle, onRecepcion, onEditar }: RowProps) {
+  // Mismo criterio que el modal de detalle: solo quien puede recibir ve el
+  // botón. Antes lo veía cualquiera y el backend respondía 403.
+  const puedeRecibir = useCan('recibir_remision');
   return (
     <DataTableRow>
       <td className="px-4 py-3 font-mono text-xs text-accent-glow">{item.folio ?? '—'}</td>
@@ -419,7 +432,7 @@ function RemisionRow({ item, onVerDetalle, onRecepcion, onEditar }: RowProps) {
             <FileDown className="h-3.5 w-3.5 mr-1" />
             Word
           </Button>
-          {item.estado === 'emitida' && (
+          {item.estado === 'emitida' && puedeRecibir && (
             <Button
               size="sm"
               variant="outline"

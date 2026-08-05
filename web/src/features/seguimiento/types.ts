@@ -23,7 +23,10 @@ export interface RecotizarResult {
   folio: string;
 }
 
+// Forma REAL de POST /api/ventas/{id}/convertir-a-venta. El tipo declaraba
+// `{id, folio_venta}` y el backend nunca mandó ninguno de los dos, así que el
+// toast de confirmación imprimía "Convertida a venta: undefined".
 export interface ConvertirResult {
-  id: number;
-  folio_venta: string;
+  mensaje: string;
+  nuevo_folio: string;
 }

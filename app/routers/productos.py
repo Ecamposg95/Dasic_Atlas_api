@@ -275,7 +275,15 @@ def listar_productos(
         .all()
     )
 
-    if current_user.rol in [models.RolUsuario.ADMIN, models.RolUsuario.ASISTENTE]:
+    # SUPERADMIN va explícito: `RolUsuario.ADMIN` es alias de ADMINISTRADOR, no
+    # un tier que lo incluya, así que sin nombrarlo el superadmin caía al
+    # esquema de vendedor y no veía costos — teniendo más permisos que un
+    # administrador, que sí los ve.
+    if current_user.rol in [
+        models.RolUsuario.SUPERADMIN,
+        models.RolUsuario.ADMINISTRADOR,
+        models.RolUsuario.GERENTE_COMERCIAL,
+    ]:
         return [schemas.ProductoResponseAdmin.model_validate(p) for p in productos]
     return [schemas.ProductoResponseVendedor.model_validate(p) for p in productos]
 

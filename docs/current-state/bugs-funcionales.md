@@ -11,18 +11,18 @@
 | ~~3~~ | ~~ALTO~~ | `cotizador/hooks/useSugerirOC.ts` | ✅ **Corregido** (Ola 1). Invalidaba `['compras']`, key inexistente; la real es `['ordenesCompra']` → las OC generadas no aparecían |
 | ~~4~~ | ~~ALTO~~ | `compras/hooks/useRecibirParcial.ts` | ✅ **Corregido** (Ola 1). Recibir OC mueve stock y no invalidaba `['productos']`/`['cardex']` |
 | ~~5~~ | ~~ALTO~~ | `fx/pages/FxPage.tsx` | ✅ **Corregido** (Ola 1). Override/refresh de TC no invalidaba `['fx','usd-mxn']` → el cotizador sembraba el TC viejo |
-| 6 | ALTO | `components/layout/Sidebar.tsx:20-21` | `modulos_visibles` ignorado → menús que el backend rechaza con 403 |
+| ~~6~~ | ~~ALTO~~ | `components/layout/Sidebar.tsx` | ✅ **Corregido** (Ola 1). `modulos_visibles` se ignoraba → menús que el backend rechaza con 403. Los ítems sin clasificar en la matriz siguen visibles a propósito: cubre 11 de 21 módulos |
 | 7 | ALTO | `cotizador/pages/CotizadorPage.tsx:210-212` | Cada refetch re-hidrata el carrito: pisa ediciones en vuelo y colapsa filas expandidas al guardar |
 | ~~8~~ | ~~ALTO~~ | `clientes/hooks/useEmpresaDetalle.ts` | ✅ **Corregido** (Ola 1). Registrar pago no invalidaba `['empresa',id,'resumen']` → saldo viejo en la pestaña contigua |
 | ~~9~~ | ~~ALTO~~ | `cxc/hooks/usePagoDistribuido.ts` | ✅ **Corregido** (Ola 1). Espejo del anterior. Ambos usan ahora el helper compartido `lib/cobranza-cache.ts`, porque el bug era la enumeración duplicada de claves |
-| 10 | ALTO | `remisiones/pages/RemisionesPage.tsx:421,305,314` | Recibir/Cancelar/Crear cotización visibles para roles que el backend rechaza |
-| 11 | ALTO | `servicios/pages/ServiciosPage.tsx:71-79` | Comparaciones de rol sin `'superadmin'` → el superadmin no ve crear/editar/eliminar |
+| ~~10~~ | ~~ALTO~~ | `remisiones/pages/RemisionesPage.tsx` | ✅ **Corregido** (Ola 1). Recibir/Cancelar/Crear cotización eran visibles para roles que el backend rechaza. Ahora leen los flags `can_*` que `/api/auth/me` ya entregaba |
+| ~~11~~ | ~~ALTO~~ | `servicios/pages/ServiciosPage.tsx` | ✅ **Corregido** (Ola 1). Comparaciones de rol a mano sin `'superadmin'`. Sustituidas por los helpers centrales, espejo de las guardas del router |
 | ~~12~~ | ~~ALTO~~ | `borradores/pages/BorradoresPage.tsx` | ✅ **Corregido** (Ola 1). Dos query keys para el mismo endpoint → descartar en una pantalla dejaba fantasmas en la otra. Se invalidan ambas; unificar los dos hooks queda pendiente |
 | ~~13~~ | ~~MEDIO~~ | `cotizador/store.ts` + `routers/ventas.py` | ✅ **Corregido** (Ola 1). `max: 0` al re-hidratar → toda cotización guardada mostraba "Sin stock · OC". La causa estaba en el backend: `/detalle-json` no exponía `stock_actual` |
 | 14 | MEDIO | `components/document/DocumentRow.tsx:186-196,479-487` | El input de cantidad se autocorrige en cada tecla; no se puede vaciar para reteclear |
 | ~~15~~ | ~~MEDIO~~ | `cotizador/components/HeaderCotizacion.tsx`, `fx/pages/FxPage.tsx` | ✅ **Corregido** (Ola 1). `toISOString()` usaba UTC: tras las 18:00 CDMX los documentos nacían fechados un día adelante. Helper `lib/fechas.ts` con 9 pruebas; la suite fija `TZ=America/Mexico_City` para que sean falsificables en CI |
 
-**Bonus trivial:** `seguimiento/types.ts:28` — el toast de convertir a venta imprime `undefined` porque el backend devuelve `nuevo_folio`, no `folio_venta`.
+~~**Bonus trivial:** `seguimiento/types.ts:28` — el toast de convertir a venta imprime `undefined`.~~ ✅ **Corregido** (Ola 1): el tipo declaraba `{id, folio_venta}` y el backend devuelve `{mensaje, nuevo_folio}`.
 
 ## Invalidación de caché — mapa completo
 
@@ -54,7 +54,7 @@ Bien resueltos: `useMoveDeal` (cancelQueries + snapshot + rollback) y la guarda 
 
 Falsos positivos (se muestra y el backend rechaza): menú completo para Ventas y Operativo (#6), acciones de remisión (#10).
 
-Falsos negativos (se oculta y el backend permitiría): superadmin sin acciones en servicios (#11); en `InventarioPage.tsx:386,418` el costo y el ajuste de stock se gatean con `useIsAdmin()` cuando el backend los permite a gerencia.
+~~Falsos negativos~~ ✅ **Corregidos** (Ola 1). Servicios (#11) e Inventario. En inventario el hallazgo real difería del reportado: la columna de costo desalineaba **en ambos sentidos** —el backend excluía a `SUPERADMIN` de ver costos, porque `RolUsuario.ADMIN` es alias de `ADMINISTRADOR` y no un tier que lo incluya, mientras la UI se la escondía a gerencia— y el botón de **ajustar stock no tenía gateo alguno**, así que ventas y operativo lo veían y recibían 403. Corregidos los tres puntos, backend incluido.
 
 **Contradicción de la propia matriz:** `permissions.py:249-257` declara el módulo `compras` visible para Ventas y Operativo, pero los 11 endpoints de compras exigen admin o gerencia. O se alinea la matriz, o se alinean los endpoints.
 

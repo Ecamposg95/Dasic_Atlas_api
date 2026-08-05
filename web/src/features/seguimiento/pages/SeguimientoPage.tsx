@@ -273,7 +273,7 @@ export function SeguimientoPage() {
   const convertirMutation = useMutation<ConvertirResult, ApiError, number>({
     mutationFn: (id) => api.post<ConvertirResult>(`/api/ventas/${id}/convertir`),
     onSuccess: (data) => {
-      toast({ kind: 'success', title: `Convertida a venta: ${data.folio_venta}` });
+      toast({ kind: 'success', title: `Convertida a venta: ${data.nuevo_folio}` });
       qc.invalidateQueries({ queryKey: ['ventas'] });
     },
     onError: (err) => {

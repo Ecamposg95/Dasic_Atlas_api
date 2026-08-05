@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { useIsSuperadmin } from '@/lib/permissions';
+import { useIsSuperadmin, useModuloVisible } from '@/lib/permissions';
 import { branding } from '@/lib/branding';
 import { SECTIONS } from './nav-config';
 
@@ -18,7 +18,12 @@ export function Sidebar({
   onToggleCollapsed?: () => void;
 }) {
   const isSuper = useIsSuperadmin();
-  const secciones = isSuper ? SECTIONS : SECTIONS.filter((s) => s.title !== 'Plataforma');
+  const moduloVisible = useModuloVisible();
+  // Se filtra por `modulos_visibles` del backend y se descartan las secciones
+  // que quedan vacías, para no dejar un encabezado sin ítems debajo.
+  const secciones = (isSuper ? SECTIONS : SECTIONS.filter((s) => s.title !== 'Plataforma'))
+    .map((s) => ({ ...s, items: s.items.filter((it) => moduloVisible(it.modulo)) }))
+    .filter((s) => s.items.length > 0);
 
   // Cerrar el drawer con Escape (solo relevante en mobile; en desktop es estático).
   useEffect(() => {

@@ -17,7 +17,7 @@ import {
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { confirm } from '@/lib/confirm';
-import { useAuth } from '@/stores/auth';
+import { useIsAdmin, useIsAdminOrGerente } from '@/lib/permissions';
 import { useServicios, SERVICIOS_PAGE_SIZE } from '../hooks/useServicios';
 import { useCategoriasServicio } from '../hooks/useCategoriasServicio';
 import { ServicioFormModal } from '../components/ServicioFormModal';
@@ -31,7 +31,6 @@ function fmtCosto(moneda: string, valor: number | string) {
 }
 
 export function ServiciosPage() {
-  const user = useAuth((s) => s.user);
   const qc = useQueryClient();
 
   const [filtroQ, setFiltroQ] = useState('');
@@ -68,15 +67,15 @@ export function ServiciosPage() {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / SERVICIOS_PAGE_SIZE));
 
-  const isAdminOrAsistente =
-    user?.rol === 'administrador' ||
-    user?.rol === 'gerente_comercial' ||
-    // legacy aliases
-    user?.rol === 'admin' ||
-    user?.rol === 'asistente';
-
-  const canDelete =
-    user?.rol === 'administrador' || user?.rol === 'admin';
+  // Espejo exacto de las guardas del backend (`app/routers/servicios.py`):
+  // crear y editar exigen `allow_admin_asistente` (superadmin, administrador,
+  // gerente_comercial) y eliminar exige `allow_admin` (superadmin,
+  // administrador). Se usan los helpers centrales en vez de comparar el rol a
+  // mano, que es como se coló el bug: ninguna de las dos listas incluía
+  // 'superadmin', así que el superadmin no veía ni crear, ni editar, ni
+  // eliminar servicios que el backend sí le permite.
+  const isAdminOrAsistente = useIsAdminOrGerente();
+  const canDelete = useIsAdmin();
 
   const crearMut = useMutation<Servicio, ApiErr, ServicioCreate>({
     mutationFn: (body) => api.post<Servicio>('/api/servicios/', body),
