@@ -42,7 +42,16 @@ python scripts/bootstrap_tenant.py
 uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
 ```
 
-There is **no test suite** wired up. Validation has been done with `python -m py_compile` and manual checks. If you add tests, set up the harness first.
+### Tests (exist since 2026-08-03)
+
+```bash
+pip install -r requirements-dev.txt && pytest -q   # backend: folios, formato, remisiones (domain), stock
+cd web && npm run test                             # vitest: motor de cálculo del cotizador + store
+cd web && npm run typecheck                        # tsc estricto
+python3 -m compileall app                          # sintaxis backend
+```
+
+Caveats: pytest corre sobre **SQLite in-memory con shims** de las funciones Postgres-only (`pg_advisory_xact_lock`, `hashtext`) — no cubre locks reales, tipos ni el `GROUP BY` estricto de PG (ver `docs/development/testing.md`). No hay CI: nada corre solo en push.
 
 ## Architecture
 
@@ -51,23 +60,21 @@ There is **no test suite** wired up. Validation has been done with `python -m py
 1. `configure_logging()` then `get_settings()` (cached, validates `DATABASE_URL` and `SECRET_KEY`).
 2. `lifespan` runs at startup: `Base.metadata.create_all()` (transitional — Alembic is the long-term path), then `run_all_seeds()`:
    - `run_backfill_ddl` — idempotent `ALTER TABLE … ADD COLUMN IF NOT EXISTS` for legacy schemas pre-Alembic. **Treat this list as a migration shim, not as a permanent home.** New schema changes belong in Alembic.
-   - `seed_base_tenant` — guarantees one `Organization` ("DASIC Industrial") + one HQ `Branch`.
-   - `seed_super_admin` — creates `admin@dasic.com / admin123` if no users exist.
-   - `ensure_memberships` + `backfill_organization_ids` — backfills org scope on legacy rows.
-3. Routers mounted under `/api/*`; SSR HTML routes (login, dashboard, cotizador, seguimiento, inventario, clientes, compras, gastos, reportes, usuarios) are registered via `_protected_view` factory which decodes the cookie JWT and redirects unauthenticated users to `/`.
+   - `seed_super_admin` / `seed_dedicated_superadmin` / `promote_superadmin_from_env` — cuenta inicial (ver `SUPERADMIN_*`).
+   - `seed_marcas`, `seed_sat_catalogos_pequenos`, `seed_sat_clave_unidad`, `seed_contactos_principal`, `seed_default_pipeline`, `seed_unidades`.
+3. Routers mounted under `/api/*`. `_SSR_ROUTES` está **vacía**: las rutas `/spa/*` devuelven el `index.html` del build; Jinja solo queda como fallback del login si falta `app/static/dist/`.
 
-### Multi-tenancy (non-negotiable)
+### Mono-tenant (realidad actual)
 
-- Every business table carries `organization_id` (UUID stored as `VARCHAR(36)`).
-- `app/dependencies.py::get_current_active_organization` resolves the tenant from `X-Organization-ID` header or the JWT `org_id` claim, validates membership in `UserOrganization`, and pushes it into a `ContextVar` via `app/core/context.py` so service code can read it without threading args.
-- **Every query touching a business table must filter by `organization_id`.** No exceptions. Endpoints that return cross-tenant data are bugs.
+- El esquema multi-tenant fue **retirado** (`migrations/versions/20260429_01_drop_multitenant.py`). No existen `Organization`, `Branch`, `UserOrganization` ni `app/models/nucleus.py`.
+- `organization_id` sobrevive como columna inerte en 5 tablas (`pipelines`, `pipeline_stages`, `deals`, `deal_actividades`, `servicios`). **No asumas aislamiento por organización.**
+- El camino SaaS vigente es de configuración: branding por tenant en `web/src/lib/branding.ts` (`VITE_TENANT`) y config en runtime vía `platform_config` / `config_service`. Re-tenantizar la DB es un proyecto aparte, no una regla activa.
 
 ### Domain layout
 
 `app/models/` is partitioned by domain — do not create catch-all files:
 
 - `enums.py` — `RolUsuario`, `EstatusOrden`, `TipoMovimiento`, `BranchType`
-- `nucleus.py` — `Organization`, `Branch`, `UserOrganization` (multi-tenant core)
 - `users.py` — `Usuario` (note: tolerates legacy enum aliases when reading from existing DBs)
 - `catalog.py` — `Producto`, `Promocion` (cost-first: `costo_compra` + `moneda_compra`, `precio_publico` is no longer required)
 - `clients.py` — `Cliente`, `Proveedor`
@@ -75,8 +82,26 @@ There is **no test suite** wired up. Validation has been done with `python -m py
 - `purchases.py` — `OrdenCompra`, `DetalleCompra` (linked to a quote via `cotizacion_id`)
 - `finance.py` — `TransaccionCliente`, `TransaccionProveedor`
 - `quote_events.py` — `QuoteEvent` (audit log per quote: email, WhatsApp, AI suggestions)
+- `remisiones.py` — `Remision`, `DetalleRemision` (estados BORRADOR/EMITIDA/RECIBIDA/CANCELADA, cantidades `Numeric(12,3)`)
+- `crm.py` — `Pipeline`, `PipelineStage`, `Deal`, `DealActividad`
+- `instalaciones.py` — `Planta`, `ActivoInstalado` (base instalada del cliente)
+- `unidades.py` — `UnidadMedida` (catálogo comercial administrable)
 
-`app/schemas/` mirrors this domain split for Pydantic. `app/routers/` exposes endpoints; routers are intentionally thick today (pending extraction into a repository/service layer — see `context/02_REPO_CURRENT_STATE.md`).
+`app/schemas/` mirrors this domain split for Pydantic.
+
+### Patrón de módulo: `app/domains/<módulo>/` (referencia para código nuevo)
+
+Los routers históricos son gordos (`ventas.py` ~2.4k líneas mezcla dominio, persistencia y presentación). **Todo módulo nuevo o extraído sigue el patrón de `app/domains/remisiones/`:**
+
+```
+app/domains/<módulo>/
+├── router.py        # HTTP: validación de entrada, permisos (require), códigos de estado
+├── service.py       # Reglas de negocio y transacciones
+├── repository.py    # Consultas y agregados
+├── schemas.py       # Pydantic del módulo
+├── documents.py     # Generación documental (si aplica)
+└── templates/       # Plantillas Jinja en archivo, nunca HTML inline en el router
+```
 
 ### Quote → folio → OC flow
 
@@ -84,17 +109,25 @@ There is **no test suite** wired up. Validation has been done with `python -m py
 - A quote (`EstatusOrden.COTIZACION`) becomes a sales order; `app/routers/compras.py` exposes `GET /api/compras/cotizacion/{quote_id}/borrador` to preview an OC without persisting it.
 - Pricing model is **cost + utility margin**, not list price minus discount. Quote currency may differ from purchase currency; `tipo_cambio` is required when `moneda == "USD"`.
 
-### RBAC (transitional)
+### RBAC
 
-Canonical roles in `RolUsuario`: `ADMINISTRADOR`, `GERENTE_COMERCIAL`, `VENTAS`. Legacy aliases (`ADMIN`, `ASISTENTE`, `VENDEDOR`) are still accepted when reading existing rows. Authorization helpers live in `app/security/jwt.py` (`allow_admin`, `allow_all_staff`, etc.). Real tenant-aware enforcement using `UserOrganization` is **pending** — current checks are role-string only.
+Roles en `RolUsuario`: `SUPERADMIN`, `ADMINISTRADOR`, `GERENTE_COMERCIAL`, `VENTAS`, `OPERATIVO` (+ aliases legacy tolerados al leer).
+
+- **Mecanismo preferido (código nuevo):** matriz declarativa en `app/security/permissions.py` — `can(user, action, resource)` / `require(...)` con variantes `:own` y `scope_query_by_owner()`. Es lo que usa `app/domains/remisiones/`.
+- **Mecanismo histórico:** helpers rol-string en `app/security/jwt.py` (`allow_admin`, `allow_all_staff`, `allow_admin_asistente`) que aún usan la mayoría de routers. Al tocar un router, migrarlo a la matriz es mejora bienvenida; no lo mezcles con cambios funcionales grandes.
+- Enforcement por tenant: **no aplica** (mono-tenant).
 
 ## Conventions and rules
 
-- **Multi-tenant always.** Every business query filters by `organization_id`. New tables get an `organization_id` column.
+- **Módulos nuevos usan `app/domains/<x>/`** (router/service/repository), no un router gordo más.
 - **Alembic for schema changes.** Add a revision under `migrations/versions/` for any `app/models/` edit. Use `_BACKFILL_DDL` in `app/db/seeds.py` only as a transitional shim — new work goes into Alembic.
-- **SPA only (post-2026-05-22).** Toda nueva feature de UI vive en `/web/src/features/<feature>/`. NO crear `.html` nuevos en `app/templates/`. Patrón: `types.ts` (curado del schema), `hooks/use<X>.ts` (TanStack Query), `pages/<X>Page.tsx`, `components/<X>FormModal.tsx` para CRUDs. Primitivas en `@/components/ui/`. Cookie auth se preserva — el wrapper en `@/lib/api` ya hace `credentials:'include'`. Build con `cd web && npm run build` antes de push a producción (Railway lo hace automático via nixpacks).
+- **SPA only (post-2026-05-22).** Toda nueva feature de UI vive en `/web/src/features/<feature>/`. NO crear `.html` nuevos en `app/templates/`. Patrón: `types.ts` (curado del schema), `hooks/use<X>.ts` (TanStack Query), `pages/<X>Page.tsx`, `components/<X>FormModal.tsx` para CRUDs. Primitivas en `@/components/ui/`. Cookie auth se preserva — el wrapper en `@/lib/api` ya hace `credentials:'include'`. **Build obligatorio antes de cada push:** `cd web && npm run build` y commitear `app/static/dist/`. El deploy de Railway **NO compila la SPA** (solo instala dependencias Python): el `dist/` commiteado ES el frontend de producción. Si olvidas el build, produces un deploy con el frontend viejo.
 - **Folios, totals, stock movements are server-side.** Never compute folios in the frontend. Recompute subtotal/IVA/total in the backend on save. Stock changes only via `MovimientoStock` rows.
-- **Cookie auth.** SSR routes read the JWT from the `access_token` cookie; API routes accept `Authorization: Bearer …` or the same cookie. Do not move auth client-side.
+- **Cookie auth.** El JWT viaja en la cookie HttpOnly `access_token`; la API acepta `Authorization: Bearer …` o la cookie. No mover auth al cliente.
+- **Cantidades en documentos:** usar `app/services/formato.py::fmt_cantidad` (máx 2 decimales, sin ceros colgantes) — obligatorio desde que `cantidad` es `Numeric(12,3)`.
+- **Folios:** generar con `app/services/folio_service.py::generar_folio` (advisory lock + `MAX(folio)` + regex), nunca reimplementar el patrón.
+- **Tipo de cambio direccional:** USD→MXN usa `DOF + tolerancia`; MXN→USD usa `DOF − tolerancia` (protege a DASIC en ambas direcciones). Implementado en espejo: `web/src/features/cotizador/lib/calc.ts::resolveDirectionalTcs` y `app/routers/ventas.py::_resolve_directional_tcs` — si tocas uno, toca el otro.
+- **Design system:** tokens semánticos siempre (`bg-card`, `text-foreground`, `border-border`, `accent-glow`…), cero colores crudos. Página nueva = `PageHeader`; formularios = `FormField` + `<form onSubmit>` con `type="button"` en los botones que no envían.
 - **DB URL normalization.** `app/core/config.py::normalize_database_url` rewrites `postgres://` and `postgresql://` to `postgresql+psycopg://`. Don't hand-craft URLs that bypass it.
 - **Required env vars:** `DATABASE_URL`, `SECRET_KEY`. Optional: `ACCESS_TOKEN_EXPIRE_MINUTES`, `TOKEN_COOKIE_NAME`, `COOKIE_SECURE`, `ALLOWED_ORIGINS`, `SMTP_*`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `BANXICO_TOKEN`. Settings are validated at boot — the app refuses to start with a missing `DATABASE_URL` or `SECRET_KEY`.
 - **Tipo de cambio (USD/MXN):** `app/services/fx_service.py` resuelve TC del día con cache en `tipos_cambio_dia`. Fuente primaria: Banxico SIE serie SF63528 (TC FIX) — requiere `BANXICO_TOKEN` (registro gratuito en https://www.banxico.org.mx/SieAPIRest/service/v1/token/registro). Fallback público sin token: `open.er-api.com`. Endpoint `GET /api/fx/usd-mxn?fecha=YYYY-MM-DD` y `POST /api/fx/refresh` (admin).
