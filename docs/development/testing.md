@@ -1,21 +1,56 @@
 # Testing
 
-El repo tiene **dos suites**: pytest para el backend y Vitest para la lógica pura del frontend. Ninguna corre automáticamente — **no hay CI**; se ejecutan a mano antes de cada push.
+El repo tiene **dos suites**: pytest para el backend y Vitest para la lógica pura del frontend. Ambas corren en **CI** (`.github/workflows/ci.yml`, en cada push a `main` y en cada pull request) y se pueden correr a mano antes de cada push.
 
 ## Cómo correr
 
 ```bash
 # Backend  (instalar dependencias de desarrollo una sola vez)
 pip install -r requirements-dev.txt
+pytest -q                       # modo SQLite (rápido, sin infraestructura)
+
+# Backend contra PostgreSQL real (lo mismo que hace CI)
+docker run -d --name atlas-test-pg -p 5433:5432 \
+  -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=atlas_test postgres:16
+export TEST_DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/atlas_test
 pytest -q
 
 # Frontend
 cd web
 npm run test          # corrida única
 npm run test:watch    # modo watch
+npm run typecheck     # tsc -b --noEmit (CI también corre `npm run build`)
 ```
 
-Config: `pytest.ini` (`testpaths = tests`) y `web/vitest.config.ts` (entorno `node` — sin jsdom, no se testean componentes React todavía; alias `@` espejado de `vite.config.ts`; patrón `src/**/*.test.ts`). Los tests del frontend viven junto al código que cubren.
+Config: `pytest.ini` (`testpaths = tests`, marcador `postgres`) y `web/vitest.config.ts` (entorno `node` — sin jsdom, no se testean componentes React todavía; alias `@` espejado de `vite.config.ts`; patrón `src/**/*.test.ts`). Los tests del frontend viven junto al código que cubren.
+
+## Modo dual del backend: SQLite o PostgreSQL
+
+`tests/conftest.py` elige el motor según **`TEST_DATABASE_URL`**:
+
+| | Sin `TEST_DATABASE_URL` (default local) | Con `TEST_DATABASE_URL` (CI) |
+|---|---|---|
+| Motor | SQLite en memoria, base nueva por test | La base PostgreSQL que apuntes |
+| Esquema | `create_all()` | `alembic upgrade head`, con fallback documentado abajo |
+| `pg_advisory_xact_lock` / `hashtext` | parcheadas a no-op | **funciones reales** — sin parches |
+| Aislamiento entre tests | base nueva cada vez | `DELETE` de todas las tablas + reinicio de secuencias |
+| Tests `@pytest.mark.postgres` | omitidos con razón explícita | se ejecutan |
+| Duración | ~4 s | ~6 s |
+
+En modo Postgres, `DATABASE_URL` se reapunta a la base de pruebas antes de importar `app`, así que el engine de `app.db.session` (y cualquier `SessionLocal()` suelto del código de producción, p. ej. en `ventas.py`) hablan con la misma base efímera.
+
+**Por qué se limpia con `DELETE` y no envolviendo cada test en una transacción con rollback.** El rollback es más elegante, pero rompería justo lo que este modo existe para probar: los `COMMIT` tienen que ser reales porque (a) `pg_advisory_xact_lock` se libera al terminar la transacción, así que una transacción-envoltorio falsearía la vida del lock; (b) las pruebas de concurrencia abren una **segunda conexión**, que no vería nada sembrado dentro de una transacción sin confirmar; y (c) parte del código de producción abre sus propias sesiones. El `DELETE` de las ~47 tablas en una sola transacción cuesta ~6 ms — se difieren las FKs para que el ciclo `ordenes_venta ↔ remisiones` no imponga un orden imposible, y se reinician las secuencias para que los ids arranquen en 1 como en SQLite. (Un `TRUNCATE ... CASCADE` equivalente cuesta ~0.9 s por test: un minuto por corrida.)
+
+**Salvaguarda:** la suite rechaza una `TEST_DATABASE_URL` cuya base no tenga `test` en el nombre (borra el esquema y vacía todas las tablas). Para saltarla, `TEST_DATABASE_ALLOW_ANY=1`. Para reutilizar el esquema entre corridas y ahorrar el arranque, `TEST_DATABASE_RESET=0`.
+
+### El marcador `postgres`
+
+```python
+@pytest.mark.postgres
+def test_dos_sesiones_no_consumen_el_mismo_saldo(pg_engine): ...
+```
+
+Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). Es donde van las pruebas de concurrencia de la Ola 0: cualquier test que abra **dos conexiones**, dependa de **advisory locks**, de DDL de migraciones o de la estrictez SQL de Postgres. Fixtures disponibles: `pg_engine` (engine de sesión) además de los de siempre (`db`, `usuario`, `client_as`).
 
 ## Qué cubre hoy
 
@@ -32,6 +67,7 @@ Config: `pytest.ini` (`testpaths = tests`) y `web/vitest.config.ts` (entorno `no
 | `test_formato.py` | `fmt_cantidad`: enteros sin decimales, máximo 2, redondeo de display |
 | `test_stock_decimal_guard.py` | Rechazo de cantidades fraccionarias en movimientos de stock |
 | `test_unidades.py` | Catálogo de unidades y snapshot de unidad por partida |
+| `test_postgres_mode.py` | Solo en modo Postgres: que `hashtext`/`pg_advisory_xact_lock` sean reales y que el lock serialice de verdad dos conexiones |
 
 ### Frontend — `web/src/features/cotizador/`
 
@@ -42,20 +78,30 @@ Config: `pytest.ini` (`testpaths = tests`) y `web/vitest.config.ts` (entorno `no
 
 > **Modelo de TC vigente (2026-08-04):** USD→MXN usa `DOF + tolerancia`; MXN→USD usa `DOF − tolerancia` — la tolerancia protege a DASIC de la volatilidad en ambas direcciones. Se resuelve en espejo en `calc.ts::resolveDirectionalTcs` y `ventas.py::_resolve_directional_tcs`: al tocar uno hay que tocar el otro y actualizar estos tests. (El "modelo unificado" de una sola tasa, vigente entre junio y agosto de 2026, quedó sustituido.)
 
-## Limitación importante: SQLite en el backend
+## Estado de las brechas del modo SQLite
 
-`tests/conftest.py` levanta la suite sobre **SQLite en memoria** y parchea como no-op las funciones exclusivas de Postgres (`pg_advisory_xact_lock`, `hashtext`). Es rápido y no necesita infraestructura, pero **contradice la regla del repo de usar solo PostgreSQL** y deja fuera justo lo que más duele:
+Las tres brechas históricas se cierran con el modo Postgres + CI (Ola 0 del plan `docs/superpowers/specs/2026-08-05-golden-path-remisiones-facturacion-design.md`):
 
-- **Concurrencia real de folios** — los advisory locks son no-op en las pruebas: la garantía de consecutivo irrepetible bajo carga no se verifica.
-- **Migraciones** — el esquema se crea con `create_all()`; Alembic y el `_BACKFILL_DDL` nunca se ejecutan, así que el DDL específico (`ALTER COLUMN … TYPE NUMERIC`, defaults de servidor) queda sin probar.
-- **Estrictez de Postgres** — un `GROUP BY` que SQLite acepta y Postgres rechaza llegó a producción por esta brecha (`f501338`: el total por moneda tumbó el módulo de gastos completo).
+- ✅ **Concurrencia real de folios y saldos** — en CI los advisory locks son reales; ya no hay parche. `test_postgres_mode.py` demuestra que el lock serializa dos conexiones; las pruebas de sobre-entrega concurrente (UAT-05) pueden escribirse ya, marcadas `@pytest.mark.postgres`.
+- ✅ **Estrictez de Postgres** — la suite corre contra PostgreSQL 16 en cada push y PR, así que un `GROUP BY` inválido (el caso `f501338`, que tumbó gastos en producción) sale en CI y no en producción. Al migrar la suite ya apareció un caso: dos tests borraban una remisión con SQL crudo y SQLite lo aceptaba porque **no valida foreign keys**; Postgres lo rechazó.
+- ⚠️ **Migraciones — parcialmente**. La cadena de Alembic **no es autocontenida**: la primera revisión (`20260428_01`) hace `ALTER TABLE productos …` sobre tablas que ninguna revisión crea, porque Alembic se adoptó cuando producción ya existía. `alembic upgrade head` sobre una base vacía falla, así que el conftest lo intenta y, si no se aplicó **ninguna** revisión, cae al mismo bootstrap que producción (`create_all` + `_BACKFILL_DDL` + `alembic stamp head`) y lo anuncia al final de la corrida. Si la cadena falla **a media corrida** (una migración nueva rota) no hay red: CI se pone en rojo.
 
-**Siguiente paso recomendado:** contenedor de servicio `postgres:16` en CI, base efímera por sesión y `alembic upgrade head` antes de la suite. Cierra las tres brechas de una vez y habilita correr los tests en cada push.
+  **Pendiente para cerrarla del todo:** escribir la revisión base que crea el esquema desde cero. Con eso el fallback deja de dispararse solo y CI pasa a verificar la cadena completa.
+
+## CI
+
+`.github/workflows/ci.yml` — dispara en push a `main` y en cada pull request; solo valida, **no despliega** (Railway autodespliega desde `main` por su cuenta).
+
+- **Job `backend`** — servicio `postgres:16` con healthcheck, Python de `runtime.txt`, caché de pip, `pip install -r requirements-dev.txt`, `TEST_DATABASE_URL` apuntando a la base efímera `atlas_test` y `pytest -q`.
+- **Job `frontend`** — Node 22, caché de npm, `npm ci && npm run typecheck && npm run test && npm run build`.
+
+Los dos jobs corren en paralelo. Para reproducir el job de backend en local, exporta la misma `TEST_DATABASE_URL` contra un `postgres:16` en docker (ver "Cómo correr").
 
 ## Qué falta cubrir
 
 Por valor descendente:
 
+0. **Concurrencia real** (`@pytest.mark.postgres`, habilitado por la Ola 0) — dos sesiones emitiendo/entregando contra el mismo pendiente: exactamente una confirma y la otra recibe 409 (UAT-05); dos sesiones generando folio a la vez sin repetir consecutivo (`folio_service.generar_folio` con su `pg_locker` real); dos sesiones aplicando pagos contra el mismo saldo. Van con **dos sesiones/conexiones distintas** (`pg_engine`), nunca con la sesión del fixture `db`.
 1. **Totales de venta en el backend** (`app/routers/ventas.py`) — tests espejo de `calc.test.ts` con los mismos números, para garantizar que servidor y cliente calculan idéntico (folios, `tipo_cambio` obligatorio en USD, versionado de recotizaciones).
 2. **Cobranza FIFO** (`app/services/cuentas_por_cobrar.py`) — aplicación de pagos contra las órdenes más antiguas, saldos parciales, sobrepagos, aging.
 3. **`stock_service.aplicar_movimiento`** — que todo movimiento genere fila en `movimientos_stock`, disponible = `stock_actual − reservas activas`, y el ciclo reserva → liberación/consumo.

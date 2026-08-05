@@ -292,6 +292,10 @@ def test_emitir_404_si_borrador_fue_eliminado_durante_el_lock(db, orden):
     rem = _borrador(db, o, d, admin)
 
     def _locker_que_elimina_a_medio_camino(db, key):
+        # Borra primero las líneas: la eliminación real pasa por el ORM, que
+        # cascadea `detalles` (Remision.detalles usa delete-orphan). En SQL
+        # crudo hay que hacerlo a mano — Postgres SÍ valida la FK (SQLite no).
+        db.execute(text("DELETE FROM detalles_remision WHERE remision_id = :id"), {"id": rem.id})
         db.execute(text("DELETE FROM remisiones WHERE id = :id"), {"id": rem.id})
         db.commit()
 
@@ -308,6 +312,10 @@ def test_eliminar_borrador_serializa_con_lock(db, orden):
     rem = _borrador(db, o, d, admin)
 
     def _locker_que_elimina_a_medio_camino(db, key):
+        # Borra primero las líneas: la eliminación real pasa por el ORM, que
+        # cascadea `detalles` (Remision.detalles usa delete-orphan). En SQL
+        # crudo hay que hacerlo a mano — Postgres SÍ valida la FK (SQLite no).
+        db.execute(text("DELETE FROM detalles_remision WHERE remision_id = :id"), {"id": rem.id})
         db.execute(text("DELETE FROM remisiones WHERE id = :id"), {"id": rem.id})
         db.commit()
 

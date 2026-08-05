@@ -1,0 +1,88 @@
+name: CI
+
+# Solo valida. El despliegue lo hace Railway por su cuenta al mergear a main;
+# este workflow no publica nada ni toca infraestructura.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: backend (pytest sobre PostgreSQL 16)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: atlas_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d atlas_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Con TEST_DATABASE_URL presente, tests/conftest.py corre en modo
+      # PostgreSQL: migra la base efímera y NO parchea pg_advisory_xact_lock /
+      # hashtext. Sin esta variable la suite caería a SQLite (modo local).
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/atlas_test
+      SECRET_KEY: ci-secret-key-32-chars-minimum!!!
+      PYTHONDONTWRITEBYTECODE: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: runtime.txt
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+
+      - name: pytest
+        run: pytest -q
+
+  frontend:
+    name: frontend (typecheck + vitest + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: npm ci
+        run: npm ci
+
+      - name: typecheck
+        run: npm run typecheck
+
+      - name: vitest
+        run: npm run test
+
+      - name: build
+        run: npm run build
