@@ -130,3 +130,13 @@ Jinja2 + Alpine" y `30_dev_workflow.md` documenta credenciales iniciales que ya
 no son las que crea el seed. Para setup, usa
 [`development/local-setup.md`](development/local-setup.md), que está verificado
 contra el código actual.
+
+## Auditoría de agosto 2026
+
+| Documento | Contenido |
+|---|---|
+| [`current-state/auditoria-2026-08.md`](current-state/auditoria-2026-08.md) | **Empieza aquí** — resumen ejecutivo, 8 hallazgos prioritarios y plan de ejecución por olas |
+| [`current-state/bugs-funcionales.md`](current-state/bugs-funcionales.md) | Bugs con ruta de reproducción y fix sugerido (top 15 por severidad) |
+| [`current-state/consistencia-visual.md`](current-state/consistencia-visual.md) | Desviaciones del design system cuantificadas y cobertura de estados por página |
+| [`current-state/inventario-sin-uso.md`](current-state/inventario-sin-uso.md) | Código muerto, endpoints sin consumidor y capacidad construida sin cablear |
+| [`product/oportunidades-por-modulo.md`](product/oportunidades-por-modulo.md) | Los 21 módulos evaluados como herramienta de trabajo: top 20 y quick wins |
