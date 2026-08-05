@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { confirm } from '@/lib/confirm';
+import { fechaLocalISO } from '@/lib/fechas';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ChevronLeft, ChevronRight, Eye, Pen, ArrowUp, X, Ghost, FileSpreadsheet, Brush, Truck,
@@ -209,7 +210,7 @@ export function FantasmasPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `fantasmas_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `fantasmas_${fechaLocalISO()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }

@@ -5,6 +5,7 @@ import { useTcHoy } from '../hooks/useTcHoy';
 import { useHistorialFx } from '../hooks/useHistorialFx';
 import { api } from '@/lib/api';
 import { toast } from '@/lib/toast';
+import { fechaLocalISO } from '@/lib/fechas';
 import { useIsAdmin } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,7 +38,9 @@ function fmtFecha(iso: string): string {
 }
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  // Fecha local, no UTC: el TC "de hoy" que se consulta y se guarda tiene que
+  // ser el del día en México, no el que ya avanzó en UTC después de las 18:00.
+  return fechaLocalISO();
 }
 
 // ---------------------------------------------------------------------------

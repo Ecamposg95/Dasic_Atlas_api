@@ -16,5 +16,11 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // El negocio opera en CDMX y varias reglas dependen del DÍA local (fecha
+    // de cotización, vigencia, TC del día). Fijar la zona hace la suite
+    // determinista y, sobre todo, falsificable: en UTC —donde corre CI— un
+    // `toISOString()` mal usado daría el mismo resultado que la versión
+    // correcta y los tests de `lib/fechas.ts` no detectarían nada.
+    env: { TZ: 'America/Mexico_City' },
   },
 });

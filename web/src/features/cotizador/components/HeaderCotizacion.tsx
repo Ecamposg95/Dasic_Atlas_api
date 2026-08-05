@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { User, Coins, ArrowRightLeft, CalendarPlus, CalendarClock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { ClientPicker } from './ClientPicker';
 import { Input } from '@/components/ui/input';
+import { fechaLocalISO, fechaLocalISOMas } from '@/lib/fechas';
 import { useCotizador } from '../store';
 import { useConfig } from '../hooks/useConfig';
 import { TCMiniTable } from './TCMiniTable';
@@ -25,13 +26,10 @@ export function HeaderCotizacion() {
   useEffect(() => {
     if (editingId != null) return;
     if (fechaCreacion == null) {
-      const hoy = new Date().toISOString().slice(0, 10);
-      setFechaCreacion(hoy);
+      setFechaCreacion(fechaLocalISO());
     }
     if (fechaVencimiento == null) {
-      const d = new Date();
-      d.setDate(d.getDate() + (config.quote_validity_days || 15));
-      setFechaVencimiento(d.toISOString().slice(0, 10));
+      setFechaVencimiento(fechaLocalISOMas(config.quote_validity_days || 15));
     }
   }, [editingId, fechaCreacion, fechaVencimiento, config.quote_validity_days, setFechaCreacion, setFechaVencimiento]);
 
