@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { toast } from '@/lib/toast';
 import type { Contacto, ContactoInput } from '../types';
 
 export function useContactosEmpresa(clienteId: number | null) {
@@ -32,6 +33,15 @@ export function useEliminarContacto(clienteId: number) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['contactos', clienteId] });
       void qc.invalidateQueries({ queryKey: ['contactos', 'global'] });
+    },
+    // Sin esto, un borrado rechazado por el backend no dejaba rastro: la fila
+    // seguía ahí y el usuario no sabía si había pasado algo.
+    onError: (err) => {
+      toast({
+        kind: 'error',
+        title: 'No se pudo eliminar el contacto',
+        description: err?.detail || 'Error desconocido',
+      });
     },
   });
 }

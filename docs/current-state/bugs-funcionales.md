@@ -32,7 +32,7 @@ Además de los del top: ~~`useCrearCotizacionDesde` crea una orden y solo invali
 
 ## Manejo de errores
 
-Sin `onError` ni feedback: eliminar contacto (`ContactosTab.tsx:49`), borrar nota (`NotasTab.tsx:45`, tampoco confirma), eliminar activo y planta (`ActivosTab.tsx:51`, `PlantasTab.tsx:45` — el 409 "la planta tiene activos" se pierde en silencio).
+~~Sin `onError` ni feedback~~ ✅ **Corregido, y de los cuatro reportados solo dos eran reales.** Eliminar contacto y borrar nota no tenían `onError`: ya lo tienen, y el borrado de nota ahora **confirma** (era el único borrado del sistema que no preguntaba, frente a 43 sitios que sí). **Activo y planta ya estaban resueltos:** su `onError` con toast vive en el hook `useInstalaciones.ts`, no en el componente que revisó la auditoría — el 409 "la planta tiene activos" nunca se perdió.
 
 ~~**`Layout.tsx:35-40`**~~ ✅ **Corregido.** Cualquier fallo de `/api/auth/me` expulsaba al login, no solo el 401. Ahora solo 401 y 403 sacan al usuario; lo transitorio se reintenta 3 veces con espera creciente y, si no cede, se muestra una pantalla con "Reintentar" en vez de echarlo. **Matiz sobre el reporte original:** el efecto solo corre con `user === null` —al recargar o entrar por enlace directo—, así que no había pérdida de trabajo en curso; el daño real era aterrizar en el login en vez de en la ruta pedida.
 

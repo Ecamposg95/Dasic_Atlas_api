@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNotasEmpresa, useCrearNota, useBorrarNota } from '../../hooks/useEmpresa360';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/lib/toast';
+import { confirm } from '@/lib/confirm';
 
 export function NotasTab({ clienteId }: { clienteId: number }) {
   const { data, isLoading } = useNotasEmpresa(clienteId);
@@ -42,7 +43,24 @@ export function NotasTab({ clienteId }: { clienteId: number }) {
                 <span className="text-xs text-muted-foreground">
                   {n.autor_nombre ?? 'Alguien'} · {n.creado_en ? new Date(n.creado_en).toLocaleString('es-MX') : ''}
                 </span>
-                <button onClick={() => borrar.mutate(n.id)} className="text-xs text-rose-500 hover:underline">Borrar</button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    // Único borrado del sistema que no preguntaba: los otros 43
+                    // sitios usan `confirm()` con el tono y el nombre del registro.
+                    const ok = await confirm({
+                      titulo: 'Borrar nota',
+                      mensaje: 'La nota se elimina para todos. Esta acción no se puede deshacer.',
+                      tono: 'danger',
+                      confirmLabel: 'Borrar',
+                    });
+                    if (ok) borrar.mutate(n.id);
+                  }}
+                  disabled={borrar.isPending}
+                  className="text-xs text-rose-500 hover:underline disabled:opacity-50"
+                >
+                  Borrar
+                </button>
               </div>
             </li>
           ))}

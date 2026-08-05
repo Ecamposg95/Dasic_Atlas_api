@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { toast } from '@/lib/toast';
 import type { EmpresaResumen, ActividadEvento, NotaEmpresa, DealEnlazado } from '../types';
 
 export function useEmpresaResumen(id: number) {
@@ -39,6 +40,13 @@ export function useBorrarNota(id: number) {
   return useMutation({
     mutationFn: (notaId: number) => api.delete(`/api/clientes/${id}/notas/${notaId}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['empresa', id, 'notas'] }),
+    onError: (err) => {
+      toast({
+        kind: 'error',
+        title: 'No se pudo borrar la nota',
+        description: (err as { detail?: string })?.detail || 'Error desconocido',
+      });
+    },
   });
 }
 
