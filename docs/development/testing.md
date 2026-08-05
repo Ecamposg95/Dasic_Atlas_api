@@ -69,6 +69,8 @@ Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). E
 | `test_unidades.py` | Catálogo de unidades y snapshot de unidad por partida |
 | `test_postgres_mode.py` | Solo en modo Postgres: que `hashtext`/`pg_advisory_xact_lock` sean reales y que el lock serialice de verdad dos conexiones |
 | `test_remisiones_concurrencia.py` | Solo en modo Postgres: **UAT-05** — dos remisiones que piden el mismo pendiente a la vez (una emite, la otra recibe 400) y cuatro emisiones simultáneas sin repetir folio |
+| `test_cobranza_concurrencia.py` | Solo en modo Postgres: dos pagos simultáneos contra el mismo saldo. **Encontró un bug real de producción** — ver abajo |
+| `test_endpoints_autenticacion.py` | Barrido de **todas** las rutas montadas: ninguna responde sin credenciales salvo login y logout |
 
 ### Frontend — `web/src/features/cotizador/`
 
@@ -104,7 +106,7 @@ Los dos jobs corren en paralelo. Para reproducir el job de backend en local, exp
 
 Por valor descendente:
 
-0. **Concurrencia de cobranza** — dos sesiones aplicando pagos contra el mismo saldo de `cuentas_por_cobrar`. Es lo que queda del eje de concurrencia: la sobre-entrega y el folio ya están cubiertos en `test_remisiones_concurrencia.py`. Va con **dos conexiones distintas** (`pg_engine`), nunca con la sesión del fixture `db`, y marcado `@pytest.mark.postgres`.
+0. ~~**Concurrencia de cobranza**~~ ✅ **Cubierta, y encontró un bug real.** `aplicar_pago` serializa con `SELECT ... FOR UPDATE` sobre el cliente, y el lock funcionaba — pero los routers cargan el cliente **antes** de llamar al servicio, así que la instancia ya vivía en el identity map de la sesión con el saldo leído antes de esperar el lock. SQLAlchemy devolvía ese objeto **sin refrescar sus atributos**, de modo que el saldo nuevo se calculaba sobre el valor viejo y el segundo pago pisaba al primero: dos pagos de 600 sobre una deuda de 1000 dejaban el saldo en 400 en vez de −200, sin error visible. Se corrigió con `populate_existing()`. **El lock estaba bien puesto; el bug era que no bastaba** — la clase de defecto que ninguna revisión de código detecta y solo aparece con dos conexiones reales.
 1. **Totales de venta en el backend** (`app/routers/ventas.py`) — tests espejo de `calc.test.ts` con los mismos números, para garantizar que servidor y cliente calculan idéntico (folios, `tipo_cambio` obligatorio en USD, versionado de recotizaciones).
 2. **Cobranza FIFO** (`app/services/cuentas_por_cobrar.py`) — aplicación de pagos contra las órdenes más antiguas, saldos parciales, sobrepagos, aging.
 3. **`stock_service.aplicar_movimiento`** — que todo movimiento genere fila en `movimientos_stock`, disponible = `stock_actual − reservas activas`, y el ciclo reserva → liberación/consumo.

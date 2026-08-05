@@ -122,11 +122,22 @@ def aplicar_pago(
         raise ValueError("Monto debe ser > 0")
 
     # Lock pesimista sobre el cliente para serializar pagos concurrentes y
-    # evitar lost-update en saldo_actual. Recarga la fila bloqueada.
+    # evitar lost-update en saldo_actual.
+    #
+    # `populate_existing()` NO es opcional: los routers cargan el cliente antes
+    # de llamar aquí (`clientes.py`), así que la instancia ya está en el
+    # identity map de la sesión con el saldo leído ANTES de esperar el lock.
+    # Sin él, SQLAlchemy ejecuta el SELECT ... FOR UPDATE —el lock se toma y
+    # se respeta— pero devuelve el objeto en memoria SIN refrescar sus
+    # atributos, así que se calcula el saldo nuevo sobre el valor viejo y el
+    # segundo pago pisa al primero. El lock queda correcto y el dinero mal:
+    # dos pagos de 600 sobre una deuda de 1000 dejaban el saldo en 400 en vez
+    # de −200. Cubierto por `tests/test_cobranza_concurrencia.py`.
     cliente_locked = (
         db.query(models.Cliente)
         .filter(models.Cliente.id == cliente.id)
         .with_for_update()
+        .populate_existing()
         .first()
     )
     if cliente_locked is None:
