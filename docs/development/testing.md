@@ -72,6 +72,7 @@ Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). E
 | `test_cobranza_concurrencia.py` | Solo en modo Postgres: dos pagos simultáneos contra el mismo saldo. **Encontró un bug real de producción** — ver abajo |
 | `test_cobranza_fifo.py` | Reparto de un pago entre cargos abiertos: orden por vencimiento, un pago que cubre varios, sobrante que no infla ningún cargo, orden explícito por encima del FIFO, y transiciones pendiente/parcial/pagado/vencido |
 | `test_ventas_totales.py` | Espejo de `calc.test.ts` contra el endpoint real: costo+utilidad, descuento, suma de líneas, redondeo **por línea** antes de sumar, medio centavo, y USD sin TC rechazado. **Encontró una divergencia de redondeo** — ver abajo |
+| `test_stock_service.py` | Rastro auditable: cada movimiento deja fila con su `stock_resultante`, el kardex reconstruye el stock paso a paso, guard de negativo, y el ciclo de reservas (reservar no toca el stock físico; solo cuentan las cotizaciones vivas) |
 | `test_endpoints_autenticacion.py` | Barrido de **todas** las rutas montadas: ninguna responde sin credenciales salvo login y logout |
 
 ### Frontend — `web/src/features/cotizador/`
@@ -113,7 +114,7 @@ Por valor descendente:
 2. ~~**Cobranza FIFO**~~ ✅ **Cubierta** (`test_cobranza_fifo.py`, 11 casos). Validada por mutación: invertir el orden, quitar el tope por saldo del cargo o romper la guarda de 'pagado' hacen fallar la suite. **Queda el aging** (`calcular_aging`, `top_deudores`, `listar_vencimientos`), que son agregados de reporte y no reparto de dinero.
 
    > **Pregunta para administración:** el orden usa `nullsfirst()`, así que un cargo **sin fecha de vencimiento se cobra antes que uno ya vencido**. Puede ser deliberado o un efecto colateral. El comportamiento vigente quedó fijado en una prueba para que no cambie sin que nadie lo note, pero conviene confirmarlo.
-3. **`stock_service.aplicar_movimiento`** — que todo movimiento genere fila en `movimientos_stock`, disponible = `stock_actual − reservas activas`, y el ciclo reserva → liberación/consumo.
+3. ~~**`stock_service.aplicar_movimiento`**~~ ✅ **Cubierto** (`test_stock_service.py`, 10 casos). Validado por mutación: quitar el guard de negativo, hacer que RESERVA mueva stock físico, ignorar el estatus de la cotización al sumar reservas o quitar el tope a 0 hacen fallar la suite.
 4. **Componentes React críticos** — hoy ninguno (falta jsdom); candidatos: carrito del cotizador y formularios con validación.
 
 > El sistema es **mono-tenant**: no hay aislamiento por organización que probar. Lo que sí conviene cubrir es el **owner-scoping** por rol (que un usuario de ventas no vea documentos ajenos), como ya hace `test_remisiones_api.py`.
