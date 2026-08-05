@@ -1,5 +1,8 @@
 # Auditoría integral — agosto 2026
 
+> **Los pendientes ya no viven aquí.** El orden de trabajo consolidado está en [`backlog.md`](backlog.md); este documento se conserva como el diagnóstico que lo originó.
+
+
 > Cinco auditorías paralelas sobre el repo completo: UI muerta · capacidad backend sin consumir · consistencia visual · bugs funcionales · robustez por módulo. Todo hallazgo tiene evidencia `archivo:línea` verificada por grep o lectura del código; nada se reporta por sospecha.
 >
 > **Documentos de detalle:** [`bugs-funcionales.md`](bugs-funcionales.md) · [`consistencia-visual.md`](consistencia-visual.md) · [`inventario-sin-uso.md`](inventario-sin-uso.md) · [`../product/oportunidades-por-modulo.md`](../product/oportunidades-por-modulo.md)

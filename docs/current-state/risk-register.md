@@ -6,15 +6,15 @@
 
 | ID | Riesgo | Mitigación |
 |---|---|---|
-| R1 | **Todo push a `main` despliega a producción sin tests.** Una regresión visual/funcional del rediseño llega directo a DASIC. | Commits pequeños; validar `typecheck`+`build`+`compileall` antes de cada push; considerar branch de trabajo + preview de Railway para los cambios de shell; smoke manual post-deploy. |
-| R2 | **Cero cobertura de tests** sobre lógica de dinero (totales, FIFO de pagos, stock). Refactors de routers gordos sin red. | No refactorizar backend en la etapa visual; si se toca lógica de negocio, montar harness pytest primero (Task Pack 15). |
+| R1 | ~~**Todo push a `main` despliega a producción sin tests.**~~ **Mitigado (2026-08-05).** CI corre pytest sobre PostgreSQL 16 + typecheck + vitest + build en cada push y PR, y existe environment `staging` con base propia. **Residual:** CI no bloquea el deploy —Railway despliega en paralelo— y staging aún apunta a `main` (paso manual pendiente, ver backlog P1). | Mantener commits pequeños; validar en staging antes de mergear; smoke manual post-deploy. |
+| R2 | ~~**Cero cobertura de tests** sobre lógica de dinero~~ **Parcialmente mitigado.** El motor de cálculo del cotizador está cubierto (58 tests de vitest, valores derivados a mano) y la concurrencia de remisiones también. **Residual:** totales de venta del backend, FIFO de cobranza y `stock_service` siguen sin pruebas — son P4 del backlog, y el orden importa si se va a refactorizar `ventas.py`. | Montar las pruebas del área **antes** de refactorizarla, no después. |
 | R3 | **Esquema de DB con doble vía** (Alembic + `_BACKFILL_DDL` + `create_all`); Railway no corre Alembic. Columna nueva sin backfill → 500 en todos los endpoints que carguen la fila. | Regla vigente: toda columna en tabla existente = migración + entrada `_BACKFILL_DDL` + re-export. No introducir cambios de esquema en la fase visual salvo indispensables. |
 
 ## Importantes
 
 | ID | Riesgo | Mitigación |
 |---|---|---|
-| R4 | Endpoints con autorización inconsistente (~9 sin dependencia de rol; `POST /api/inventario/movimientos` el más sensible). | Revisión puntual y cierre en un commit de seguridad quirúrgico (no mezclado con UI). |
+| R4 | **Endpoints sin autenticación.** Verificado contra producción: `GET /api/compras/proveedores`, `GET /api/compras/`, `GET /api/compras/historial` y `GET /api/compras/{id}/imprimir` responden **200 sin credenciales**, y `POST /api/compras/proveedores` es una **escritura** abierta. También `GET /api/clientes/{id}/pdf-estado-cuenta`. No es un fallo general: `/api/remisiones/` y `drop-all-tables` sí responden 401. | **P0 del backlog.** Commit de seguridad quirúrgico, sin mezclar con UI. Confirmar antes si algún consumidor externo depende de la lectura abierta de `imprimir`. |
 | R5 | `SECRET_KEY` puede rotar entre deploys (si no está fijada en Railway) → sesiones invalidadas en cada release del rediseño. | Verificar/fijar variable en Railway antes de la cadena de releases visuales. |
 | R6 | Migración masiva slate→tokens puede romper contraste/light-mode en páginas no revisadas. | Migrar por feature (commit por página), QA visual light+dark por página; guardrail del prompt: no reemplazar todos los estilos en un cambio masivo. |
 | R7 | Documentación contradictoria (`context/` legacy: Next.js/Prisma hipotético, Jinja retirado, multi-tenant que ya no existe) puede inducir a agentes/devs a decisiones erróneas. | `docs/current-state/` (este paquete) como fuente única del estado; marcar/archivar legacy en Task Pack 17. |
