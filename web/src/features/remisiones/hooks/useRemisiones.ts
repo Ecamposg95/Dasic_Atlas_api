@@ -1,4 +1,10 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from '@tanstack/react-query';
 import { api, normalizeDetail } from '@/lib/api';
 import type {
   RemisionEstado,
@@ -84,6 +90,35 @@ export function useAvanceEntrega(ordenId: number | null) {
   });
 }
 
+// Cualquier cambio de estado de una remisión mueve el saldo pendiente de su
+// orden, así que además del listado y el detalle hay que invalidar las dos
+// vistas que leen ese saldo: el borrador que precarga el editor y el avance de
+// entrega de la venta. Con `staleTime: 30_000` y `refetchOnWindowFocus: false`
+// (ver `lib/queryClient.ts`), una query que no se invalida NO se refresca
+// sola: el editor precargaba pendientes anteriores a la emisión y el usuario
+// intentaba entregar de más.
+//
+// Se invalida por PREFIJO, sin el id de orden, porque estas mutaciones reciben
+// el id de la REMISIÓN y no el de su orden. Acotar exigiría deducirlo, y
+// escribir una clave que no existe es justamente el defecto que esto corrige
+// (`useSugerirOC` invalida `['compras']`, que nunca fue la clave real). Son
+// queries pequeñas: refrescar de más cuesta un fetch, refrescar de menos
+// cuesta una sobre-entrega.
+function invalidarSaldoDeOrden(qc: QueryClient) {
+  void qc.invalidateQueries({ queryKey: ['remisiones'] });
+  void qc.invalidateQueries({ queryKey: ['remision-borrador'] });
+  void qc.invalidateQueries({ queryKey: ['ventas', 'avance-entrega'] });
+}
+
+// Emitir y cancelar además mueven inventario cuando
+// `stock_evento_descuento == "remision"` (ver `domains/remisiones/service.py`):
+// emitir descuenta y cancelar revierte, y ambas dejan fila en
+// `movimientos_stock`. Sin esto el kardex y las existencias quedan viejos.
+function invalidarStock(qc: QueryClient) {
+  void qc.invalidateQueries({ queryKey: ['productos'] });
+  void qc.invalidateQueries({ queryKey: ['cardex'] });
+}
+
 // POST /api/remisiones/ → crea BORRADOR (sin folio; el folio se asigna al
 // emitir).
 export function useCrearBorrador() {
@@ -92,7 +127,7 @@ export function useCrearBorrador() {
     mutationFn: (payload: RemisionCreatePayload) =>
       api.post<RemisionEstadoResponse>('/api/remisiones/', payload),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['remisiones'] });
+      invalidarSaldoDeOrden(qc);
     },
   });
 }
@@ -105,7 +140,7 @@ export function useActualizarBorrador() {
     mutationFn: ({ id, payload }: { id: number; payload: RemisionUpdatePayload }) =>
       api.put<RemisionEstadoResponse>(`/api/remisiones/${id}`, payload),
     onSuccess: (_data, vars) => {
-      void qc.invalidateQueries({ queryKey: ['remisiones'] });
+      invalidarSaldoDeOrden(qc);
       void qc.invalidateQueries({ queryKey: ['remision', vars.id] });
     },
   });
@@ -117,7 +152,7 @@ export function useEliminarBorrador() {
   return useMutation({
     mutationFn: (id: number) => api.delete<void>(`/api/remisiones/${id}`),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['remisiones'] });
+      invalidarSaldoDeOrden(qc);
     },
   });
 }
@@ -163,7 +198,8 @@ export function useEmitir() {
   return useMutation<RemisionEmitirResponse, RemisionEmitirError, number>({
     mutationFn: (id: number) => postEmitir(id),
     onSuccess: (_data, id) => {
-      void qc.invalidateQueries({ queryKey: ['remisiones'] });
+      invalidarSaldoDeOrden(qc);
+      invalidarStock(qc);
       void qc.invalidateQueries({ queryKey: ['remision', id] });
     },
   });
@@ -179,7 +215,7 @@ export function useRegistrarRecepcion() {
     mutationFn: ({ id, recibido_por }: { id: number; recibido_por: string }) =>
       api.patch<RecepcionResponse>(`/api/remisiones/${id}/recepcion`, { recibido_por }),
     onSuccess: (_data, vars) => {
-      void qc.invalidateQueries({ queryKey: ['remisiones'] });
+      invalidarSaldoDeOrden(qc);
       void qc.invalidateQueries({ queryKey: ['remision', vars.id] });
     },
   });
@@ -194,7 +230,10 @@ export function useCancelar() {
         motivo,
       } satisfies RemisionCancelarPayload),
     onSuccess: (_data, vars) => {
-      void qc.invalidateQueries({ queryKey: ['remisiones'] });
+      // Cancelar excluye la remisión del acumulado entregado (devuelve el
+      // pendiente a la orden) y revierte el stock que emitir descontó.
+      invalidarSaldoDeOrden(qc);
+      invalidarStock(qc);
       void qc.invalidateQueries({ queryKey: ['remision', vars.id] });
     },
   });
@@ -209,6 +248,9 @@ export function useCrearCotizacionDesde() {
       api.post<RemisionCrearCotizacionResponse>(`/api/remisiones/${id}/crear-cotizacion`),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['remisiones'] });
+      // Crea una orden de venta nueva: sin esto la cotización recién generada
+      // no aparece en el historial ni en el listado de borradores.
+      void qc.invalidateQueries({ queryKey: ['ventas'] });
     },
   });
 }

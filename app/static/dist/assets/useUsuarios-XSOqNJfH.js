@@ -1,0 +1,1 @@
+import{e as r}from"./vendor-query-BkusyTQl.js";import{b as u}from"./index-B_6c7ZHF.js";function i(e=!0){return r({queryKey:["usuarios"],queryFn:()=>u.get("/api/usuarios/"),staleTime:3e4,enabled:e})}export{i as u};
