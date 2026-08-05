@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Modal, ModalFooter } from '@/components/ui/modal';
 import { PageHeader } from '@/components/ui/page-header';
 import { Tabs } from '@/components/ui/tabs';
+import { QueryError } from '@/components/ui/query-error';
 import {
   DataTable,
   DataTableHead,
@@ -156,7 +157,7 @@ export function RecordatoriosPage() {
   const [posponerRec, setPosponerRec] = useState<Recordatorio | null>(null);
   const [crearOpen, setCrearOpen] = useState(false);
 
-  const { data, isLoading, isPlaceholderData } = useRecordatorios(vista);
+  const { data, isLoading, isPlaceholderData, isError, error, refetch } = useRecordatorios(vista);
   const completar = useCompletarRecordatorio();
   const eliminar = useEliminarRecordatorio();
 
@@ -220,8 +221,10 @@ export function RecordatoriosPage() {
           <div className="text-sm text-muted-foreground py-4">Cargando recordatorios…</div>
         )}
 
+        {!isLoading && isError && <QueryError error={error} onRetry={() => void refetch()} />}
+
         {/* Table */}
-        {!isLoading && (
+        {!isLoading && !isError && (
           <div className={isPlaceholderData ? 'opacity-60 pointer-events-none' : ''}>
             <DataTable maxBodyHeight="calc(100vh - 18rem)">
               <DataTableHead sticky>

@@ -13,7 +13,7 @@
 | 5 | Unificar el icono de editar a `Pencil` (retirar `Pen`, `Edit2`, `Edit3`) | 17 | trivial |
 | 6 | Declarar `size` explícito en modales y bajar los formularios de entidad a `md` | 7 | trivial |
 | 7 | Unificar padding de celda a `px-4 py-3` en los 7 listados densos | 7 archivos | trivial |
-| ~~8~~ | ✅ **Primitiva creada**, adoptada en 8 páginas (cobertura 11/35). Faltan 24 | 1 + 30 | medio |
+| ~~8~~ | ✅ **Primitiva creada**, adoptada en 11 páginas (cobertura 14/35). Faltan 21 | 1 + 30 | medio |
 | 9 | Migrar los ~50 `"Cargando…"` a skeleton (empezando por el dashboard, con 5 en la pantalla de entrada) | ~50 | medio |
 | 10 | Unificar el botón-acción-de-fila a `Button variant="ghost" size="icon-sm"` | ~30 | medio |
 

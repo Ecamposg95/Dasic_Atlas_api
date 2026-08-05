@@ -23,6 +23,7 @@ import {
 import { PrecioFormModal } from '../components/PrecioFormModal';
 import { ComparadorRapido } from '../components/ComparadorRapido';
 import { CollapsibleCard } from '@/components/ui/CollapsibleCard';
+import { QueryError } from '@/components/ui/query-error';
 import type { PrecioProveedorCreate } from '../types';
 
 // ---------------------------------------------------------------------------
@@ -143,7 +144,7 @@ export function PreciosPage() {
     setPage(1);
   }, [filtroProducto, filtroProveedor]);
 
-  const { data: preciosData, isLoading, isPlaceholderData } = usePrecios(page, filtros);
+  const { data: preciosData, isLoading, isPlaceholderData, isError, error, refetch } = usePrecios(page, filtros);
   const crear = useCrearPrecio();
   const eliminar = useEliminarPrecio();
 
@@ -256,6 +257,8 @@ export function PreciosPage() {
             <DataTableBody>
               {isLoading ? (
                 <SkeletonRows rows={5} cols={isAdmin ? 6 : 5} />
+              ) : isError ? (
+                <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={isAdmin ? 6 : 5} />
               ) : items.length === 0 ? (
                 <DataTableEmpty colSpan={isAdmin ? 6 : 5}>
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">

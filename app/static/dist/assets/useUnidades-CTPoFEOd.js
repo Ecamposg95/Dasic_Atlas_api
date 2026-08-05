@@ -1,1 +1,0 @@
-import{e}from"./vendor-query-BkusyTQl.js";import{b as a}from"./index-D4Ot82gB.js";function r(){return e({queryKey:["catalogos","unidades"],queryFn:()=>a.get("/api/catalogos/unidades"),staleTime:6e4})}export{r as u};

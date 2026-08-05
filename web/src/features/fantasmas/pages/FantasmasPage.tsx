@@ -12,6 +12,7 @@ import { Modal, ModalFooter } from '@/components/ui/modal';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SatCombobox } from '@/components/ui/sat-combobox';
+import { QueryError } from '@/components/ui/query-error';
 import {
   DataTable, DataTableBody, DataTableEmpty, DataTableHead, DataTableRow,
 } from '@/components/ui/data-table';
@@ -76,7 +77,7 @@ export function FantasmasPage() {
     ? Number(filtroProveedor)
     : null;
 
-  const { data: resp, isLoading, isPlaceholderData, error } = useFantasmas(
+  const { data: resp, isLoading, isPlaceholderData, isError, error, refetch } = useFantasmas(
     page, filtroQDebounced, filtroEstado, proveedorIdServer,
   );
   const { data: proveedores } = useProveedores();
@@ -353,7 +354,10 @@ export function FantasmasPage() {
           {isLoading && (
             <DataTableEmpty colSpan={9}>Cargando fantasmas…</DataTableEmpty>
           )}
-          {!isLoading && filtrados.length === 0 && (
+          {!isLoading && isError && (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={9} />
+          )}
+          {!isLoading && !isError && filtrados.length === 0 && (
             <tr>
               <td colSpan={9}>
                 <EmptyState icon={Ghost} title="Sin fantasmas que coincidan" />

@@ -40,7 +40,7 @@ Además de los del top: ~~`useCrearCotizacionDesde` crea una orden y solo invali
 
 ✅ **Hallazgo adicional, no auditado:** los **47** sitios que redirigen a `/spa/login` resolvían a una ruta **hija de `/spa`**, cuyo elemento es el `Layout` protegido: el login se dibujaba **dentro del shell autenticado** —sidebar, header y footer alrededor del formulario— y disparaba la verificación de sesión del propio Layout, que al recibir otro 401 navegaba a `/`. Se movió al nivel superior, donde se dibuja limpio y sin rebote, y se retiró la hija para no dejar dos rutas compitiendo por el mismo path.
 
-🔵 **En curso — estado de error por página.** Se creó `components/ui/query-error.tsx`: dos formas (bloque suelto y `<tr>` con `asRow`, porque los listados renderizan dentro de un `<tbody>` donde no cabe un `<div>`), y trata el **403 aparte** —lo presenta como falta de acceso y sin botón de reintentar, porque no es un fallo sino una respuesta—. Adoptada en servicios, contactos, borradores, usuarios, gastos, inventario, clientes y compras. **Cobertura: 11 de 35 páginas** (antes 3). La rama de error va siempre antes que la de vacío: confundir "roto" con "vacío" es justo el defecto que corrige.
+🔵 **En curso — estado de error por página.** Se creó `components/ui/query-error.tsx`: dos formas (bloque suelto y `<tr>` con `asRow`, porque los listados renderizan dentro de un `<tbody>` donde no cabe un `<div>`), y trata el **403 aparte** —lo presenta como falta de acceso y sin botón de reintentar, porque no es un fallo sino una respuesta—. Adoptada en 11 páginas: servicios, contactos, borradores, usuarios, gastos, inventario, clientes, compras, fantasmas, precios y recordatorios. **Cobertura: 14 de 35** (antes 3). La rama de error va siempre antes que la de vacío: confundir "roto" con "vacío" es justo el defecto que corrige.
 
 ## Estado obsoleto y carreras
 
@@ -54,7 +54,7 @@ Bien resueltos: `useMoveDeal` (cancelQueries + snapshot + rollback) y la guarda 
 
 ## Navegación
 
-✅ **Corregido.** `SeguimientoPage` ya siembra su búsqueda desde `?folio=` y `?orden=`, así que el enlace de `DealCard` y el "Guardar e ir a Seguimiento" del cotizador abren filtrados en vez del historial completo. `TotalsBar` navega del lado del cliente a la ruta canónica `/spa/seguimiento` —sus tres salidas recargaban la SPA entera— y la ruta legacy `/seguimiento` pasó a usar `RedirectConQuery`, el helper que ya existía en el router, para no descartar el query string. **Pendiente:** el "Cancelar" sigue saltándose la confirmación cuando hay una cotización en edición.
+✅ **Corregido.** `SeguimientoPage` ya siembra su búsqueda desde `?folio=` y `?orden=`, así que el enlace de `DealCard` y el "Guardar e ir a Seguimiento" del cotizador abren filtrados en vez del historial completo. `TotalsBar` navega del lado del cliente a la ruta canónica `/spa/seguimiento` —sus tres salidas recargaban la SPA entera— y la ruta legacy `/seguimiento` pasó a usar `RedirectConQuery`, el helper que ya existía en el router, para no descartar el query string. ✅ El "Cancelar" ya confirma también al editar una cotización existente — antes salía sin preguntar y los cambios sin guardar se perdían en silencio. Usa el mismo criterio que el aviso de recarga del navegador: hay algo que perder si el carrito tiene líneas.
 
 ## Permisos: UI vs matriz del backend
 

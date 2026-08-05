@@ -77,14 +77,22 @@ export function TotalsBar() {
   const disabled = reasons.length > 0 || guardar.isPending;
 
   async function onCancel() {
-    if (editingId != null) {
-      navigate('/spa/seguimiento');
-      return;
+    // Editando una cotización existente se salía SIN preguntar, así que los
+    // cambios sin guardar se perdían en silencio. Se confirma en ambos casos,
+    // con el mismo criterio que el aviso de recarga del navegador
+    // (`onBeforeUnload` en CotizadorPage): hay algo que perder si el carrito
+    // tiene líneas.
+    if (cart.length > 0) {
+      const mensaje =
+        editingId != null
+          ? '¿Salir de la cotización? Los cambios que no hayas guardado se pierden.'
+          : '¿Descartar cotización?';
+      if (!(await confirm({ mensaje, tono: 'danger' }))) return;
     }
-    if (cart.length === 0 || (await confirm({ mensaje: '¿Descartar cotización?', tono: 'danger' }))) {
-      useCotizador.getState().reset();
-      navigate('/spa/seguimiento');
-    }
+    // Editando NO se limpia el store aquí: CotizadorPage ya lo resetea al
+    // desmontar. Limpiarlo antes de navegar haría parpadear el editor vacío.
+    if (editingId == null) useCotizador.getState().reset();
+    navigate('/spa/seguimiento');
   }
 
   const margenStats = useMemo(() => {
