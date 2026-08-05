@@ -6,7 +6,7 @@
 
 | # | Corrección | Alcance | Esfuerzo |
 |---|---|---|---|
-| 1 | **Variantes `dark:` en `lib/status-tones.ts:4-8`** | 5 líneas → 11 archivos | trivial |
+| ~~1~~ | ✅ **Corregido.** Contraste medido: **1.66:1** en tema claro (mínimo AA 4.5). Ahora 4.84:1 en claro y 9.39:1 en oscuro, verificado por `status-tones.test.ts`, que **calcula** el contraste en vez de revisarlo a ojo | 5 líneas → 11 archivos | trivial |
 | 2 | Corregir el mapa canónico (`inactivo`/`borrador`/`descartado` → neutral, `prospecto` → info) y borrar los 3 mapas locales | ~20 líneas | trivial |
 | 3 | Redefinir el cva de `Button` (`default → h-9`, añadir `icon-sm`) y poner `size` en los 15 footers de modal huérfanos | 15 sitios + 1 archivo | trivial |
 | 4 | `rounded` a secas → `rounded-md` | **164 sitios** | trivial |
@@ -19,7 +19,7 @@
 
 ## El bug: tonos de estado sin tema claro
 
-`lib/status-tones.ts:4-8` no tiene **ni un** prefijo `dark:` y usa tonos de la rampa oscura (`text-emerald-400` sobre `bg-emerald-500/15`). En tema claro eso da un contraste ≈1.8:1 contra el mínimo de 4.5:1 de WCAG. Afecta a los 11 archivos que usan `StatusBadge`. `badge.tsx:12-16` sí lo hace bien — es una omisión, no un criterio.
+✅ **Corregido.** El contraste real medido era **1.66:1** (la estimación de ≈1.8 iba en la dirección correcta). Se espejó `badge.tsx`, que ya lo hacía bien: par claro `-700` sobre `-100` (4.84:1) y variante `dark:` con la rampa anterior (9.39:1). `neutral` no necesitó cambio porque ya usaba tokens semánticos. La regresión queda cerrada por pruebas que **calculan** el contraste.
 
 ## Divergencias semánticas de color
 
