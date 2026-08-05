@@ -40,6 +40,8 @@ Además de los del top: ~~`useCrearCotizacionDesde` crea una orden y solo invali
 
 ✅ **Hallazgo adicional, no auditado:** los **47** sitios que redirigen a `/spa/login` apuntaban a una ruta inexistente. Caía en el catch-all `NotFound` de `/spa`, que además vive **dentro del `Layout` protegido**, así que el usuario llegaba al login sólo de rebote — una recarga completa y una llamada a `/api/auth/me` de más. Se declaró la ruta estática.
 
+🔵 **En curso — estado de error por página.** Se creó `components/ui/query-error.tsx`: dos formas (bloque suelto y `<tr>` con `asRow`, porque los listados renderizan dentro de un `<tbody>` donde no cabe un `<div>`), y trata el **403 aparte** —lo presenta como falta de acceso y sin botón de reintentar, porque no es un fallo sino una respuesta—. Adoptada en servicios, contactos, borradores, usuarios, gastos, inventario, clientes y compras. **Cobertura: 11 de 35 páginas** (antes 3). La rama de error va siempre antes que la de vacío: confundir "roto" con "vacío" es justo el defecto que corrige.
+
 ## Estado obsoleto y carreras
 
 El caso grave es el cotizador (#7 del top). Menores: efectos con `[]` que no reaccionan a cambios de query param en `CotizadorPage.tsx:230-241` (navegar de `?cliente=5` a `?cliente=9` no re-precarga) y `RemisionesPage.tsx:466-478` (un segundo `?ver=` no abre el detalle). El import de JSON del cotizador (`CotizadorPage.tsx:100-163`) sigue agregando líneas al store aunque navegues fuera.
