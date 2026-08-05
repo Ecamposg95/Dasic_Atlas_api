@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func, or_, select, text
 from typing import List, Optional
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timedelta, timezone
 from jinja2 import Environment, BaseLoader
 from pydantic import BaseModel, EmailStr, Field
@@ -92,6 +92,19 @@ _DEFAULT_TERMINOS = (
     "Para procesar su pedido es necesario colocar una orden de compra indicando el número de cotización y aceptación de estas condiciones comerciales (más anticipo cuando aplique).\n"
     "La garantía de los productos es la que otorga cada fabricante."
 )
+
+
+# Redondeo de dinero a 2 decimales, HALF-UP.
+#
+# `Decimal.quantize` usa ROUND_HALF_EVEN por defecto ("redondeo del banquero"),
+# y el cotizador usa `Math.round` de JS, que es HALF-UP. La diferencia solo
+# aparece en importes que caen exactamente en medio centavo, pero ahí el
+# usuario aprobaba en pantalla un número y se guardaba otro: 1 de costo con
+# 12.5% de utilidad da 1.125, que el cotizador muestra como 1.13 y el backend
+# guardaba como 1.12. Un centavo, en el documento que el cliente firma y sobre
+# el que se factura. Cubierto por `tests/test_ventas_totales.py`.
+def _money(x: Decimal) -> Decimal:
+    return Decimal(x).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 def _iva_rate() -> Decimal:
@@ -777,11 +790,11 @@ def crear_orden(
             # Redondear el subtotal por línea ANTES de acumular: así la suma de los
             # subtotales impresos en el PDF cuadra exacto con orden.total (sin descuadre
             # de centavos por redondear sólo el gran total).
-            subtotal = (
+            subtotal = _money(
                 precio_unit_bruto
                 * item.cantidad
                 * (Decimal("1.0") - (descuento_pct / Decimal("100")))
-            ).quantize(Decimal("0.01"))
+            )
             total_orden += subtotal
 
             # Upsert fantasma solo para líneas ad-hoc (sin producto ni servicio del catálogo)
@@ -836,11 +849,11 @@ def crear_orden(
                 unidad=_unidad,
                 # precio_unitario = bruto pre-descuento (lo que el cliente ve por unidad).
                 # subtotal ya incluye el descuento aplicado.
-                precio_unitario=precio_unit_bruto.quantize(Decimal("0.01")),
+                precio_unitario=_money(precio_unit_bruto),
                 utilidad_aplicada=utilidad_pct,
                 descuento_aplicado=descuento_pct,
                 descuento_proveedor=Decimal(getattr(item, "descuento_proveedor", 0) or 0),
-                subtotal=subtotal.quantize(Decimal("0.01")),
+                subtotal=_money(subtotal),
                 tipo_linea=tipo_linea,
                 proveedor_sugerido_id=getattr(item, "proveedor_sugerido_id", None),
                 fantasma_id=_fantasma_id,
@@ -865,11 +878,11 @@ def crear_orden(
                     usuario=current_user,
                 )
 
-        nueva_orden.total = total_orden.quantize(Decimal("0.01"))
+        nueva_orden.total = _money(total_orden)
 
         # Deuda (Solo si es venta directa) — usa CxC formal con vencimiento.
         if tipo_orden == models.EstatusOrden.PENDIENTE:
-            total_con_iva = (total_orden * (Decimal("1.0") + get_iva_rate(db))).quantize(Decimal("0.01"))
+            total_con_iva = _money(total_orden * (Decimal("1.0") + get_iva_rate(db)))
             crear_cargo_por_venta(
                 db,
                 orden_venta=nueva_orden,
@@ -1056,11 +1069,11 @@ def actualizar_orden(
             # Redondear el subtotal por línea ANTES de acumular: así la suma de los
             # subtotales impresos en el PDF cuadra exacto con orden.total (sin descuadre
             # de centavos por redondear sólo el gran total).
-            subtotal = (
+            subtotal = _money(
                 precio_unit_bruto
                 * item.cantidad
                 * (Decimal("1.0") - (descuento_pct / Decimal("100")))
-            ).quantize(Decimal("0.01"))
+            )
             total_orden += subtotal
 
             # Upsert fantasma solo para líneas ad-hoc (sin producto ni servicio del catálogo)
@@ -1111,11 +1124,11 @@ def actualizar_orden(
                 mostrar_marca=_mostrar_marca,
                 cantidad=item.cantidad,
                 unidad=_unidad,
-                precio_unitario=precio_unit_bruto.quantize(Decimal("0.01")),
+                precio_unitario=_money(precio_unit_bruto),
                 utilidad_aplicada=utilidad_pct,
                 descuento_aplicado=descuento_pct,
                 descuento_proveedor=Decimal(getattr(item, "descuento_proveedor", 0) or 0),
-                subtotal=subtotal.quantize(Decimal("0.01")),
+                subtotal=_money(subtotal),
                 tipo_linea=tipo_linea,
                 proveedor_sugerido_id=getattr(item, "proveedor_sugerido_id", None),
                 fantasma_id=_fantasma_id,
@@ -1139,7 +1152,7 @@ def actualizar_orden(
                     usuario=current_user,
                 )
 
-        orden.total = total_orden.quantize(Decimal("0.01"))
+        orden.total = _money(total_orden)
 
         db.add(models.QuoteEvent(
             orden_id=orden.id,
@@ -1406,7 +1419,7 @@ def convertir_cotizacion(
                 orden.folio = orden.folio.replace("COT-", "VTA-", 1)
         
         # Generar Deuda — usando servicio CxC formal (vence en cliente.dias_credito)
-        total_con_iva = (orden.total * (Decimal("1.0") + get_iva_rate(db))).quantize(Decimal("0.01"))
+        total_con_iva = _money(orden.total * (Decimal("1.0") + get_iva_rate(db)))
         crear_cargo_por_venta(
             db,
             orden_venta=orden,
