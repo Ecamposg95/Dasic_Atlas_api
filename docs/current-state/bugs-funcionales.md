@@ -18,7 +18,7 @@
 | 10 | ALTO | `remisiones/pages/RemisionesPage.tsx:421,305,314` | Recibir/Cancelar/Crear cotización visibles para roles que el backend rechaza |
 | 11 | ALTO | `servicios/pages/ServiciosPage.tsx:71-79` | Comparaciones de rol sin `'superadmin'` → el superadmin no ve crear/editar/eliminar |
 | 12 | ALTO | `borradores/pages/BorradoresPage.tsx:117` | Dos query keys para el mismo endpoint → descartar en una pantalla deja fantasmas en la otra |
-| 13 | MEDIO | `cotizador/store.ts:368` | `max: 0` al re-hidratar → toda cotización guardada muestra "Sin stock · OC" |
+| ~~13~~ | ~~MEDIO~~ | `cotizador/store.ts` + `routers/ventas.py` | ✅ **Corregido** (Ola 1). `max: 0` al re-hidratar → toda cotización guardada mostraba "Sin stock · OC". La causa estaba en el backend: `/detalle-json` no exponía `stock_actual` |
 | 14 | MEDIO | `components/document/DocumentRow.tsx:186-196,479-487` | El input de cantidad se autocorrige en cada tecla; no se puede vaciar para reteclear |
 | 15 | MEDIO | `cotizador/components/HeaderCotizacion.tsx:28-34`, `fx/pages/FxPage.tsx:40` | `toISOString()` usa UTC: tras las 18:00 CDMX los documentos nacen fechados un día adelante |
 

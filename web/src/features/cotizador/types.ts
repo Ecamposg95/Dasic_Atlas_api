@@ -203,6 +203,9 @@ export type OrdenVentaDetail = {
       marca?: string | null;
       moneda_compra?: string | null;
       costo_compra: number | string;
+      // Opcional por compatibilidad: una respuesta cacheada o un backend
+      // anterior a agosto de 2026 no lo trae, y el store cae a 0 como antes.
+      stock_actual?: number | null;
     } | null;
     servicio: {
       id?: number;

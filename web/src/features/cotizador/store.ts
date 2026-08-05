@@ -365,7 +365,10 @@ export const useCotizador = create<CotizadorState>((set) => ({
             cost_original: costCat,
             marca: d.marca ?? prod.marca ?? null,
             mostrar_marca: !!d.mostrar_marca,
-            max: 0,
+            // Stock del catálogo al reabrir. Antes era 0 fijo —el backend no
+            // lo exponía en /detalle-json—, y con eso toda cotización guardada
+            // se mostraba como "Sin stock · OC" aunque hubiera existencias.
+            max: Number(prod.stock_actual ?? 0),
             proveedor_sugerido_id: (d as { proveedor_sugerido_id?: number | null }).proveedor_sugerido_id ?? null,
             qty: d.cantidad,
             utilidad: Number(d.utilidad_aplicada),

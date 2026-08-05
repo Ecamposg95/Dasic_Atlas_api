@@ -1578,6 +1578,11 @@ def obtener_detalle_orden(
                 "marca": d.producto.marca,
                 "moneda_compra": d.producto.moneda_compra,
                 "costo_compra": float(d.producto.costo_compra or 0),
+                # El editor lo usa como tope de cantidad al re-hidratar. Sin
+                # este campo el store no tenía de dónde leerlo y ponía 0, así
+                # que toda cotización reabierta mostraba "Sin stock · OC"
+                # aunque hubiera existencias.
+                "stock_actual": float(d.producto.stock_actual or 0),
             }
         servicio = None
         if d.servicio is not None:
