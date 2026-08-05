@@ -25,6 +25,40 @@ el build de inmediato.
 
 ---
 
+## 1.b Staging (creado 2026-08-05)
+
+| | Producción | Staging |
+|---|---|---|
+| URL | `dasicatlasapi-production.up.railway.app` | **`dasicatlasapi-staging.up.railway.app`** |
+| Environment | `production` | `staging` |
+| Base de datos | Postgres propio | **Postgres propio e independiente** |
+| Rama que despliega | `main` | `main` (ver nota) |
+
+**Aislamiento verificado:** el hostname interno `postgres.railway.internal` es el mismo en ambos entornos porque el DNS privado de Railway es *por environment* — resuelve a instancias distintas. Comprobado consultando ambas bases: producción tenía 192 cotizaciones y staging 2. **Staging no puede escribir en producción.**
+
+### Cómo desplegar algo a staging
+
+Hoy staging está conectado a `main`, igual que producción, así que por sí solo es un espejo y no una compuerta previa. Dos formas de usarlo como validación **antes** de tocar producción:
+
+```bash
+# Opción A (funciona hoy, sin cambiar configuración):
+# sube el estado LOCAL de tu rama a staging
+cd /ruta/al/repo
+railway up --environment staging --service Dasic_Atlas_api
+```
+
+**Opción B (recomendada, requiere un cambio manual de 30 segundos):** en el panel de Railway → environment `staging` → servicio `Dasic_Atlas_api` → Settings → Source, cambiar la rama de `main` a **`staging`** (la rama ya existe en el remoto). A partir de ahí el flujo es:
+
+```
+rama de trabajo → merge a `staging` → despliegue automático a staging → validar → merge a `main` → producción
+```
+
+La API GraphQL de Railway rechaza este cambio desde fuera del panel (WAF, error 1010), por eso no está automatizado.
+
+### Qué NO replica staging
+
+Las variables de integración (`BANXICO_TOKEN`, `ANTHROPIC_API_KEY`, `SMTP_*`) tampoco están en staging — igual que en producción. El tipo de cambio usará el proveedor público de respaldo y el correo quedará en modo simulado. Si una prueba depende de esas integraciones, hay que añadir la variable solo en staging.
+
 ## 2. Qué hace el build (verificado en logs)
 
 El builder es **Railpack** (no nixpacks). El plan que ejecuta es:
