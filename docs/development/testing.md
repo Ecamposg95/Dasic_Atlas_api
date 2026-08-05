@@ -1,78 +1,64 @@
 # Testing
 
-Primer harness de tests del repo (2026-08). Hoy cubre **solo lógica pura del
-frontend** — no requiere base de datos ni servidor corriendo.
+El repo tiene **dos suites**: pytest para el backend y Vitest para la lógica pura del frontend. Ninguna corre automáticamente — **no hay CI**; se ejecutan a mano antes de cada push.
 
-## Cómo correr los tests
+## Cómo correr
 
 ```bash
+# Backend  (instalar dependencias de desarrollo una sola vez)
+pip install -r requirements-dev.txt
+pytest -q
+
+# Frontend
 cd web
-npm run test        # corrida única (CI-friendly)
-npm run test:watch  # modo watch durante desarrollo
+npm run test          # corrida única
+npm run test:watch    # modo watch
 ```
 
-Runner: [Vitest] (dev-dependency de `web/`). Config en `web/vitest.config.ts`:
-entorno `node` (sin jsdom — no se testean componentes React todavía), alias `@`
-espejado de `vite.config.ts`, y patrón de descubrimiento `src/**/*.test.ts`.
-Los tests viven junto al código que cubren (colocated), p.ej.
-`src/features/cotizador/lib/calc.test.ts` junto a `calc.ts`.
+Config: `pytest.ini` (`testpaths = tests`) y `web/vitest.config.ts` (entorno `node` — sin jsdom, no se testean componentes React todavía; alias `@` espejado de `vite.config.ts`; patrón `src/**/*.test.ts`). Los tests del frontend viven junto al código que cubren.
 
-## Qué cubre este harness
+## Qué cubre hoy
 
-`web/src/features/cotizador/lib/calc.test.ts` — el motor de cálculo de dinero
-del cotizador (`calc.ts`), que es 100% funciones puras (el módulo solo hace
-`import type`, sin stores ni React):
+### Backend — `tests/`
 
-- `convertCost` — conversión costo→divisa de cotización con la tasa de venta
-  (DOF + tolerancia): misma moneda, USD→MXN (×), MXN→USD (÷), guard TC ≤ 0.
-- `convertCostDOF` — conversión con DOF puro (Costo OC al proveedor, sin spread).
-- `lineImporte` — precio extendido por línea: costo + utilidad %, descuento al
-  cliente, multimoneda, bordes de utilidad 0 y cantidad decimal.
-- `computeTotals` — subtotal/IVA/total del documento, mezcla de líneas MXN+USD,
-  y la regla de **redondeo a 2 decimales POR LÍNEA antes de sumar** (igual que
-  el `quantize` por línea del backend, para que el preview cuadre con el PDF).
-- `computeCostos` — costo real vía DOF con `descuento_proveedor`, margen $ y
-  margen % (incluye el caso donde el margen proviene solo del spread del TC),
-  guard subtotal 0.
-- `computeTotalsPorMoneda` — subtotales nativos por moneda sin aplicar TC.
-- `resolveDirectionalTcs` — tasa de venta unificada DOF+tolerancia: default y
-  validación de tolerancia, override plausible honrado y espejado, banda de
-  plausibilidad [DOF·0.5, DOF·1.5] que descarta sentinelas legacy (0.000001),
-  e ignorar el parámetro `_tc_mn_a_usd`.
+| Archivo | Cubre |
+|---|---|
+| `test_remisiones_service.py` | Ciclo de vida: emisión con validación de pendientes, sobre-entrega autorizada por permiso, cancelación con reversa de stock, conversión a cotización, carrera con lock |
+| `test_remisiones_api.py` | Contratos HTTP: permisos por rol, owner-scoping, restricciones del rol operativo, borrador con pendientes, avance de entrega, 400/409 vs 500 |
+| `test_remisiones_repository.py` | Acumulados de entrega por partida (solo cuentan los estados que entregan) |
+| `test_remisiones_documents.py` | Render de plantilla: escape XSS, marcas de agua de borrador y cancelada, línea de recepción |
+| `test_remision_modelo.py` | Estado inicial y persistencia del enum |
+| `test_folio_service.py` | Consecutivo, incremento y reinicio mensual |
+| `test_formato.py` | `fmt_cantidad`: enteros sin decimales, máximo 2, redondeo de display |
+| `test_stock_decimal_guard.py` | Rechazo de cantidades fraccionarias en movimientos de stock |
+| `test_unidades.py` | Catálogo de unidades y snapshot de unidad por partida |
 
-Convención de los tests: cada valor esperado está **derivado a mano** y la
-aritmética queda documentada en un comentario junto al assert. Nunca copiar el
-output de la función como expected (test tautológico).
+### Frontend — `web/src/features/cotizador/`
 
-## Estrategia pendiente: backend (pytest)
+- **`lib/calc.test.ts`** — el motor de dinero (100% funciones puras): `convertCost` y `convertCostDOF` (tasa de venta vs DOF puro para costo de OC), `lineImporte` (costo + utilidad, descuento al cliente, multimoneda, bordes), `computeTotals` (subtotal/IVA/total con **redondeo a 2 decimales por línea antes de sumar**, espejo del `quantize` del backend), `computeCostos` (margen $ y %, incluido el margen que viene solo del spread del TC), `computeTotalsPorMoneda` y `resolveDirectionalTcs`.
+- **`store.test.ts`** — hidratación del cotizador y comportamiento del TC al cambiar la moneda del documento.
 
-El backend no tiene tests todavía. El plan cuando se monte:
+**Convención:** cada valor esperado está derivado a mano con la aritmética documentada en un comentario junto al assert. Nunca copiar el output de la función como expected (test tautológico).
 
-- **Harness:** `pytest` + `httpx.AsyncClient`/`TestClient` de FastAPI.
-- **Base de datos:** las reglas del repo prohíben SQLite/fakes en memoria — los
-  tests de backend necesitan un **PostgreSQL de servicio** (Docker
-  `postgres:16` local o service container en CI) con una **DB efímera por
-  sesión de test**: fixture que crea un database temporal, corre
-  `alembic upgrade head` (o `Base.metadata.create_all` mientras dure la
-  transición), siembra el tenant base (`seed_base_tenant`) y hace drop al
-  terminar. Cada test corre dentro de una transacción con rollback para
-  aislamiento. *Nota: en el entorno de desarrollo actual (WSL sin Postgres de
-  servicio) esto no es ejecutable — por eso el primer harness fue el frontend.*
-- **Candidatos prioritarios (lógica de dinero):**
-  1. Totales de `app/routers/ventas.py` — recálculo servidor de
-     subtotal/IVA/total, folios `COT-YYYYMM-…`, `tipo_cambio` requerido cuando
-     `moneda == "USD"`, versionado de re-cotizaciones. Contraparte backend de
-     `calc.ts` (`_convert_cost_to_quote_currency`, `_resolve_directional_tcs`):
-     idealmente tests espejo con los mismos números que `calc.test.ts` para
-     garantizar paridad front/back.
-  2. FIFO de cuentas por cobrar — aplicación de pagos (`TransaccionCliente`)
-     contra las órdenes más antiguas primero, saldos parciales, sobrepagos.
-  3. `app/services/stock_service.py::aplicar_movimiento` — todo movimiento de
-     stock genera row en `movimientos_stock`, disponible = `stock_actual −
-     reservas activas`, ciclo reserva → liberación/consumo al
-     cancelar/convertir cotización.
-- **Multi-tenancy:** cualquier test de endpoint debe verificar que la consulta
-  filtra por `organization_id` (dos orgs sembradas, asegurar que no hay fuga
-  cross-tenant).
+> **Modelo de TC vigente (2026-08-04):** USD→MXN usa `DOF + tolerancia`; MXN→USD usa `DOF − tolerancia` — la tolerancia protege a DASIC de la volatilidad en ambas direcciones. Se resuelve en espejo en `calc.ts::resolveDirectionalTcs` y `ventas.py::_resolve_directional_tcs`: al tocar uno hay que tocar el otro y actualizar estos tests. (El "modelo unificado" de una sola tasa, vigente entre junio y agosto de 2026, quedó sustituido.)
 
-[Vitest]: https://vitest.dev/
+## Limitación importante: SQLite en el backend
+
+`tests/conftest.py` levanta la suite sobre **SQLite en memoria** y parchea como no-op las funciones exclusivas de Postgres (`pg_advisory_xact_lock`, `hashtext`). Es rápido y no necesita infraestructura, pero **contradice la regla del repo de usar solo PostgreSQL** y deja fuera justo lo que más duele:
+
+- **Concurrencia real de folios** — los advisory locks son no-op en las pruebas: la garantía de consecutivo irrepetible bajo carga no se verifica.
+- **Migraciones** — el esquema se crea con `create_all()`; Alembic y el `_BACKFILL_DDL` nunca se ejecutan, así que el DDL específico (`ALTER COLUMN … TYPE NUMERIC`, defaults de servidor) queda sin probar.
+- **Estrictez de Postgres** — un `GROUP BY` que SQLite acepta y Postgres rechaza llegó a producción por esta brecha (`f501338`: el total por moneda tumbó el módulo de gastos completo).
+
+**Siguiente paso recomendado:** contenedor de servicio `postgres:16` en CI, base efímera por sesión y `alembic upgrade head` antes de la suite. Cierra las tres brechas de una vez y habilita correr los tests en cada push.
+
+## Qué falta cubrir
+
+Por valor descendente:
+
+1. **Totales de venta en el backend** (`app/routers/ventas.py`) — tests espejo de `calc.test.ts` con los mismos números, para garantizar que servidor y cliente calculan idéntico (folios, `tipo_cambio` obligatorio en USD, versionado de recotizaciones).
+2. **Cobranza FIFO** (`app/services/cuentas_por_cobrar.py`) — aplicación de pagos contra las órdenes más antiguas, saldos parciales, sobrepagos, aging.
+3. **`stock_service.aplicar_movimiento`** — que todo movimiento genere fila en `movimientos_stock`, disponible = `stock_actual − reservas activas`, y el ciclo reserva → liberación/consumo.
+4. **Componentes React críticos** — hoy ninguno (falta jsdom); candidatos: carrito del cotizador y formularios con validación.
+
+> El sistema es **mono-tenant**: no hay aislamiento por organización que probar. Lo que sí conviene cubrir es el **owner-scoping** por rol (que un usuario de ventas no vea documentos ajenos), como ya hace `test_remisiones_api.py`.

@@ -35,7 +35,7 @@ set -a && source .env && set +a
 .venv/bin/uvicorn app.main:app --reload --host 127.0.0.1 --port 8001
 # Swagger: http://127.0.0.1:8001/docs
 # App:     http://127.0.0.1:8001/
-# Login:   admin@dasic.com / admin123  (creado por el seed al boot)
+# Login:   admin@dasic.mx / 784512  (creado por el seed al boot)
 ```
 
 En el primer boot verás:
@@ -43,7 +43,7 @@ En el primer boot verás:
 ```
 Tables OK (create_all ejecutado).
 Inicializando sistema DASIC ERP — creando administrador...
-Admin creado: admin@dasic.com / admin123
+Admin creado: admin@dasic.mx / 784512
 Startup completado correctamente.
 Seed context/ OK → {productos:{creados:12,...}, clientes:{...}, ...}
 Application startup complete.
@@ -83,7 +83,7 @@ El repo aún no tiene suite. La validación estándar después de cada cambio:
 
 # 2. login
 curl -s -c cookies.txt -X POST http://127.0.0.1:8001/api/auth/login \
-  -d 'username=admin@dasic.com&password=admin123' \
+  -d 'username=admin@dasic.mx&password=784512' \
   -H 'Content-Type: application/x-www-form-urlencoded' > /dev/null
 
 # 3. probar el endpoint
