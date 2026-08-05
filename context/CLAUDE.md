@@ -1,3 +1,9 @@
+> [!warning] DOCUMENTO HISTÓRICO — NO APLICA
+> Este archivo es un **boceto de planeación de abril-2026** que propuso un stack **Next.js 14 + Prisma + NextAuth**. Ese stack **nunca se implementó**: el proyecto siempre fue FastAPI + SQLAlchemy y hoy es SPA React + FastAPI. Ningún modelo Prisma, ruta `/app/...` ni comando `npx prisma` de aquí existe en el repo.
+> **Se conserva solo como registro del plan original.** Para el estado real ir a `CLAUDE.md` (raíz del repo), `docs/Atlas-ONE-Proyecto.md` y `context/02_REPO_CURRENT_STATE.md`.
+
+---
+
 # CLAUDE.md — DASIC Industrial ERP
 ## Ultra Plan · CRM para Consultora Industrial
 **Desarrollado por:** Atlas_Tech  

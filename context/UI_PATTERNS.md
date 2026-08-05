@@ -1,3 +1,9 @@
+> [!warning] DOCUMENTO HISTÓRICO — NO APLICA
+> Describe la UI **SSR con Jinja2 + Alpine.js + Tailwind CDN y paleta slate**, retirada en la migración a SPA del **2026-05-22**. Hoy la UI es React + Vite + Tailwind compilado + shadcn/ui, con el design system **CIRCUITO** (tokens semánticos HSL, acento esmeralda, sidebar negro) — ninguna clase `slate-*` ni patrón Alpine de aquí es la convención vigente.
+> **Se conserva solo como referencia de decisiones de diseño previas.** Para los patrones actuales ir a `CLAUDE.md` (raíz), `docs/Atlas-ONE-Proyecto.md` (§3 design system) y el código en `web/src/components/ui/` + `web/src/index.css`.
+
+---
+
 # UI_PATTERNS.md — Guía de Estilos y Patrones de Interfaz
 # DASIC Industrial ERP · CRM-first · Multi-tenant · SSR
 

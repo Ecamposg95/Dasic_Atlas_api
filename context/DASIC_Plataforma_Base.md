@@ -1,3 +1,9 @@
+> [!warning] DOCUMENTO HISTÓRICO — NO APLICA
+> Blueprint de arranque (2026-04-13). Su modelo de datos y sus routers propuestos **nunca se implementaron así**: no existen `product_variants`, `warehouses`, `stock_items`, `price_lists` ni `product_prices`; el esquema real es en español (`productos`, `movimientos_stock`, `ordenes_venta`…) y los endpoints viven bajo `/api/*`. Tampoco existe la reserva de 48 h con expiración: las reservas se crean al guardar cotización y se liberan al cancelar/convertir. Sí sobrevive el rumbo estratégico (cotizar rápido con stock confiable, kardex, dashboard de KPIs).
+> **Se conserva como registro de la visión y los KPIs originales de negocio.** Para el estado real ir a `docs/Atlas-ONE-Proyecto.md` y `context/02_REPO_CURRENT_STATE.md`.
+
+---
+
 # Blueprint: DASIC Sales-Stock Platform
 
 **Version:** 0.1.0  

@@ -1,3 +1,9 @@
+> [!warning] DOCUMENTO HISTÓRICO — NO APLICA
+> Roadmap congelado al **2026-04-28**. Sus "pendientes" ya se cerraron (folios, recotización, OC real, dashboard, CRM Kanban) y su **Fase 4 nucleus multi-tenant / Fase 5 RBAC tenant-aware fue revertida**: `app/models/nucleus.py` (Organization/Branch/UserOrganization) fue retirado y el proyecto es mono-tenant. Tampoco aplica el "baseline canónico" `atlas_erp_pos_stack.md`.
+> **Se conserva como registro de la secuencia de trabajo original.** El roadmap vigente está en `docs/Atlas-ONE-Proyecto.md` (§11) y `context/02_REPO_CURRENT_STATE.md`.
+
+---
+
 # Roadmap de Implementacion (DASIC CRM Industrial)
 
 Este roadmap es el orden recomendado de trabajo para convertir el prototipo actual en un CRM industrial multi-tenant basado en patrones de Atlas.

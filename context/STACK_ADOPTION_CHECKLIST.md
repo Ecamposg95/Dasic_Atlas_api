@@ -1,3 +1,9 @@
+> [!warning] DOCUMENTO HISTÓRICO — NO APLICA
+> Checklist congelado en abril-2026 contra el baseline Atlas ERP/POS. Sus estados ya no son ciertos: `Organization`/`Branch`/`UserOrganization` figuran como `ADOPTADO` pero **fueron retirados** (mono-tenant), la UI SSR que asume fue reemplazada por la SPA React (2026-05-22), y la "capa de repositories `PENDIENTE`" existe hoy como el patrón `app/domains/<x>/` (router/service/repository), estrenado en `app/domains/remisiones/`.
+> **Se conserva como registro del checklist original.** El estado real y verificado está en `context/02_REPO_CURRENT_STATE.md` y `docs/Atlas-ONE-Proyecto.md`.
+
+---
+
 # Stack Adoption Checklist (Atlas -> DASIC)
 
 Este checklist detalla el estado real del repositorio tras la refactorización a la arquitectura base recomendada para DASIC.
