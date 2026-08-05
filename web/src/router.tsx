@@ -89,6 +89,14 @@ export const router = createBrowserRouter([
   // Sirve también la URL `/` (matching el flujo previo de Jinja).
   { path: '/', element: <LoginPage /> },
   { path: '/login', element: <LoginPage /> },
+  // 47 sitios redirigen aquí al recibir un 401. La ruta no existía: caía en el
+  // catch-all `NotFound` de `/spa`, que además vive DENTRO del `Layout`
+  // protegido, así que el usuario terminaba en el login sólo de rebote —
+  // Layout pedía `/api/auth/me`, recibía otro 401 y navegaba a `/`—. Es decir,
+  // una recarga completa y una llamada de más para llegar al mismo sitio.
+  // Declararla estática la resuelve directo: React Router prioriza el segmento
+  // literal sobre el comodín de `/spa`.
+  { path: '/spa/login', element: <LoginPage /> },
   {
     path: '/spa',
     element: <Layout />,

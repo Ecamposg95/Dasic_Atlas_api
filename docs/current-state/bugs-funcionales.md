@@ -34,7 +34,11 @@ Además de los del top: ~~`useCrearCotizacionDesde` crea una orden y solo invali
 
 Sin `onError` ni feedback: eliminar contacto (`ContactosTab.tsx:49`), borrar nota (`NotasTab.tsx:45`, tampoco confirma), eliminar activo y planta (`ActivosTab.tsx:51`, `PlantasTab.tsx:45` — el 409 "la planta tiene activos" se pierde en silencio).
 
-**`Layout.tsx:35-40`**: cualquier fallo de `/api/auth/me` (500, timeout, red intermitente) expulsa al login, no solo el 401 → se pierde el trabajo en curso por un parpadeo de red. `ReportesPage.tsx:292-294` hace `window.location.href` **durante el render** y hacia `/` en vez de `/spa/login`.
+~~**`Layout.tsx:35-40`**~~ ✅ **Corregido.** Cualquier fallo de `/api/auth/me` expulsaba al login, no solo el 401. Ahora solo 401 y 403 sacan al usuario; lo transitorio se reintenta 3 veces con espera creciente y, si no cede, se muestra una pantalla con "Reintentar" en vez de echarlo. **Matiz sobre el reporte original:** el efecto solo corre con `user === null` —al recargar o entrar por enlace directo—, así que no había pérdida de trabajo en curso; el daño real era aterrizar en el login en vez de en la ruta pedida.
+
+~~`ReportesPage.tsx:292-294`~~ ✅ **Corregido.** Hacía `window.location.href` **durante el render** (efecto secundario en fase de render, que React puede ejecutar dos veces) y recargaba la SPA entera; ahora usa `<Navigate>`.
+
+✅ **Hallazgo adicional, no auditado:** los **47** sitios que redirigen a `/spa/login` apuntaban a una ruta inexistente. Caía en el catch-all `NotFound` de `/spa`, que además vive **dentro del `Layout` protegido**, así que el usuario llegaba al login sólo de rebote — una recarga completa y una llamada a `/api/auth/me` de más. Se declaró la ruta estática.
 
 ## Estado obsoleto y carreras
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { BarChart3 } from 'lucide-react';
 import { useIsAdminOrGerente } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
@@ -290,8 +291,10 @@ function RankingVendedoresSection({ dias }: { dias: number }) {
     );
   }
   if (apiError?.status === 401) {
-    window.location.href = '/';
-    return null;
+    // `window.location.href` durante el render es un efecto secundario en fase
+    // de render: React puede ejecutarla dos veces y además recargaba la SPA
+    // entera. `<Navigate>` es la forma declarativa y no sale del cliente.
+    return <Navigate to="/" replace />;
   }
 
   const items = data ?? [];
