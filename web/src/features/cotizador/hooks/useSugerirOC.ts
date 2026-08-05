@@ -17,7 +17,10 @@ export function useGenerarOC() {
     mutationFn: (cotizacionId) =>
       api.post<GenerarOCResponse>(`/api/ventas/${cotizacionId}/generar-oc`),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['compras'] });
+      // La clave del listado de OCs es ['ordenesCompra'] (useOrdenesCompra):
+      // ['compras'] no existe como query en ninguna parte, así que invalidarla
+      // no refrescaba nada y las OCs recién generadas no aparecían.
+      qc.invalidateQueries({ queryKey: ['ordenesCompra'] });
       qc.invalidateQueries({ queryKey: ['ventas'] });
     },
   });

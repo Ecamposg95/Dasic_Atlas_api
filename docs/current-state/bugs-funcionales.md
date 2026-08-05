@@ -6,11 +6,11 @@
 
 | # | Sev | Dónde | Qué pasa |
 |---|---|---|---|
-| 1 | CRÍTICO | `remisiones/hooks/useRemisiones.ts:89-201` | Las mutaciones no invalidan `['remision-borrador']` → el editor precarga pendientes pre-emisión → sobre-entrega o 400 |
-| 2 | CRÍTICO | ídem vs `useRemisiones.ts:79-85` | Tampoco invalidan `['ventas','avance-entrega']` → el avance de la venta nunca se refresca tras emitir |
-| 3 | ALTO | `cotizador/hooks/useSugerirOC.ts:20` | Invalida `['compras']`, key inexistente; la real es `['ordenesCompra']` → las OC generadas no aparecen |
-| 4 | ALTO | `compras/hooks/useRecibirParcial.ts:9-12` | Recibir OC mueve stock pero no invalida `['productos']`/`['cardex']` |
-| 5 | ALTO | `fx/pages/FxPage.tsx:63-64,165-166` | Override/refresh de TC no invalida `['fx','usd-mxn']` → el cotizador siembra el TC viejo hasta 5 min |
+| ~~1~~ | ~~CRÍTICO~~ | `remisiones/hooks/useRemisiones.ts` | ✅ **Corregido** (Ola 1). Las mutaciones no invalidaban `['remision-borrador']` → el editor precargaba pendientes pre-emisión → sobre-entrega o 400 |
+| ~~2~~ | ~~CRÍTICO~~ | ídem | ✅ **Corregido** (Ola 1). Tampoco invalidaban `['ventas','avance-entrega']` → el avance de la venta nunca se refrescaba tras emitir |
+| ~~3~~ | ~~ALTO~~ | `cotizador/hooks/useSugerirOC.ts` | ✅ **Corregido** (Ola 1). Invalidaba `['compras']`, key inexistente; la real es `['ordenesCompra']` → las OC generadas no aparecían |
+| ~~4~~ | ~~ALTO~~ | `compras/hooks/useRecibirParcial.ts` | ✅ **Corregido** (Ola 1). Recibir OC mueve stock y no invalidaba `['productos']`/`['cardex']` |
+| ~~5~~ | ~~ALTO~~ | `fx/pages/FxPage.tsx` | ✅ **Corregido** (Ola 1). Override/refresh de TC no invalidaba `['fx','usd-mxn']` → el cotizador sembraba el TC viejo |
 | 6 | ALTO | `components/layout/Sidebar.tsx:20-21` | `modulos_visibles` ignorado → menús que el backend rechaza con 403 |
 | 7 | ALTO | `cotizador/pages/CotizadorPage.tsx:210-212` | Cada refetch re-hidrata el carrito: pisa ediciones en vuelo y colapsa filas expandidas al guardar |
 | 8 | ALTO | `clientes/hooks/useEmpresaDetalle.ts:36-40` | Registrar pago no invalida `['empresa',id,'resumen']` → saldo viejo en la pestaña contigua |
@@ -26,7 +26,7 @@
 
 ## Invalidación de caché — mapa completo
 
-Además de los del top: `useCrearCotizacionDesde` (`useRemisiones.ts:205-214`) crea una orden y solo invalida remisiones; los tres flujos de `SeguimientoPage.tsx:264,277,289` (recotizar/convertir/cancelar) mueven stock y crean cargos de cobranza sin invalidar `['productos']` ni `['cxc-*']`; los ajustes de inventario (`AjusteStockModal.tsx:32`, `ProductoFormModal.tsx:60`, `useProductos.ts:85`) no invalidan `['cardex']` pese a generar movimientos; las mutaciones de CRM (`useCrmDeals.ts`) no invalidan `['empresa',id,'deals']` ni el dashboard.
+Además de los del top: ~~`useCrearCotizacionDesde` crea una orden y solo invalida remisiones~~ (✅ corregido junto con #1 y #2, igual que las invalidaciones de `['productos']`/`['cardex']` al emitir y cancelar, que sí mueven inventario); los tres flujos de `SeguimientoPage.tsx:264,277,289` (recotizar/convertir/cancelar) mueven stock y crean cargos de cobranza sin invalidar `['productos']` ni `['cxc-*']`; los ajustes de inventario (`AjusteStockModal.tsx:32`, `ProductoFormModal.tsx:60`, `useProductos.ts:85`) no invalidan `['cardex']` pese a generar movimientos; las mutaciones de CRM (`useCrmDeals.ts`) no invalidan `['empresa',id,'deals']` ni el dashboard.
 
 **Cero invalidaciones de `['dashboard']` en toda la app** — sus alertas (cotizaciones por vencer, stock crítico, saldos vencidos, OC en borrador) pueden estar arbitrariamente viejas.
 

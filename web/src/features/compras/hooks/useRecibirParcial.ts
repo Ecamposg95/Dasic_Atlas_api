@@ -9,6 +9,11 @@ export function useRecibirParcial(id: number) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['ordenesCompra'] });
       qc.invalidateQueries({ queryKey: ['ordenCompraDetalle', id] });
+      // Recibir da entrada al inventario de las líneas de catálogo
+      // (`_aplicar_recepcion` en routers/compras.py), con su fila en
+      // movimientos_stock: sin esto, existencias y kardex quedan viejos.
+      qc.invalidateQueries({ queryKey: ['productos'] });
+      qc.invalidateQueries({ queryKey: ['cardex'] });
     },
   });
 }

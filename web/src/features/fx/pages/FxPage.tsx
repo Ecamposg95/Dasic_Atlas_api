@@ -62,6 +62,10 @@ function OverrideModal({ onClose, onSaved }: OverrideModalProps) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['fx-hoy'] });
       void qc.invalidateQueries({ queryKey: ['fx-historico'] });
+      // El cotizador siembra el TC desde ['fx','usd-mxn'] (useFX), una clave
+      // distinta de las de esta página: sin invalidarla, las cotizaciones
+      // nuevas seguían naciendo con el tipo de cambio anterior al override.
+      void qc.invalidateQueries({ queryKey: ['fx'] });
       toast({ kind: 'success', title: 'Override guardado' });
       onSaved();
     },
@@ -164,6 +168,7 @@ export function FxPage() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['fx-hoy'] });
       void qc.invalidateQueries({ queryKey: ['fx-historico'] });
+      void qc.invalidateQueries({ queryKey: ['fx'] });  // ver nota en el override
       toast({ kind: 'success', title: 'TC actualizado desde Banxico' });
     },
     onError: (err) => {
