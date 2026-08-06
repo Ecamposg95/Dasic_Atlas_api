@@ -550,6 +550,49 @@ _BACKFILL_DDL = [
 ]
 
 
+# 20260806_01: fechas de documento a DATE.
+#
+# Va aparte del resto de `_BACKFILL_DDL` porque no es un `ADD COLUMN`: es una
+# conversión de tipo con lógica de datos, y solo debe correr si la columna
+# sigue siendo timestamp. El `DO $$` la hace idempotente — en un arranque
+# posterior no encuentra nada que convertir y no hace nada.
+#
+# El CASE distingue los dos orígenes de los datos: las filas a medianoche UTC
+# las escribió el cotizador (su parte de fecha ES la capturada) y las que traen
+# hora las generó el backend (son instantes, y su día correcto es el de CDMX).
+# Ver la migración homónima para el detalle y los conteos medidos.
+_FECHAS_A_DATE = """
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'ordenes_venta' AND column_name = 'fecha_creacion'
+      AND data_type LIKE 'timestamp%'
+  ) THEN
+    ALTER TABLE ordenes_venta
+      ALTER COLUMN fecha_creacion DROP DEFAULT,
+      ALTER COLUMN fecha_creacion TYPE date USING (
+        CASE
+          WHEN (fecha_creacion AT TIME ZONE 'UTC')::time = '00:00:00'
+            THEN (fecha_creacion AT TIME ZONE 'UTC')::date
+          ELSE (fecha_creacion AT TIME ZONE 'America/Mexico_City')::date
+        END
+      ),
+      ALTER COLUMN fecha_creacion SET DEFAULT (now() AT TIME ZONE 'America/Mexico_City')::date;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'ordenes_venta' AND column_name = 'fecha_vencimiento'
+      AND data_type LIKE 'timestamp%'
+  ) THEN
+    ALTER TABLE ordenes_venta
+      ALTER COLUMN fecha_vencimiento TYPE date USING fecha_vencimiento::date;
+  END IF;
+END $$;
+"""
+
+
 def run_backfill_ddl(db: Session) -> None:
     """Ejecuta DDL idempotente para columnas nuevas. Tolera errores individuales."""
     for stmt in _BACKFILL_DDL:
@@ -559,6 +602,16 @@ def run_backfill_ddl(db: Session) -> None:
         except Exception as exc:
             db.rollback()
             logger.warning("Backfill DDL skip (%s): %s", stmt[:80], exc)
+
+    # Conversión de tipo, no columna nueva: va aparte y se registra en INFO
+    # cuando corre, porque toca datos existentes y conviene verlo en el log.
+    try:
+        db.execute(text(_FECHAS_A_DATE))
+        db.commit()
+        logger.info("Fechas de ordenes_venta verificadas/convertidas a DATE.")
+    except Exception as exc:
+        db.rollback()
+        logger.warning("Conversión de fechas a DATE omitida: %s", exc)
 
 
 def seed_super_admin(db: Session) -> None:

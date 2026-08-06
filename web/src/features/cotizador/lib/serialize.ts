@@ -39,8 +39,12 @@ export function buildSavePayload(s: CotizadorSnapshot): OrdenVentaCreate {
     tc_mn_a_usd: s.tc_mn_a_usd,
     tc_usd_a_mn: s.tc_usd_a_mn,
     tolerancia_tc: s.tolerancia_tc,
-    fecha_creacion: s.fecha_creacion ? `${s.fecha_creacion}T00:00:00` : null,
-    fecha_vencimiento: s.fecha_vencimiento ? `${s.fecha_vencimiento}T00:00:00` : null,
+    // Se manda la fecha PELADA. El `T00:00:00` que se pegaba antes convertía
+    // una fecha de calendario en un instante, y el backend —cuya columna era
+    // timestamptz— lo anclaba en UTC; al pintarlo en CDMX retrocedía un día.
+    // Ahora la columna es DATE y el contrato es una fecha, sin más.
+    fecha_creacion: s.fecha_creacion || null,
+    fecha_vencimiento: s.fecha_vencimiento || null,
     observaciones: s.observaciones || null,
     terminos_condiciones: s.terminos_condiciones || null,
     // Map store fields → backend schema (`app/schemas/sales.py:102-103`):

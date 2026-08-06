@@ -2,7 +2,7 @@
 Sales schemas: OrdenVenta, DetalleOrden.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import List, Literal, Optional
 
@@ -118,8 +118,8 @@ class OrdenVentaCreate(BaseModel):
     )
     # Fechas editables: el editor de borradores puede sobreescribir la fecha
     # de creación y la fecha de vencimiento de la cotización.
-    fecha_creacion: Optional[datetime] = None
-    fecha_vencimiento: Optional[datetime] = None
+    fecha_creacion: Optional[date] = None
+    fecha_vencimiento: Optional[date] = None
     # Bloque editable de Condiciones Comerciales. None → backend aplica
     # defaults. Vacío "" → usuario eligió no tener condiciones (PDF muestra
     # solo metadata: moneda, vigencia).
@@ -132,8 +132,8 @@ class OrdenVentaCreate(BaseModel):
 class OrdenVentaResponse(BaseModel):
     id: int
     folio: str
-    fecha_creacion: datetime
-    fecha_vencimiento: Optional[datetime] = None
+    fecha_creacion: date
+    fecha_vencimiento: Optional[date] = None
     estatus: EstatusOrden
     moneda: str
     tipo_cambio: Decimal

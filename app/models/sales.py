@@ -2,10 +2,11 @@
 Sales models: OrdenVenta, DetalleOrden.
 """
 
-from sqlalchemy import Boolean, Column, DateTime, DECIMAL, ForeignKey, Integer, Numeric, String, Text, text
+from sqlalchemy import Boolean, Column, Date, DateTime, DECIMAL, ForeignKey, Integer, Numeric, String, Text, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
+from app.core.fechas import hoy_negocio
 from app.db import Base
 from app.models.enums import EstatusOrden, TolerantEnum
 
@@ -18,8 +19,17 @@ class OrdenVenta(Base):
     cliente_id = Column(Integer, ForeignKey("clientes.id"))
     contacto_id = Column(Integer, ForeignKey("contactos.id"), nullable=True)
     vendedor_id = Column(Integer, ForeignKey("usuarios.id"))
-    fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
-    fecha_vencimiento = Column(DateTime, nullable=True)
+    # `Date`, no `DateTime`: son fechas de CALENDARIO, no instantes. Guardarlas
+    # como timestamp obligaba a elegir zona al pintarlas y el mismo documento
+    # salía con dos fechas distintas según la pantalla (C-2608009). El default
+    # del servidor lleva la zona explícita porque `now()::date` usaría la de la
+    # sesión —UTC en Railway—, que es justo el error que se está quitando.
+    # El default vive en PYTHON, no en el DDL: la zona del negocio es
+    # configuración de la app (`BUSINESS_TIMEZONE`), y un `server_default` con
+    # la zona escrita a mano sería SQL de Postgres —rompe `create_all()` en la
+    # suite— además de duplicar la regla en dos lugares que pueden divergir.
+    fecha_creacion = Column(Date, default=hoy_negocio)
+    fecha_vencimiento = Column(Date, nullable=True)
 
     estatus = Column(TolerantEnum(EstatusOrden), default=EstatusOrden.COTIZACION)
     moneda = Column(String(3), nullable=False, default="MXN")

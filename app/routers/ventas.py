@@ -675,7 +675,7 @@ def crear_orden(
             tc_mn_a_usd=orden_data.tc_mn_a_usd,
             tc_usd_a_mn=orden_data.tc_usd_a_mn,
             tolerancia_tc=tolerancia_tc,
-            fecha_vencimiento=datetime.utcnow() + timedelta(days=get_quote_validity_days(db)),
+            fecha_vencimiento=hoy_negocio() + timedelta(days=get_quote_validity_days(db)),
             total=0,
             terminos_condiciones=terminos,
             pdf_unificado=1 if orden_data.pdf_unificado else 0,
@@ -975,7 +975,7 @@ def actualizar_orden(
             orden.fecha_vencimiento = orden_update.fecha_vencimiento
         elif orden.fecha_vencimiento is None:
             # No tenía vencimiento previo; aplicar default
-            orden.fecha_vencimiento = datetime.utcnow() + timedelta(days=get_quote_validity_days(db))
+            orden.fecha_vencimiento = hoy_negocio() + timedelta(days=get_quote_validity_days(db))
         if orden_update.pdf_unificado is not None:
             orden.pdf_unificado = 1 if orden_update.pdf_unificado else 0
         if orden_update.concepto_unificado is not None:
@@ -1240,7 +1240,7 @@ def recotizar(
             tc_usd_a_mn=origen.tc_usd_a_mn,
             tolerancia_tc=origen.tolerancia_tc,
             total=origen.total,
-            fecha_vencimiento=datetime.utcnow() + timedelta(days=get_quote_validity_days(db)),
+            fecha_vencimiento=hoy_negocio() + timedelta(days=get_quote_validity_days(db)),
             cotizacion_origen_id=raiz_id,
             version=siguiente_version,
             enviada_at=None,
@@ -1486,9 +1486,9 @@ def listar_historial(
         "estatus": o.estatus,
         "version": o.version or 1,
         "cotizacion_origen_id": o.cotizacion_origen_id,
-        "edad_dias": max((ahora - o.fecha_creacion.date()).days, 0) if o.fecha_creacion else 0,
-        "dias_restantes": (o.fecha_vencimiento.date() - ahora).days if o.fecha_vencimiento else None,
-        "esta_vencida": bool(o.fecha_vencimiento and o.fecha_vencimiento.date() < ahora),
+        "edad_dias": max((ahora - o.fecha_creacion).days, 0) if o.fecha_creacion else 0,
+        "dias_restantes": (o.fecha_vencimiento - ahora).days if o.fecha_vencimiento else None,
+        "esta_vencida": bool(o.fecha_vencimiento and o.fecha_vencimiento < ahora),
     } for o in ordenes]
 
 
@@ -1698,7 +1698,7 @@ def generar_pdf(
     else:
         fecha_str = ""
     vigencia_dias = (
-        max((orden.fecha_vencimiento.date() - orden.fecha_creacion.date()).days, 0)
+        max((orden.fecha_vencimiento - orden.fecha_creacion).days, 0)
         if orden.fecha_vencimiento and orden.fecha_creacion
         else get_quote_validity_days(db)
     )
@@ -1801,7 +1801,7 @@ def generar_word(id: int, db: Session = Depends(get_db)):
     else:
         fecha_str = ""
     vigencia_dias = (
-        max((orden.fecha_vencimiento.date() - orden.fecha_creacion.date()).days, 0)
+        max((orden.fecha_vencimiento - orden.fecha_creacion).days, 0)
         if orden.fecha_vencimiento and orden.fecha_creacion
         else get_quote_validity_days(db)
     )
@@ -1843,9 +1843,9 @@ class _WhatsappLogIn(BaseModel):
 
 def _quote_summary(orden: "models.OrdenVenta") -> dict:
     ahora = hoy_negocio()
-    edad = max((ahora - orden.fecha_creacion.date()).days, 0) if orden.fecha_creacion else 0
+    edad = max((ahora - orden.fecha_creacion).days, 0) if orden.fecha_creacion else 0
     dias_restantes = (
-        (orden.fecha_vencimiento.date() - ahora).days if orden.fecha_vencimiento else None
+        (orden.fecha_vencimiento - ahora).days if orden.fecha_vencimiento else None
     )
     detalles_resumen = "; ".join(
         f"{(d.producto.sku_comercial if d.producto else (d.sku_libre or 'FANTASMA'))} x{fmt_cantidad(d.cantidad)}"
