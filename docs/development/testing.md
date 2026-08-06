@@ -83,6 +83,14 @@ Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). E
 - **`lib/calc.test.ts`** — el motor de dinero (100% funciones puras): `convertCost` y `convertCostDOF` (tasa de venta vs DOF puro para costo de OC), `lineImporte` (costo + utilidad, descuento al cliente, multimoneda, bordes), `computeTotals` (subtotal/IVA/total con **redondeo a 2 decimales por línea antes de sumar**, espejo del `quantize` del backend), `computeCostos` (margen $ y %, incluido el margen que viene solo del spread del TC), `computeTotalsPorMoneda` y `resolveDirectionalTcs`.
 - **`store.test.ts`** — hidratación del cotizador y comportamiento del TC al cambiar la moneda del documento.
 
+### Componentes (jsdom)
+
+- **`ui/form-field.test.tsx`** — asociación etiqueta↔control, `aria-required`, y que el error se ate al campo con `aria-invalid`/`aria-describedby`.
+- **`ui/query-error.test.tsx`** — `role="alert"`, reintento, el 403 sin botón, y que la variante `asRow` produzca HTML válido dentro de un `<tbody>`.
+- **`gastos/GastoFormModal.test.tsx`** — validación de un formulario de entidad: qué no llega al servidor y por qué se le dice al usuario.
+
+**Reparto con la validación nativa.** Un input con `min`/`max`/`required` lo bloquea el navegador **antes** del `submit`, así que la comprobación en JS nunca ve esos casos y una prueba que los busque falla sin que nada esté roto. Cubre en JS lo que HTML no puede: campos vacíos que el negocio exige, longitudes que impone el backend, reglas entre campos.
+
 **Convención:** cada valor esperado está derivado a mano con la aritmética documentada en un comentario junto al assert. Nunca copiar el output de la función como expected (test tautológico).
 
 **Fechas en las pruebas del backend: usa `hoy_negocio()`, nunca `date.today()`.** CI corre en **UTC** y el código resuelve el día con la zona del negocio (`app/core/fechas.py`), así que una prueba que tome el día del runner concuerda en un equipo en CDMX y falla en CI durante las horas en que UTC va por delante — o al revés. Ya pasó: dos pruebas de cobranza verdes en local tumbaron el pipeline. **CI se queda en UTC a propósito**, porque esa discrepancia es justo lo que hace visible el bug.
