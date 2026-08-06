@@ -67,8 +67,11 @@ export function QueryError({
   if (asRow) {
     return (
       <tr>
-        <td colSpan={colSpan} role="alert">
-          {contenido}
+        {/* El `role="alert"` va DENTRO de la celda, no sobre ella: puesto en el
+            `<td>` sobreescribe su rol implícito de `cell` y la tabla deja de
+            exponerse como tal a las tecnologías de asistencia. */}
+        <td colSpan={colSpan}>
+          <div role="alert">{contenido}</div>
         </td>
       </tr>
     );

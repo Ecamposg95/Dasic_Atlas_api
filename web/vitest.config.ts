@@ -15,7 +15,11 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    // .tsx incluido desde que hay pruebas de componente. El entorno sigue
+    // siendo 'node' por defecto —es más rápido y cubre la mayoría—; los
+    // archivos que montan React declaran '// @vitest-environment jsdom' en su
+    // primera línea.
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     // El negocio opera en CDMX y varias reglas dependen del DÍA local (fecha
     // de cotización, vigencia, TC del día). Fijar la zona hace la suite
     // determinista y, sobre todo, falsificable: en UTC —donde corre CI— un

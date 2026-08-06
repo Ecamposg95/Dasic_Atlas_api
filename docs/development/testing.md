@@ -22,7 +22,7 @@ npm run test:watch    # modo watch
 npm run typecheck     # tsc -b --noEmit (CI también corre `npm run build`)
 ```
 
-Config: `pytest.ini` (`testpaths = tests`, marcador `postgres`) y `web/vitest.config.ts` (entorno `node` — sin jsdom, no se testean componentes React todavía; alias `@` espejado de `vite.config.ts`; patrón `src/**/*.test.ts`). Los tests del frontend viven junto al código que cubren.
+Config: `pytest.ini` (`testpaths = tests`, marcador `postgres`) y `web/vitest.config.ts`. El entorno por defecto es `node` —más rápido y suficiente para la lógica pura—; los archivos que **montan componentes React** declaran `// @vitest-environment jsdom` en su primera línea. Alias `@` espejado de `vite.config.ts`; patrón `src/**/*.test.ts` y `.tsx`. Los tests del frontend viven junto al código que cubren.
 
 ## Modo dual del backend: SQLite o PostgreSQL
 
@@ -116,6 +116,8 @@ Por valor descendente:
 
    > **Pregunta para administración:** el orden usa `nullsfirst()`, así que un cargo **sin fecha de vencimiento se cobra antes que uno ya vencido**. Puede ser deliberado o un efecto colateral. El comportamiento vigente quedó fijado en una prueba para que no cambie sin que nadie lo note, pero conviene confirmarlo.
 3. ~~**`stock_service.aplicar_movimiento`**~~ ✅ **Cubierto** (`test_stock_service.py`, 10 casos). Validado por mutación: quitar el guard de negativo, hacer que RESERVA mueva stock físico, ignorar el estatus de la cotización al sumar reservas o quitar el tope a 0 hacen fallar la suite.
-4. **Componentes React críticos** — hoy ninguno (falta jsdom); candidatos: carrito del cotizador y formularios con validación.
+4. ~~**Componentes React**~~ 🔵 **Harness listo y primeras pruebas escritas.** jsdom + Testing Library (`form-field.test.tsx`, `query-error.test.tsx`). Las consultas van **por rol y por nombre accesible**, nunca por clase CSS: así la prueba falla cuando se rompe la accesibilidad, no cuando cambia el diseño. Encontraron dos defectos reales —ver abajo—. **Falta:** el carrito del cotizador y los formularios de entidad completos.
+
+   Las primeras pruebas de componente destaparon dos cosas que no se ven leyendo el JSX: `FormField` mostraba el mensaje de error **solo visualmente** (sin `aria-invalid` ni `aria-describedby`, así que al enfocar el campo un lector de pantalla no anunciaba nada y el campo parecía válido), y `QueryError` ponía `role="alert"` **sobre el `<td>`**, lo que sobreescribe su rol implícito de celda y saca la fila de la semántica de tabla. Ambos corregidos.
 
 > El sistema es **mono-tenant**: no hay aislamiento por organización que probar. Lo que sí conviene cubrir es el **owner-scoping** por rol (que un usuario de ventas no vea documentos ajenos), como ya hace `test_remisiones_api.py`.
