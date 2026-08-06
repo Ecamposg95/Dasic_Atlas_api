@@ -82,6 +82,7 @@ Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). E
 
 - **`lib/calc.test.ts`** — el motor de dinero (100% funciones puras): `convertCost` y `convertCostDOF` (tasa de venta vs DOF puro para costo de OC), `lineImporte` (costo + utilidad, descuento al cliente, multimoneda, bordes), `computeTotals` (subtotal/IVA/total con **redondeo a 2 decimales por línea antes de sumar**, espejo del `quantize` del backend), `computeCostos` (margen $ y %, incluido el margen que viene solo del spread del TC), `computeTotalsPorMoneda` y `resolveDirectionalTcs`.
 - **`store.test.ts`** — hidratación del cotizador y comportamiento del TC al cambiar la moneda del documento.
+- **`store.carrito.test.ts`** — reglas del carrito: fusión del **mismo** producto de catálogo, fantasmas que **nunca** se fusionan (cada uno es una partida capturada a mano, con su costo y proveedor), servicios sin stock, edición aislada por línea, reordenamiento y `reset`.
 
 ### Componentes (jsdom)
 
@@ -128,7 +129,7 @@ Por valor descendente:
 
    > **Pregunta para administración:** el orden usa `nullsfirst()`, así que un cargo **sin fecha de vencimiento se cobra antes que uno ya vencido**. Puede ser deliberado o un efecto colateral. El comportamiento vigente quedó fijado en una prueba para que no cambie sin que nadie lo note, pero conviene confirmarlo.
 3. ~~**`stock_service.aplicar_movimiento`**~~ ✅ **Cubierto** (`test_stock_service.py`, 10 casos). Validado por mutación: quitar el guard de negativo, hacer que RESERVA mueva stock físico, ignorar el estatus de la cotización al sumar reservas o quitar el tope a 0 hacen fallar la suite.
-4. ~~**Componentes React**~~ 🔵 **Harness listo y primeras pruebas escritas.** jsdom + Testing Library (`form-field.test.tsx`, `query-error.test.tsx`). Las consultas van **por rol y por nombre accesible**, nunca por clase CSS: así la prueba falla cuando se rompe la accesibilidad, no cuando cambia el diseño. Encontraron dos defectos reales —ver abajo—. **Falta:** el carrito del cotizador y los formularios de entidad completos.
+4. ~~**Componentes React**~~ ✅ **Cubierto.** jsdom + Testing Library (`form-field.test.tsx`, `query-error.test.tsx`). Las consultas van **por rol y por nombre accesible**, nunca por clase CSS: así la prueba falla cuando se rompe la accesibilidad, no cuando cambia el diseño. Encontraron dos defectos reales —ver abajo—. El carrito y la validación de formularios también quedaron cubiertos.
 
    Las primeras pruebas de componente destaparon dos cosas que no se ven leyendo el JSX: `FormField` mostraba el mensaje de error **solo visualmente** (sin `aria-invalid` ni `aria-describedby`, así que al enfocar el campo un lector de pantalla no anunciaba nada y el campo parecía válido), y `QueryError` ponía `role="alert"` **sobre el `<td>`**, lo que sobreescribe su rol implícito de celda y saca la fila de la semántica de tabla. Ambos corregidos.
 
