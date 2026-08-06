@@ -40,6 +40,7 @@ from app.services.fantasmas_service import upsert_from_detalle
 from app.services.formato import fmt_cantidad
 from app.services.word_service import build_cotizacion_docx
 from app.core.runtime_config import get_iva_rate, get_quote_validity_days
+from app.core.fechas import hoy_negocio
 
 logger = logging.getLogger(__name__)
 
@@ -1471,7 +1472,7 @@ def listar_historial(
         .all()
     )
 
-    ahora = datetime.utcnow().date()
+    ahora = hoy_negocio()
 
     return [{
         "id": o.id,
@@ -1841,7 +1842,7 @@ class _WhatsappLogIn(BaseModel):
 
 
 def _quote_summary(orden: "models.OrdenVenta") -> dict:
-    ahora = datetime.utcnow().date()
+    ahora = hoy_negocio()
     edad = max((ahora - orden.fecha_creacion.date()).days, 0) if orden.fecha_creacion else 0
     dias_restantes = (
         (orden.fecha_vencimiento.date() - ahora).days if orden.fecha_vencimiento else None

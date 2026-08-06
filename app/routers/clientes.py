@@ -14,6 +14,7 @@ from app import schemas
 from app.db import get_db
 from app.security import allow_admin, allow_admin_asistente, allow_all_staff, get_current_user
 from app.security.permissions import is_owner_scoped, require
+from app.core.fechas import hoy_negocio
 
 logger = logging.getLogger(__name__)
 
@@ -969,7 +970,7 @@ def cuentas_por_cobrar_cliente(
     )
     from decimal import Decimal
     from datetime import datetime as _dt
-    hoy = _dt.utcnow().date()
+    hoy = hoy_negocio()
 
     def _saldo(r):
         return float(Decimal(r.monto or 0) - Decimal(r.monto_pagado or 0))

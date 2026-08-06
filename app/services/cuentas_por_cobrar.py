@@ -22,10 +22,12 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.models.enums import TipoMovimiento
+from app.core.fechas import hoy_negocio
 
 
 def _hoy() -> date:
-    return datetime.utcnow().date()
+    # Día del NEGOCIO, no de UTC: ver app/core/fechas.py.
+    return hoy_negocio()
 
 
 def crear_cargo_por_venta(

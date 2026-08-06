@@ -21,6 +21,7 @@ from app.services.cuentas_por_cobrar import (
     top_deudores,
 )
 from app.models.enums import TipoMovimiento
+from app.core.fechas import hoy_negocio
 
 
 router = APIRouter(prefix="/api/cuentas-por-cobrar", tags=["Cuentas por cobrar"])
@@ -35,7 +36,7 @@ def resumen_cxc(db: Session = Depends(get_db)):
     de buckets que la versión Python (delta<0 vencido, 0≤delta≤7 por vencer
     7d, 8≤delta≤30 por vencer 30d).
     """
-    hoy = datetime.utcnow().date()
+    hoy = hoy_negocio()
     saldo_expr = models.TransaccionCliente.monto - func.coalesce(
         models.TransaccionCliente.monto_pagado, 0
     )
