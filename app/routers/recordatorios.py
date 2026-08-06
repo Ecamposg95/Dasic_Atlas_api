@@ -18,6 +18,7 @@ from app.db import get_db
 from app.security import allow_all_staff, get_current_user
 from app.security.permissions import is_owner_scoped
 from app.schemas.recordatorios import RecordatorioCreate, RecordatorioPosponer
+from app.core.fechas import hoy_negocio, rango_del_dia
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +133,7 @@ def crear_recordatorio(
     db.commit()
     db.refresh(rec)
 
-    hoy = date.today()
+    hoy = hoy_negocio()
     return _enrich(rec, hoy)
 
 
@@ -152,17 +153,18 @@ def listar_recordatorios(
             f"vista inválida. Valores permitidos: {sorted(_VALID_VISTAS)}",
         )
 
-    hoy = date.today()
+    hoy = hoy_negocio()
     # Usar datetime.combine para comparaciones de rangos (evita TZ drift)
     # Patrón idéntico al usado en ventas.py (historial usa .date() directamente,
     # aquí usamos combine para rangos explícitos en la columna con TZ).
     # tzinfo=UTC: la columna es DateTime(timezone=True); comparar con naive
     # delega la coerción al TZ del server (frágil fuera de UTC). Lo hacemos explícito.
-    inicio_hoy = datetime.combine(hoy, time.min, tzinfo=timezone.utc)
-    fin_hoy = datetime.combine(hoy, time.max, tzinfo=timezone.utc)
-    inicio_proximos = datetime.combine(hoy, time.min, tzinfo=timezone.utc)
+    # Límites anclados en la zona del NEGOCIO, no en UTC: fijarlos a medianoche
+    # UTC de una fecha local hacía que "hoy" abarcara de las 18:00 de ayer a las
+    # 17:59 de hoy, así que un recordatorio de la tarde caía en el día siguiente.
+    inicio_hoy, fin_hoy = rango_del_dia(hoy)
     from datetime import timedelta
-    fin_proximos = datetime.combine(hoy + timedelta(days=7), time.max, tzinfo=timezone.utc)
+    _, fin_proximos = rango_del_dia(hoy + timedelta(days=7))
 
     query = db.query(models.Recordatorio)
 
@@ -207,7 +209,7 @@ def resumen_recordatorios(
 ):
     from datetime import timedelta
 
-    hoy = date.today()
+    hoy = hoy_negocio()
     inicio_hoy = datetime.combine(hoy, time.min, tzinfo=timezone.utc)
     fin_hoy = datetime.combine(hoy, time.max, tzinfo=timezone.utc)
     fin_proximos = datetime.combine(hoy + timedelta(days=7), time.max, tzinfo=timezone.utc)
@@ -265,7 +267,7 @@ def completar_recordatorio(
     db.commit()
     db.refresh(rec)
 
-    hoy = date.today()
+    hoy = hoy_negocio()
     return _enrich(rec, hoy)
 
 
@@ -293,7 +295,7 @@ def posponer_recordatorio(
     db.commit()
     db.refresh(rec)
 
-    hoy = date.today()
+    hoy = hoy_negocio()
     return _enrich(rec, hoy)
 
 

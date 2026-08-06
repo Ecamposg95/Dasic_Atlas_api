@@ -18,7 +18,7 @@ enorme —Kiritimati (UTC+14) y Niue (UTC−11) están a 25 horas, así que **nu
 comparten fecha— y verificar que la función respeta la zona configurada.
 """
 import importlib
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -70,3 +70,40 @@ def test_una_zona_inexistente_no_tumba_la_app(monkeypatch):
     degrada a UTC —el comportamiento anterior— en vez de reventar al arrancar."""
     mod = _recargar_con_zona(monkeypatch, "No/Existe")
     assert mod.hoy_negocio() is not None
+
+
+# ---------------------------------------------------------------------------
+# Rango del día
+# ---------------------------------------------------------------------------
+def test_el_rango_del_dia_se_ancla_en_la_zona_del_negocio(monkeypatch):
+    """El error sutil: fijar los límites a medianoche UTC de una fecha local.
+
+    Para CDMX eso hace que "hoy" abarque de las 18:00 de ayer a las 17:59 de
+    hoy, así que un recordatorio de la tarde cae en el día siguiente. Los
+    límites tienen que llevar el desfase de la zona, no el de UTC.
+    """
+    mod = _recargar_con_zona(monkeypatch, "America/Mexico_City")
+    inicio, fin = mod.rango_del_dia()
+
+    assert inicio.utcoffset() is not None, "el límite no lleva zona"
+    assert inicio.utcoffset() != timedelta(0), "el límite quedó anclado en UTC"
+    assert inicio.hour == 0 and inicio.minute == 0
+    assert fin.hour == 23 and fin.minute == 59
+
+
+def test_el_rango_cubre_el_dia_completo_y_nada_mas(monkeypatch):
+    mod = _recargar_con_zona(monkeypatch, "America/Mexico_City")
+    inicio, fin = mod.rango_del_dia()
+
+    # Casi 24 h exactas (el fin es 23:59:59.999999).
+    duracion = fin - inicio
+    assert timedelta(hours=23, minutes=59) < duracion < timedelta(days=1)
+    assert inicio.date() == fin.date() == mod.hoy_negocio()
+
+
+def test_acepta_un_dia_explicito(monkeypatch):
+    from datetime import date as _date
+
+    mod = _recargar_con_zona(monkeypatch, "America/Mexico_City")
+    inicio, fin = mod.rango_del_dia(_date(2026, 3, 15))
+    assert inicio.date() == fin.date() == _date(2026, 3, 15)

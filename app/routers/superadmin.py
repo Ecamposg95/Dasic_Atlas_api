@@ -17,6 +17,7 @@ from app.security import get_current_user
 from app.security.jwt import allow_superadmin
 from app.core.runtime_config import EDITABLE_KEYS, effective_summary
 from app.core.config import get_settings
+from app.core.fechas import hoy_negocio
 
 router = APIRouter(prefix="/api/superadmin", tags=["Super-Admin"])
 
@@ -367,12 +368,11 @@ def maintenance_job(payload: _WhichBody, db: Session = Depends(get_db)):
             n = marcar_vencidos(db)
             return {"ok": True, "which": payload.which, "actualizados": n}
         elif payload.which == "refresh_fx":
-            from app.services.fx_service import get_or_fetch, FXError
-            from datetime import date as _date
+            from app.services.fx_service import get_or_fetch
             # Respect MANUAL override: don't overwrite if today is MANUAL.
             existing = (
                 db.query(models.TipoCambioDia)
-                .filter(models.TipoCambioDia.fecha == _date.today())
+                .filter(models.TipoCambioDia.fecha == hoy_negocio())
                 .first()
             )
             if existing and existing.fuente == "MANUAL":

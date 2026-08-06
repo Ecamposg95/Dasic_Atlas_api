@@ -14,7 +14,7 @@ Reglas:
     si se pasan IDs.
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Iterable, Optional
 

@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+from app.core.fechas import hoy_negocio
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
@@ -62,7 +63,7 @@ def _from_exchangerate() -> tuple[Decimal, date]:
     ts = data.get("time_last_update_unix")
     if ts:
         return rate, datetime.utcfromtimestamp(int(ts)).date()
-    return rate, date.today()
+    return rate, hoy_negocio()
 
 
 def get_or_fetch(
@@ -70,7 +71,7 @@ def get_or_fetch(
     fecha: Optional[date] = None,
     force: bool = False,
 ) -> "models.TipoCambioDia":
-    fecha = fecha or date.today()
+    fecha = fecha or hoy_negocio()
 
     if not force:
         existing = (

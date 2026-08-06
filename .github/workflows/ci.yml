@@ -56,6 +56,11 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements-dev.txt
 
+      - name: ruff (reglas de alta señal, ver ruff.toml)
+        run: |
+          pip install ruff
+          ruff check .
+
       - name: pytest
         run: pytest -q
 

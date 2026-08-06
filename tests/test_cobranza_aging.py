@@ -8,7 +8,7 @@ persiga la cobranza en el orden equivocado.
 Los bordes (30/31, 60/61, 90/91) son donde se equivocan estas funciones, así
 que cada uno se prueba por sus dos lados.
 """
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from app import models

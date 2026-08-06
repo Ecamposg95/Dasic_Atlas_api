@@ -1,0 +1,34 @@
+# Linter del backend. Reglas de ALTA SEÑAL, no de estilo.
+#
+# Se eligió un conjunto pequeño a propósito: un linter que reporta cientos de
+# violaciones de formato se ignora, y entonces no sirve de nada. Estas reglas
+# encuentran defectos, y ya lo demostraron el 2026-08-06 — `F841` (variable
+# asignada y nunca usada) destapó que el login con "recordar sesión" devolvía
+# 500 en producción, porque el valor se leía del entorno y se descartaba.
+#
+# Ampliar el conjunto es bienvenido; hacerlo en un commit aparte del cambio
+# funcional que lo motive, para que el diff siga siendo legible.
+line-length = 120
+target-version = "py311"
+exclude = ["migrations/versions", "context", "app/static"]
+
+[lint]
+select = [
+    "F",    # pyflakes: imports/variables muertos, nombres indefinidos, f-strings rotos
+    "E9",   # errores de sintaxis y de runtime
+    "B",    # bugbear: trampas reales (mutable default, except vacío, loop var capturada)
+]
+ignore = [
+    # `Depends()` en los defaults es el patrón de FastAPI, no un descuido.
+    "B008",
+    # PENDIENTE, no descartado: `raise ... from exc` dentro de un `except`
+    # conserva la causa original en el traceback. Hay 67 casos y arreglarlos
+    # ahora sería un diff que tapa cualquier cambio funcional que lo acompañe.
+    # Va en su propio commit; hasta entonces no bloquea CI.
+    "B904",
+]
+
+[lint.per-file-ignores]
+# Los tests montan escenarios y a veces asignan para documentar; y los
+# `assert` sueltos son su razón de ser.
+"tests/*" = ["F841"]

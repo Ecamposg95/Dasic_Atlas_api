@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -969,7 +969,6 @@ def cuentas_por_cobrar_cliente(
         .all()
     )
     from decimal import Decimal
-    from datetime import datetime as _dt
     hoy = hoy_negocio()
 
     def _saldo(r):

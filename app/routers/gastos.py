@@ -6,11 +6,11 @@ from sqlalchemy import desc, or_, func
 from decimal import Decimal
 from datetime import datetime, date
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import Optional
 
 from app import models
 from app.db import get_db
-from app.security import allow_admin, allow_admin_asistente, allow_all_staff, get_current_user
+from app.security import allow_admin, allow_admin_asistente, get_current_user
 
 logger = logging.getLogger(__name__)
 

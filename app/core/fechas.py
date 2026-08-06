@@ -16,7 +16,7 @@ timestamps) lo correcto sigue siendo UTC: ahí el punto es justamente
 normalizar, y `datetime.now(timezone.utc)` es la forma adecuada.
 """
 import os
-from datetime import date, datetime
+from datetime import date, datetime, time
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 # Configurable por si el tenant opera en otra zona (la vía SaaS de
@@ -42,3 +42,19 @@ def ahora_negocio() -> datetime:
 def hoy_negocio() -> date:
     """Día del calendario donde opera la empresa."""
     return ahora_negocio().date()
+
+
+def rango_del_dia(dia: date | None = None) -> tuple[datetime, datetime]:
+    """Instantes de inicio y fin de un día **del negocio**, con zona.
+
+    Construir los límites como medianoche UTC de una fecha local es un error
+    silencioso: para CDMX, "hoy" pasaría a abarcar de las 18:00 de ayer a las
+    17:59 de hoy, así que un recordatorio de la tarde cae en el día siguiente.
+    Aquí los límites se anclan en la zona del negocio, que es lo que hace que
+    la comparación contra una columna `DateTime(timezone=True)` sea correcta.
+    """
+    tz = _tz()
+    d = dia or hoy_negocio()
+    inicio = datetime.combine(d, time.min, tzinfo=tz) if tz else datetime.combine(d, time.min)
+    fin = datetime.combine(d, time.max, tzinfo=tz) if tz else datetime.combine(d, time.max)
+    return inicio, fin

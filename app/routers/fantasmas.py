@@ -1,7 +1,6 @@
 """Endpoints para gestión de productos fantasma apilados."""
 
 import logging
-import traceback
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException

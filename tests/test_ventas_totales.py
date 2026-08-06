@@ -18,7 +18,6 @@ frontend, que sí lo incluye.
 """
 from decimal import Decimal
 
-import pytest
 
 from app import models
 

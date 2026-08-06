@@ -8,7 +8,7 @@ de cuenta mienten aunque el total cobrado sea correcto.
 Convención de la casa: cada valor esperado está derivado a mano en el
 comentario de al lado, nunca copiado de la salida de la función.
 """
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 import pytest

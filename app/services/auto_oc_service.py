@@ -17,7 +17,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app import models
-from app.services.stock_service import disponibilidad, reservas_activas, _neto_reservas_por_producto
+from app.services.stock_service import reservas_activas, _neto_reservas_por_producto
 
 
 def _proveedor_para_producto(p: "models.Producto") -> Optional[int]:

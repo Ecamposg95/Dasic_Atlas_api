@@ -5,7 +5,7 @@ Endpoints:
   POST /api/cuentas-por-cobrar/marcar-vencidos       (admin; job manual)
 """
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import case, func

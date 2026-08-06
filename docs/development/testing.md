@@ -114,7 +114,9 @@ Las tres brechas históricas se cierran con el modo Postgres + CI (Ola 0 del pla
 
 `.github/workflows/ci.yml` — dispara en push a `main` y en cada pull request; solo valida, **no despliega** (Railway autodespliega desde `main` por su cuenta).
 
-- **Job `backend`** — servicio `postgres:16` con healthcheck, Python de `runtime.txt`, caché de pip, `pip install -r requirements-dev.txt`, `TEST_DATABASE_URL` apuntando a la base efímera `atlas_test` y `pytest -q`.
+- **Job `backend`** — servicio `postgres:16` con healthcheck, Python de `runtime.txt`, caché de pip, `pip install -r requirements-dev.txt`, **`ruff check .`** y `pytest -q` con `TEST_DATABASE_URL` apuntando a la base efímera `atlas_test`.
+
+  El linter usa un conjunto **pequeño y de alta señal** (`ruff.toml`): pyflakes, errores de runtime y bugbear. No es de estilo, a propósito — un linter que reporta cientos de violaciones de formato se ignora. Ya se ganó el sitio: `F841` destapó que el login con "recordar sesión" devolvía 500 en producción. `B904` (67 casos) queda diferido con su razón anotada en el archivo.
 - **Job `frontend`** — Node 22, caché de npm, `npm ci && npm run typecheck && npm run test && npm run build`.
 
 Los dos jobs corren en paralelo. Para reproducir el job de backend en local, exporta la misma `TEST_DATABASE_URL` contra un `postgres:16` en docker (ver "Cómo correr").

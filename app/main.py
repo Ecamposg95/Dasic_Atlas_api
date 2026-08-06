@@ -17,7 +17,6 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from jose import JWTError, jwt
 from sqlalchemy import text
@@ -25,7 +24,7 @@ from sqlalchemy import text
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.core.lifespan import lifespan
-from app.db import SessionLocal, engine
+from app.db import SessionLocal
 from app import models
 from app.services import UserService
 

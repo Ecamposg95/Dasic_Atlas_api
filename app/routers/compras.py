@@ -1,7 +1,7 @@
 import logging
 import re
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import HTMLResponse
 
 logger = logging.getLogger(__name__)
@@ -187,7 +187,7 @@ class CompraInput(BaseModel):
 
 
 # --- SCHEMAS para editor de OC (Fase 5) ---
-from typing import Literal, Optional  # noqa: E402
+from typing import Literal  # noqa: E402
 from pydantic import Field  # noqa: E402
 
 

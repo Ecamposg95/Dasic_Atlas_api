@@ -11,7 +11,6 @@ Reportes disponibles:
 
 import logging
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal
 from typing import Optional
 import csv
 import io
@@ -424,7 +423,6 @@ def ordenes_pendientes_entrega(
     """Órdenes de venta convertidas (no cotización, no cancelada) que NO tienen
     remisión registrada. Útil para operación de entrega."""
     import logging
-    import traceback
     logger = logging.getLogger(__name__)
 
     try:

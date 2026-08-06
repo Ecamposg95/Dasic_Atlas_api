@@ -12,6 +12,7 @@ from app.db import get_db
 from app.security import allow_all_staff, get_current_user
 from app.security.jwt import allow_admin
 from app.services.fx_service import get_or_fetch, FXError
+from app.core.fechas import hoy_negocio
 
 router = APIRouter(prefix="/api/fx", tags=["Tipo de cambio"])
 
@@ -44,7 +45,7 @@ def refresh(db: Session = Depends(get_db)):
     sobreescribe."""
     existing = (
         db.query(models.TipoCambioDia)
-        .filter(models.TipoCambioDia.fecha == _date.today())
+        .filter(models.TipoCambioDia.fecha == hoy_negocio())
         .first()
     )
     if existing and existing.fuente == "MANUAL":
@@ -122,7 +123,7 @@ def fx_historico(
 ):
     """Histórico de TC USD/MXN en los últimos N días."""
     from datetime import timedelta
-    desde = _date.today() - timedelta(days=dias)
+    desde = hoy_negocio() - timedelta(days=dias)
     rows = (
         db.query(models.TipoCambioDia)
         .filter(models.TipoCambioDia.fecha >= desde)

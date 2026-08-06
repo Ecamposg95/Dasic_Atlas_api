@@ -8,7 +8,6 @@ SAT defaults aplicados en backend: clave_prod_serv=81111500, clave_unidad=E48.
 """
 
 import logging
-from decimal import Decimal
 from typing import Optional
 
 import sqlalchemy
