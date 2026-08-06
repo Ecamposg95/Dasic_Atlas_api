@@ -3,7 +3,6 @@
 Lee DATABASE_URL desde el ambiente (compatible con Railway y .env local).
 Usa los modelos SQLAlchemy para migraciones automáticas (--autogenerate).
 """
-import os
 from logging.config import fileConfig
 
 from dotenv import load_dotenv
@@ -28,7 +27,7 @@ if config.config_file_name is not None:
 # ---------------------------------------------------------------------------
 # Inyectar DATABASE_URL desde el ambiente (sobrescribe alembic.ini)
 # ---------------------------------------------------------------------------
-from app.core.config import get_settings, normalize_database_url  # noqa: E402
+from app.core.config import get_settings  # noqa: E402
 
 settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.database_url)
