@@ -43,6 +43,10 @@ Exigía staging (no existía), migraciones probadas sobre copia de producción (
 
 De las tres brechas del modo SQLite, **dos quedan cerradas** (locks reales y estrictez de PostgreSQL). La de migraciones queda parcial y se reevaluó a la baja: el despliegue tampoco corre Alembic, así que el camino de esquema que CI ejercita es el de producción (ver `docs/development/testing.md`).
 
+> **Estado al 6 de agosto:** las olas 0 y 1 están cerradas; las 2 y 3 siguen bloqueadas por las decisiones 1, 2 y 3 de la
+> sección 6. El backlog vivo, con lo que quedó a medias y lo que se añadió después, es
+> [`docs/current-state/backlog.md`](../../current-state/backlog.md) — este documento se conserva como el diseño aprobado.
+
 **Ola 1 — el top 15 de la auditoría queda cerrado**, salvo media entrada. Se corrigieron los bugs #1 a #6 y #8 a #15, más el bonus. Por familias:
 
 - **Invalidación de caché** (#1, #2, #3, #4, #5, #8, #9, #12). Los espejo #8 y #9 se corrigieron extrayendo `web/src/lib/cobranza-cache.ts`: el defecto era la enumeración duplicada de claves en dos módulos que no se conocen, y parcharla en ambos lados lo habría reproducido en la siguiente pantalla que lea saldo.
