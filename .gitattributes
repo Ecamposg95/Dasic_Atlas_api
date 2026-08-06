@@ -1,0 +1,24 @@
+# Finales de línea normalizados.
+#
+# El repo mezclaba LF y CRLF (111 vs 9 en una muestra de 120 .py). Sin una
+# regla, cualquier herramienta que reescriba un archivo completo cambia sus
+# finales de línea en silencio y el diff pasa de 8 líneas a todo el archivo:
+# ya ocurrió tres veces —.env.example, compras.py y ROADMAP.md—, una de ellas
+# dentro de un commit de seguridad, que quedó difícil de revisar por eso.
+#
+# `text=auto eol=lf` deja que git guarde LF en el repositorio y respete lo que
+# cada quien use en su copia de trabajo.
+* text=auto eol=lf
+
+# Binarios: git no debe tocarlos.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.xlsx binary
+*.zip binary
