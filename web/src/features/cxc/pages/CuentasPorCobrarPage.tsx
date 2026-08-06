@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
+import { formatFechaDoc } from '@/lib/fechas';
 import {
   DataTable,
   DataTableHead,
@@ -35,13 +36,9 @@ function fmtMXN(n: number): string {
 }
 
 function fmtFecha(iso: string | null): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-MX', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  });
+  // Fecha de documento: se delega en el helper para no volver a inventar
+  // un apaño por pantalla (había tres distintos conviviendo).
+  return formatFechaDoc(iso);
 }
 
 function diasRestantes(fechaVenc: string | null): number | null {

@@ -19,6 +19,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
 import { QueryError } from '@/components/ui/query-error';
+import { formatFechaDoc } from '@/lib/fechas';
 import {
   DataTable,
   DataTableHead,
@@ -40,11 +41,9 @@ function fmtMonto(monto: number, moneda: string): string {
 }
 
 function fmtFecha(iso: string): string {
-  return new Date(iso).toLocaleDateString('es-MX', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+  // Fecha de documento: se delega en el helper para no volver a inventar
+  // un apaño por pantalla (había tres distintos conviviendo).
+  return formatFechaDoc(iso);
 }
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fechaLocalISO, fechaLocalISOMas } from './fechas';
+import { fechaLocalISO, fechaLocalISOMas, formatFechaDoc, formatFechaHora } from './fechas';
 
 // Las fechas se construyen con `new Date(año, mes, día, hora)`, que interpreta
 // los argumentos en la zona LOCAL del runner. Por eso los asserts valen en
@@ -51,5 +51,61 @@ describe('fechaLocalISOMas', () => {
     const original = new Date(2026, 7, 5, 19, 0);
     fechaLocalISOMas(15, original);
     expect(fechaLocalISO(original)).toBe('2026-08-05');
+  });
+});
+
+
+// ---------------------------------------------------------------------------
+// formatFechaDoc — el bug de C-2608009
+// ---------------------------------------------------------------------------
+describe('formatFechaDoc', () => {
+  it('no retrocede un día con un timestamptz a medianoche UTC', () => {
+    // Es exactamente lo que la API devuelve para `fecha_creacion`. Con
+    // `new Date(iso).toLocaleDateString()` en CDMX salía "05 ago".
+    expect(formatFechaDoc('2026-08-06T00:00:00+00:00')).toBe('06 ago 2026');
+  });
+
+  it('trata igual las tres formas en que viaja una fecha', () => {
+    const esperado = '06 ago 2026';
+    expect(formatFechaDoc('2026-08-06')).toBe(esperado);
+    expect(formatFechaDoc('2026-08-06T00:00:00')).toBe(esperado);
+    expect(formatFechaDoc('2026-08-06T00:00:00+00:00')).toBe(esperado);
+    // Y con una hora cualquiera: sigue siendo el mismo día del calendario.
+    expect(formatFechaDoc('2026-08-06T23:30:00+00:00')).toBe(esperado);
+  });
+
+  it('respeta el primero de mes, que es donde más se nota el corrimiento', () => {
+    // El abreviado del mes varía entre versiones de ICU ('sep' / 'sept'), así
+    // que se afirma lo que importa —día, mes y año— sin atarse a esa cadena.
+    const salida = formatFechaDoc('2026-09-01T00:00:00+00:00');
+    expect(salida).toMatch(/^01 sept?\.? 2026$/);
+  });
+
+  it('respeta el 1 de enero: un día de desfase cambia el AÑO', () => {
+    expect(formatFechaDoc('2027-01-01T00:00:00+00:00')).toBe('01 ene 2027');
+  });
+
+  it('acepta un formato propio', () => {
+    expect(formatFechaDoc('2026-08-06', { day: '2-digit', month: '2-digit', year: 'numeric' }))
+      .toBe('06/08/2026');
+  });
+
+  it('sin valor o con basura devuelve raya, no "Invalid Date"', () => {
+    expect(formatFechaDoc(null)).toBe('—');
+    expect(formatFechaDoc(undefined)).toBe('—');
+    expect(formatFechaDoc('')).toBe('—');
+    expect(formatFechaDoc('no es fecha')).toBe('—');
+  });
+});
+
+describe('formatFechaHora', () => {
+  it('un instante SÍ se convierte a la hora local: ahí es lo correcto', () => {
+    // 2026-08-06 17:57 UTC = 11:57 en CDMX. La suite corre en esa zona.
+    expect(formatFechaHora('2026-08-06T17:57:00+00:00')).toContain('11:57');
+  });
+
+  it('sin valor devuelve raya', () => {
+    expect(formatFechaHora(null)).toBe('—');
+    expect(formatFechaHora('cualquier cosa')).toBe('—');
   });
 });

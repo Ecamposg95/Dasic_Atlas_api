@@ -13,6 +13,7 @@ import {
   DataTable, DataTableBody, DataTableEmpty, DataTableHead, DataTableRow,
 } from '@/components/ui/data-table';
 import { useIsAdminOrGerente } from '@/lib/permissions';
+import { formatFechaDoc } from '@/lib/fechas';
 import { useOrdenesCompra } from '../hooks/useOrdenesCompra';
 import { OrdenCompraDetalleModal } from '../components/OrdenCompraDetalleModal';
 import { RegistrarRecepcionModal } from '../components/RegistrarRecepcionModal';
@@ -44,11 +45,9 @@ function fmtMoney(n: number, m: string) {
 }
 
 function fmtDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleDateString('es-MX', { dateStyle: 'medium' });
-  } catch {
-    return iso;
-  }
+  // Fecha de documento: se delega en el helper para no volver a inventar
+  // un apaño por pantalla (había tres distintos conviviendo).
+  return formatFechaDoc(iso);
 }
 
 /** OC se puede recibir si no está ya recibida, pagada o cancelada */

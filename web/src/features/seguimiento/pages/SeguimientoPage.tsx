@@ -32,6 +32,7 @@ import { invalidarCobranza } from '@/lib/cobranza-cache';
 import { confirm } from '@/lib/confirm';
 import { api, type ApiError } from '@/lib/api';
 import { RecordatorioFormModal } from '@/features/recordatorios/components/RecordatorioFormModal';
+import { formatFechaDoc } from '@/lib/fechas';
 import { useHistorial } from '../hooks/useHistorial';
 import type {
   HistorialItem,
@@ -49,11 +50,9 @@ function formatTotal(item: HistorialItem): string {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('es-MX', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+  // Fecha de documento: se delega en el helper para no volver a inventar
+  // un apaño por pantalla (había tres distintos conviviendo).
+  return formatFechaDoc(iso);
 }
 
 function estatusBadge(estatus: string): { label: string; tone: StatusTone } {
