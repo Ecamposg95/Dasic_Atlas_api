@@ -50,7 +50,7 @@ Facturado **se almacena** en la orden; pagado **se deriva** de CxC. Sin columna 
 
 Trabajo empezado y no terminado. Va antes que lo nuevo: media adopción es peor que ninguna, porque nadie sabe qué esperar.
 
-- **Estado de error por página.** Medido hoy: **13 con la primitiva `QueryError`, 5 con banner propio sin unificar, 17 sin nada** (una de ellas, `CrearRemisionPage`, es código muerto sin ruta). El patrón está probado; lo que falta es mecánico.
+- **Estado de error por página.** Medido: **18 con la primitiva `QueryError`, 5 con banner propio sin unificar, 12 sin nada**. De esas 12, dos no aplican —`LoginPage` es un formulario con su propio error y `CrearRemisionPage` es código muerto sin ruta—, así que quedan **10 reales**: KPIs, catálogos, detalle de empresa, cotizador, dashboard, FX, editor de remisión, reportes de servicio, mantenimiento y consola de superadmin. El patrón está probado en tres formas (fila de tabla, bloque suelto y banner de página cuando hay varias consultas); lo que falta es mecánico.
 - **Bug #7, mitad abierta.** Guardar ya no cierra los paneles de detalle, pero un refetch que aterrice mientras se teclea sigue pisando la edición. Depende de la decisión 5.
 - **`B904` diferido en ruff** (67 casos): `raise ... from exc` dentro de un `except` conserva la causa en el traceback. Arreglarlo hoy habría tapado los cambios funcionales que lo acompañaban. Va en su propio commit.
 

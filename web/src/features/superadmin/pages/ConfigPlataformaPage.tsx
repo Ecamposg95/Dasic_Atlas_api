@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/lib/toast';
+import { QueryError } from '@/components/ui/query-error';
 import { PlatformShell } from '../components/PlatformShell';
 import { useConfigPlataforma, useSetConfigPlataforma, type ConfigItem } from '../hooks/useConfigPlataforma';
 
@@ -84,7 +85,7 @@ function Row({ item }: { item: ConfigItem }) {
 }
 
 export function ConfigPlataformaPage() {
-  const { data, isLoading } = useConfigPlataforma();
+  const { data, isLoading, isError, error, refetch } = useConfigPlataforma();
 
   return (
     <PlatformShell title="Configuración de plataforma">
@@ -95,6 +96,8 @@ export function ConfigPlataformaPage() {
         <div className="rounded-xl border border-emerald-500/20 bg-card divide-y divide-emerald-500/10 overflow-hidden">
           {isLoading ? (
             <p className="font-mono text-sm text-muted-foreground px-4 py-6">Cargando configuración…</p>
+          ) : isError ? (
+            <QueryError error={error} onRetry={() => void refetch()} />
           ) : (
             <div className="px-4 py-2">
               {(data?.items ?? []).map((it) => <Row key={it.clave} item={it} />)}

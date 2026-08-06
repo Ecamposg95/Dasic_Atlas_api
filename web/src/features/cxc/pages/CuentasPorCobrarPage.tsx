@@ -15,6 +15,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
 import { formatFechaDoc } from '@/lib/fechas';
+import { QueryError } from '@/components/ui/query-error';
 import {
   DataTable,
   DataTableHead,
@@ -147,10 +148,20 @@ export function CuentasPorCobrarPage() {
   const isAdmin = useIsAdmin();
 
   const qc = useQueryClient();
-  const { data: resumen, isLoading: loadingResumen } = useResumenCxC();
-  const { data: vencimientos, isLoading: loadingVenc } = useVencimientosCxC(365);
-  const { data: aging, isLoading: loadingAging } = useAgingCxC();
-  const { data: topDeudores, isLoading: loadingTop } = useTopDeudores(10);
+  const qResumen = useResumenCxC();
+  const qVenc = useVencimientosCxC(365);
+  const qAging = useAgingCxC();
+  const qTop = useTopDeudores(10);
+  const { data: resumen, isLoading: loadingResumen } = qResumen;
+  const { data: vencimientos, isLoading: loadingVenc } = qVenc;
+  const { data: aging, isLoading: loadingAging } = qAging;
+  const { data: topDeudores, isLoading: loadingTop } = qTop;
+
+  // Un solo aviso para las cuatro consultas: son facetas del mismo dato y,
+  // cuando la API está caída, fallan todas a la vez — cuatro banners serían
+  // ruido. Reintentar vuelve a pedir solo las que fallaron.
+  const consultas = [qResumen, qVenc, qAging, qTop];
+  const fallidas = consultas.filter((q) => q.isError);
 
   const marcarMutation = useMutation({
     mutationFn: () => api.post<MarcarVencidosResponse>('/api/cuentas-por-cobrar/marcar-vencidos'),
@@ -216,6 +227,18 @@ export function CuentasPorCobrarPage() {
           )
         }
       />
+
+      {fallidas.length > 0 && (
+        <QueryError
+          error={fallidas[0].error}
+          title={
+            fallidas.length === consultas.length
+              ? 'No se pudo cargar la cobranza'
+              : `No se pudo cargar parte de la cobranza (${fallidas.length} de ${consultas.length})`
+          }
+          onRetry={() => fallidas.forEach((q) => void q.refetch())}
+        />
+      )}
 
       {/* ---------------------------------------------------------------- */}
       {/* 2. KPI cards                                                      */}

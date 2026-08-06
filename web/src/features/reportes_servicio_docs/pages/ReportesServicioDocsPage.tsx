@@ -15,6 +15,7 @@ import {
   DataTableEmpty,
 } from '@/components/ui/data-table';
 import { toast } from '@/lib/toast';
+import { QueryError } from '@/components/ui/query-error';
 import {
   useReportesServicioDocs,
   useRegistrarRecepcionReporte,
@@ -204,7 +205,7 @@ export function ReportesServicioDocsPage() {
     }
   }, [searchDebounced]);
 
-  const { data, isLoading, isPlaceholderData } = useReportesServicioDocs(page, searchDebounced);
+  const { data, isLoading, isPlaceholderData, isError, error, refetch } = useReportesServicioDocs(page, searchDebounced);
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -258,6 +259,8 @@ export function ReportesServicioDocsPage() {
         <DataTableBody>
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+          ) : isError ? (
+            <QueryError error={error} onRetry={() => void refetch()} asRow colSpan={7} />
           ) : items.length === 0 ? (
             <DataTableEmpty colSpan={7}>
               <div className="flex flex-col items-center gap-2 text-muted-foreground">

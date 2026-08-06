@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/ui/page-header';
 import { toast } from '@/lib/toast';
 import { useIsAdmin } from '@/lib/permissions';
+import { QueryError } from '@/components/ui/query-error';
 import { useDuplicados, useMergeEmpresas } from '../hooks/useDuplicados';
 import type { GrupoDuplicado } from '../types';
 
@@ -95,7 +96,7 @@ function GrupoCard({ grupo, preselectedIds }: { grupo: GrupoDuplicado; preselect
 export function UnificarEmpresasPage() {
   const navigate = useNavigate();
   const isAdmin = useIsAdmin();
-  const { data, isLoading } = useDuplicados();
+  const { data, isLoading, isError, error, refetch } = useDuplicados();
   const [searchParams] = useSearchParams();
 
   // ?ids=1,2,3 from BulkActionBar preselects those empresa IDs as survivor candidates
@@ -146,6 +147,8 @@ export function UnificarEmpresasPage() {
       )}
       {isLoading ? (
         <p className="text-sm text-muted-foreground/70">Cargando…</p>
+      ) : isError ? (
+        <QueryError error={error} onRetry={() => void refetch()} />
       ) : !(showingFiltered ? filteredGrupos : grupos).length ? (
         <div className="text-center py-12">
           <Badge variant="emerald">Sin duplicados por RFC 🎉</Badge>

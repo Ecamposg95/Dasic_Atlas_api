@@ -10,6 +10,7 @@ import { useClientes } from '@/features/clientes/hooks/useClientes';
 import { useUsuarios } from '@/features/usuarios/hooks/useUsuarios';
 import type { Cliente } from '@/features/clientes/types';
 import type { Usuario } from '@/features/usuarios/types';
+import { QueryError } from '@/components/ui/query-error';
 import { useCrmPipelines, useCrmBoard } from '../hooks/useCrmBoard';
 import { useMoveDeal, useDeleteDeal } from '../hooks/useCrmDeals';
 import { KanbanColumn } from '../components/KanbanColumn';
@@ -19,7 +20,8 @@ import { ConfigurarEtapasModal } from '../components/ConfigurarEtapasModal';
 import type { Deal } from '../types';
 
 export function CrmKanbanPage() {
-  const { data: pipelines = [], isLoading: loadingPipelines } = useCrmPipelines();
+  const { data: pipelines = [], isLoading: loadingPipelines, isError: errorPipelines,
+          error: errPipelines, refetch: recargarPipelines } = useCrmPipelines();
   const isAdminOrGerente = useIsAdminOrGerente();
 
   // Derive default pipeline id once pipelines load.
@@ -34,7 +36,8 @@ export function CrmKanbanPage() {
   // Use the controlled selection if set, otherwise fall back to the default.
   const activePipelineId = selectedPipelineId ?? defaultPipelineId;
 
-  const { data: board, isLoading: loadingBoard } = useCrmBoard(activePipelineId);
+  const { data: board, isLoading: loadingBoard, isError: errorBoard,
+          error: errBoard, refetch: recargarBoard } = useCrmBoard(activePipelineId);
 
   const { data: clientes = [] } = useClientes({ page: 1, q: '', pageSize: 500 });
   const { data: usuarios = [] } = useUsuarios();
@@ -109,6 +112,12 @@ export function CrmKanbanPage() {
     () => [...(board?.stages ?? [])].sort((a, b) => a.orden - b.orden),
     [board],
   );
+
+  if (errorPipelines) {
+    // Sin pipelines no hay tablero que dibujar: el error va en lugar de la
+    // página entera, no dentro de un tablero vacío.
+    return <QueryError error={errPipelines} onRetry={() => void recargarPipelines()} />;
+  }
 
   if (loadingPipelines) {
     return (
@@ -188,6 +197,8 @@ export function CrmKanbanPage() {
           <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
             Cargando tablero…
           </div>
+        ) : errorBoard ? (
+          <QueryError error={errBoard} onRetry={() => void recargarBoard()} />
         ) : stages.length === 0 ? (
           <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
             Este pipeline no tiene etapas configuradas.
