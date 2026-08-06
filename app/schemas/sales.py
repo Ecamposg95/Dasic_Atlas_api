@@ -2,7 +2,7 @@
 Sales schemas: OrdenVenta, DetalleOrden.
 """
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 from typing import List, Literal, Optional
 
