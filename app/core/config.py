@@ -27,6 +27,9 @@ class Settings:
     database_url: str
     secret_key: str
     access_token_expire_minutes: int
+    # Duración de la sesión cuando el usuario marca "recordar sesión".
+    # Faltaba en el dataclass pese a que `auth.py` la lee: ver abajo.
+    remember_session_days: int
     token_cookie_name: str
     cookie_secure: bool
     smtp_host: str
@@ -78,6 +81,11 @@ def get_settings() -> Settings:
         database_url=normalize_database_url(database_url),
         secret_key=secret_key,
         access_token_expire_minutes=access_token_expire_minutes,
+        # Se leía de REMEMBER_SESSION_DAYS y NO se pasaba: el campo ni
+        # siquiera existía en Settings, así que `settings.remember_session_days`
+        # en auth.py lanzaba AttributeError y el login con "recordar sesión"
+        # marcado devolvía 500 con credenciales válidas.
+        remember_session_days=remember_session_days,
         token_cookie_name=token_cookie_name,
         cookie_secure=cookie_secure,
         smtp_host=os.getenv("SMTP_HOST", "").strip(),
