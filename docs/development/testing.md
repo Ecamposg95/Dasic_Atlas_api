@@ -85,6 +85,8 @@ Se salta solo en modo SQLite, con la razón impresa (`pytest -rs` para verla). E
 
 **Convención:** cada valor esperado está derivado a mano con la aritmética documentada en un comentario junto al assert. Nunca copiar el output de la función como expected (test tautológico).
 
+**Fechas en las pruebas del backend: usa `hoy_negocio()`, nunca `date.today()`.** CI corre en **UTC** y el código resuelve el día con la zona del negocio (`app/core/fechas.py`), así que una prueba que tome el día del runner concuerda en un equipo en CDMX y falla en CI durante las horas en que UTC va por delante — o al revés. Ya pasó: dos pruebas de cobranza verdes en local tumbaron el pipeline. **CI se queda en UTC a propósito**, porque esa discrepancia es justo lo que hace visible el bug.
+
 > **Modelo de TC vigente (2026-08-04):** USD→MXN usa `DOF + tolerancia`; MXN→USD usa `DOF − tolerancia` — la tolerancia protege a DASIC de la volatilidad en ambas direcciones. Se resuelve en espejo en `calc.ts::resolveDirectionalTcs` y `ventas.py::_resolve_directional_tcs`: al tocar uno hay que tocar el otro y actualizar estos tests. (El "modelo unificado" de una sola tasa, vigente entre junio y agosto de 2026, quedó sustituido.)
 
 ## Estado de las brechas del modo SQLite

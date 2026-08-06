@@ -14,6 +14,7 @@ from decimal import Decimal
 import pytest
 
 from app import models
+from app.core.fechas import hoy_negocio
 from app.models.enums import TipoMovimiento
 from app.services import cuentas_por_cobrar as cxc
 
@@ -40,7 +41,14 @@ def _cargo(db, cliente, monto, *, vence=None, pagado="0", descripcion="Venta"):
     return t
 
 
-HOY = date.today()
+# Referencia de fecha: la del NEGOCIO, no la del runner.
+#
+# Estas pruebas usaban `date.today()`, que da el día de la máquina. Funcionaba
+# en un equipo en CDMX y fallaba en CI, que corre en UTC: el código bajo prueba
+# resuelve "hoy" con `hoy_negocio()` y, mientras UTC va un día por delante, los
+# días de atraso salían corridos y los cargos caían en el tramo de al lado.
+# Las pruebas tienen que hablar el mismo calendario que el código que prueban.
+HOY = hoy_negocio()
 AYER = HOY - timedelta(days=1)
 HACE_UN_MES = HOY - timedelta(days=30)
 EN_UNA_SEMANA = HOY + timedelta(days=7)

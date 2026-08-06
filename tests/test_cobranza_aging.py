@@ -12,10 +12,18 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from app import models
+from app.core.fechas import hoy_negocio
 from app.models.enums import TipoMovimiento
 from app.services import cuentas_por_cobrar as cxc
 
-HOY = date.today()
+# Referencia de fecha: la del NEGOCIO, no la del runner.
+#
+# Estas pruebas usaban `date.today()`, que da el día de la máquina. Funcionaba
+# en un equipo en CDMX y fallaba en CI, que corre en UTC: el código bajo prueba
+# resuelve "hoy" con `hoy_negocio()` y, mientras UTC va un día por delante, los
+# días de atraso salían corridos y los cargos caían en el tramo de al lado.
+# Las pruebas tienen que hablar el mismo calendario que el código que prueban.
+HOY = hoy_negocio()
 
 
 def _cliente(db, nombre="ACME"):
