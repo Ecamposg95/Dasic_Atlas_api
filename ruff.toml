@@ -10,7 +10,11 @@
 # funcional que lo motive, para que el diff siga siendo legible.
 line-length = 120
 target-version = "py311"
-exclude = ["migrations/versions", "context", "app/static"]
+# `extend-exclude`, no `exclude`: este último REEMPLAZA la lista por defecto
+# de ruff (.venv, node_modules, build…), y entonces el resultado depende de
+# qué basura tenga cada quien en su copia de trabajo. Localmente no se nota
+# porque .gitignore ya las esconde; en otro entorno sí.
+extend-exclude = ["migrations/versions", "context", "app/static"]
 
 [lint]
 select = [

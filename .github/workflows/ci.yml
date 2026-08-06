@@ -57,9 +57,10 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: ruff (reglas de alta señal, ver ruff.toml)
-        run: |
-          pip install ruff
-          ruff check .
+        # `--output-format=github` convierte cada hallazgo en una anotación
+        # sobre la línea exacta: sin eso, un fallo del linter solo deja un
+        # "exit code 1" y hay que adivinar qué lo causó.
+        run: ruff check . --output-format=github
 
       - name: pytest
         run: pytest -q

@@ -8,3 +8,4 @@
 
 pytest
 httpx           # TestClient de FastAPI (starlette.testclient lo requiere)
+ruff==0.16.1  # linter; ver ruff.toml. Fijado para que CI y local coincidan.
