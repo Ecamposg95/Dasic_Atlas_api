@@ -137,6 +137,57 @@ describe('lineImporte (importe extendido por línea)', () => {
   });
 });
 
+describe('invariante de la columna COSTO (fila auditable de izquierda a derecha)', () => {
+  // La celda $ COSTO del carrito muestra `convertCost(...)` a secas: el costo
+  // unitario del material convertido al TC de venta, SIN utilidad ni descuento
+  // (Cart.tsx). Estos tests fijan que el resto de la fila reconstruye el
+  // importe — si alguien vuelve a meter la utilidad en la columna (como hacía
+  // el commit c15b8ad), la fila deja de cuadrar y estos tests lo cazan.
+  const reconstruir = (costoColumna: number, item: CartItem) =>
+    costoColumna *
+    (1 + Number(item.utilidad) / 100) *
+    Number(item.qty) *
+    (1 - Number(item.descuento) / 100);
+
+  it('línea USD en cotización MXN: COSTO × (1+util) × cant × (1−desc) = importe', () => {
+    // COSTO = 10 USD × 18 = 180 MXN — sin utilidad
+    // reconstruido = 180 × 1.4 × 3 × 0.9 = 680.4 = lineImporte
+    const item = mkItem({
+      cost: 10,
+      productCurrency: 'USD',
+      utilidad: 40,
+      qty: 3,
+      descuento: 10,
+    });
+    const costoColumna = convertCost(Number(item.cost), item.productCurrency, 'MXN', TCS);
+    expect(costoColumna).toBe(180);
+    expect(reconstruir(costoColumna, item)).toBeCloseTo(680.4, 10);
+    expect(reconstruir(costoColumna, item)).toBeCloseTo(lineImporte(item, 'MXN', TCS), 10);
+  });
+
+  it('línea MXN en cotización USD: el invariante se sostiene en la dirección inversa', () => {
+    // COSTO = 360 MXN ÷ 18 = 20 USD — sin utilidad
+    // reconstruido = 20 × 1.25 × 2 × 0.95 = 47.5 = lineImporte
+    const item = mkItem({ cost: 360, utilidad: 25, qty: 2, descuento: 5 });
+    const costoColumna = convertCost(Number(item.cost), item.productCurrency, 'USD', TCS);
+    expect(costoColumna).toBe(20);
+    expect(reconstruir(costoColumna, item)).toBeCloseTo(47.5, 10);
+    expect(reconstruir(costoColumna, item)).toBeCloseTo(lineImporte(item, 'USD', TCS), 10);
+  });
+
+  it('la columna NO trae utilidad: con util > 0, COSTO ≠ importe aunque cant = 1', () => {
+    // El caso del reporte: 205.80 USD, util 33.3 %, cant 1 → COSTO 3,749.94 y
+    // IMPORTE 4,998.67 son cifras DISTINTAS a propósito.
+    const item = mkItem({ cost: 205.8, productCurrency: 'USD', utilidad: 33.3, qty: 1 });
+    const tcs: TcSet = { tc_dof: 17.2211, tc_mn_a_usd: 16.2211, tc_usd_a_mn: 18.2211 };
+    const costoColumna = convertCost(Number(item.cost), item.productCurrency, 'MXN', tcs);
+    // 205.80 × 18.2211 = 3,749.90…
+    expect(costoColumna).toBeCloseTo(3749.9024, 3);
+    expect(costoColumna).not.toBeCloseTo(lineImporte(item, 'MXN', tcs), 2);
+    expect(reconstruir(costoColumna, item)).toBeCloseTo(lineImporte(item, 'MXN', tcs), 10);
+  });
+});
+
 describe('computeTotals (subtotal / IVA / total del documento)', () => {
   it('documento mixto MXN + USD cotizado en MXN', () => {
     // Línea A (MXN): 100 × 1.30 × 2       = 260.00

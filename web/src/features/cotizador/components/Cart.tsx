@@ -43,13 +43,14 @@ export function Cart() {
       qty: item.qty,
       qtyMax: null,
       costOrigen: Number(item.cost),
-      // PRECIO UNITARIO mostrado en la columna COSTO = costo convertido al TC de
-      // VENTA (DOF + tolerancia) × (1 + util). El cliente lee esta columna como el
-      // PU; el IMPORTE es este PU × cantidad. El costo OC real al proveedor (DOF
-      // puro) vive en el detalle expandido (RowExpanded).
-      costoOc:
-        convertCost(Number(item.cost), item.productCurrency, moneda, tcs) *
-        (1 + Number(item.utilidad) / 100),
+      // COSTO UNITARIO mostrado en la columna COSTO = costo del material
+      // convertido al TC de VENTA (USD→MN: DOF + tolerancia; MN→USD: ÷ DOF −
+      // tolerancia). SIN utilidad y SIN descuento: esos son sus propias
+      // columnas, y así la fila queda auditable de izquierda a derecha —
+      // COSTO × (1+util) × cant × (1−desc) = IMPORTE. El costo OC real al
+      // proveedor (DOF puro, neto de descuento de proveedor) vive en el
+      // detalle expandido (RowExpanded).
+      costoOc: convertCost(Number(item.cost), item.productCurrency, moneda, tcs),
       utilidad: item.utilidad,
       descuento: item.descuento,
       entrega_min: item.entrega_min,

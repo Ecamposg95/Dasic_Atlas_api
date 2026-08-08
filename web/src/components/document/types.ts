@@ -7,7 +7,7 @@ export type DocLineTipo = 'producto' | 'producto_fantasma' | 'servicio_catalogo'
 
 /** Qué celdas/controles renderiza la fila. Cotización = todo; Remisión = reducido. */
 export type DocRowCaps = {
-  showCosto: boolean;     // celda Orig + OC
+  showCosto: boolean;     // celda Orig + costo convertido
   showUtilidad: boolean;  // input % util
   showDescuento: boolean; // input % desc
   showEntrega: boolean;   // inputs entrega min/max/unidad
@@ -50,7 +50,9 @@ export type DocRowVM = {
   // Costo (solo si caps.showCosto)
   costOrigen: number;          // crudo del catálogo, moneda nativa
   costoOc: number;             // valor mostrado en la columna COSTO; el productor lo define:
-                               // cotizador = PRECIO UNITARIO = costo convertido (TC venta DOF+tol) × (1+util);
+                               // cotizador = COSTO UNITARIO del material convertido al TC de venta
+                               // (USD→MN: DOF+tol; MN→USD: ÷ DOF−tol), SIN utilidad ni descuento —
+                               // así COSTO × (1+util) × cant × (1−desc) = importe;
                                // el costo OC real (DOF puro, neto descProv) vive en RowExpanded
 
   // Util / Desc / Entrega (solo si sus caps)

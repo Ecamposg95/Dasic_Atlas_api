@@ -228,10 +228,12 @@ export function DocumentRow({
           </div>
           <div
             className="text-[13px] text-muted-foreground leading-tight"
-            title="Precio unitario = costo convertido al TC de venta (DOF + tolerancia) × (1 + utilidad). El IMPORTE es este PU × cantidad. El costo OC real al proveedor (DOF puro) está en el detalle."
+            title="Costo unitario del material convertido al TC de venta (USD→MN: DOF + tolerancia; MN→USD: ÷ DOF − tolerancia). Sin utilidad ni descuento: el IMPORTE es este costo × (1 + utilidad) × cantidad × (1 − descuento). El costo OC real al proveedor (DOF puro) está en el detalle."
           >
             ${fmt(vm.costoOc)}
-            <span className="ml-1 text-[9px] uppercase tracking-wider text-muted-foreground">PU</span>
+            <span className="ml-1 text-[9px] uppercase tracking-wider text-muted-foreground">
+              {vm.monedaDocumento}
+            </span>
           </div>
         </td>
       )}
@@ -531,10 +533,11 @@ export function DocumentRowCard({
 
       {caps.showCosto && (
         <div className="text-[11px] text-muted-foreground">
-          PU:{' '}
+          Costo:{' '}
           <span className="font-mono">
             ${vm.costoOc.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
+          <span className="ml-1">{vm.monedaDocumento}</span>
           <span className="ml-2">
             Orig {vm.productCurrency} ${vm.costOrigen.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
