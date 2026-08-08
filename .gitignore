@@ -47,10 +47,14 @@ node_modules/
 web/.vite/
 web/*.tsbuildinfo
 
-# Workflow local de Claude Code (cache del plugin superpowers y planes
-# borrador que no son artefactos de producto).
+# Cache del plugin superpowers (artefacto de herramienta, no de producto).
 .superpowers/
-docs/superpowers/
+
+# docs/superpowers/ SÍ se versiona desde 2026-08-07: los specs y planes de
+# diseño son la memoria del proyecto entre sesiones y máquinas. Antes estaba
+# ignorado por considerarse borrador local, lo que dejaba diseños grandes sin
+# implementar (p.ej. golden path remisiones→factura→CxC) viviendo en una sola
+# computadora.
 
 # Capturas de pantalla pegadas como contexto en conversaciones —
 # útiles temporales, no parte del producto.
