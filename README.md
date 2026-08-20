@@ -4,11 +4,13 @@
 
 # Atlas ONE · DASIC Industrial
 
-**Plataforma ERP/CRM para empresas de servicios industriales**
+**El sistema operativo comercial de DASIC**
 
 Cotizador multimoneda · CRM de pipeline · Remisiones con entregas parciales · Inventario auditable · Cobranza con aging
 
 <br>
+
+[![CI](https://github.com/Ecamposg95/dasic-atlas-api/actions/workflows/ci.yml/badge.svg)](https://github.com/Ecamposg95/dasic-atlas-api/actions/workflows/ci.yml)
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-0d9f6e?style=flat-square&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python%203.11-0d9f6e?style=flat-square&logo=python&logoColor=white)
@@ -18,7 +20,7 @@ Cotizador multimoneda · CRM de pipeline · Remisiones con entregas parciales ·
 ![Vite](https://img.shields.io/badge/Vite%205-2ee6a8?style=flat-square&logo=vite&logoColor=0b100e)
 ![Railway](https://img.shields.io/badge/Railway-101613?style=flat-square&logo=railway&logoColor=2ee6a8)
 
-<sub>**Producción** · autodeploy desde `main` · 228 endpoints · 25 módulos de UI · 53 migraciones</sub>
+<sub>**Producción** · autodeploy desde `main` · 250 endpoints · 25 módulos de UI · 54 migraciones</sub>
 
 </div>
 
@@ -26,14 +28,14 @@ Cotizador multimoneda · CRM de pipeline · Remisiones con entregas parciales ·
 
 ## Qué es
 
-Atlas ONE digitaliza el ciclo comercial y operativo completo de DASIC Industrial: desde el prospecto hasta la entrega y el cobro. Sustituye la operación previa en Excel y Word por un sistema con trazabilidad documental, folios consecutivos irrepetibles, control de inventario auditable y precios calculados sobre **costo + utilidad** con protección cambiaria.
+Atlas ONE es la plataforma interna que digitaliza el ciclo comercial y operativo completo de **DASIC Industrial**: desde el prospecto hasta la entrega y el cobro. Sustituye la operación previa en Excel y Word por un sistema con trazabilidad documental, folios consecutivos irrepetibles, control de inventario auditable y precios calculados sobre **costo + utilidad** con protección cambiaria en ambas direcciones.
 
 ```
 Prospecto → Oportunidad → Cotización → Venta → Compra → Entrega → Cobranza
      └── CRM Kanban        └── PDF/Word   └── OC     └── Remisión  └── Aging
 ```
 
-Es también la base del producto SaaS **Atlas Industrial Services**: la identidad visual, los módulos y la terminología son configurables por tenant, con DASIC como primer cliente y design partner.
+Es un producto a la medida: cada regla de negocio —el tipo de cambio direccional, los folios por vendedor, las entregas parciales, la cobranza FIFO— está modelada sobre cómo trabaja DASIC en el día a día.
 
 ---
 
@@ -125,7 +127,7 @@ cd web && npm run build                  # genera app/static/dist/
 │   ├── features/           Una carpeta por pantalla
 │   ├── components/ui/      Design system (primitivas tokenizadas)
 │   ├── components/layout/   Shell: sidebar · header · footer
-│   └── lib/                API, permisos, branding por tenant
+│   └── lib/                API, permisos, identidad de marca
 ├── migrations/             Alembic
 ├── tests/                  Suite pytest
 └── docs/                   Documentación viva
@@ -147,11 +149,15 @@ Detalle en **[`CLAUDE.md`](CLAUDE.md)** y **[`docs/development/coding-standards.
 
 ---
 
-## Calidad
+## Calidad y CI
+
+Cada push a `main` y cada PR pasan por **GitHub Actions** ([`ci.yml`](.github/workflows/ci.yml)): ruff + pytest sobre **PostgreSQL 16** en el backend, y typecheck + vitest + build en el frontend. CI solo valida — el despliegue lo hace Railway por su cuenta.
+
+Para correr lo mismo en local:
 
 ```bash
 python3 -m compileall app                      # Sintaxis del backend
-pip install -r requirements-dev.txt && pytest -q   # Suite backend: remisiones, folios, stock, formato
+pip install -r requirements-dev.txt && pytest -q   # Suite backend: remisiones, folios, stock, cobranza
 cd web && npm run typecheck                    # TypeScript estricto
 cd web && npm run test                         # Vitest: motor de cálculo del cotizador
 ```
@@ -182,9 +188,9 @@ Autodeploy en **Railway** desde `main`. El build del servidor solo instala depen
 <div align="center">
 <br>
 
-**Atlas Tech**
+**DASIC Industrial**
 
-<sub>Atlas ONE es parte de **Atlas Industrial Services**, la plataforma vertical<br>para empresas que venden, ejecutan y mantienen soluciones industriales.</sub>
+<sub>Atlas ONE es el sistema a la medida con el que DASIC cotiza, surte,<br>entrega y cobra — construido por **Atlas Tech** en exclusiva para DASIC.</sub>
 
 <br>
 

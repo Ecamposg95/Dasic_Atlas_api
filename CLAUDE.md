@@ -51,7 +51,7 @@ cd web && npm run typecheck                        # tsc estricto
 python3 -m compileall app                          # sintaxis backend
 ```
 
-Caveats: pytest corre sobre **SQLite in-memory con shims** de las funciones Postgres-only (`pg_advisory_xact_lock`, `hashtext`) — no cubre locks reales, tipos ni el `GROUP BY` estricto de PG (ver `docs/development/testing.md`). No hay CI: nada corre solo en push.
+Caveats: **sin `TEST_DATABASE_URL`**, pytest corre sobre SQLite in-memory con shims de las funciones Postgres-only (`pg_advisory_xact_lock`, `hashtext`) — no cubre locks reales, tipos ni el `GROUP BY` estricto de PG; con `TEST_DATABASE_URL` apuntando a un Postgres corre en modo PG sin shims (ver `docs/development/testing.md`). **Hay CI desde 2026-08-06** (`.github/workflows/ci.yml`): en cada push a `main` y en cada PR corren ruff + pytest sobre PostgreSQL 16 (backend) y typecheck + vitest + build (frontend). CI solo valida — el deploy sigue siendo el autodeploy de Railway.
 
 ## Architecture
 
@@ -68,7 +68,7 @@ Caveats: pytest corre sobre **SQLite in-memory con shims** de las funciones Post
 
 - El esquema multi-tenant fue **retirado** (`migrations/versions/20260429_01_drop_multitenant.py`). No existen `Organization`, `Branch`, `UserOrganization` ni `app/models/nucleus.py`.
 - `organization_id` sobrevive como columna inerte en 5 tablas (`pipelines`, `pipeline_stages`, `deals`, `deal_actividades`, `servicios`). **No asumas aislamiento por organización.**
-- El camino SaaS vigente es de configuración: branding por tenant en `web/src/lib/branding.ts` (`VITE_TENANT`) y config en runtime vía `platform_config` / `config_service`. Re-tenantizar la DB es un proyecto aparte, no una regla activa.
+- **Decisión de producto (2026-08-19): el proyecto está enfocado a DASIC** — no hay iniciativa SaaS multi-tenant activa ni planes de re-tenantizar la DB. `web/src/lib/branding.ts` (`VITE_TENANT`) y la config en runtime (`platform_config` / `config_service`) se conservan como mecanismo de configuración e identidad visual, no como promesa multi-tenant.
 
 ### Domain layout
 
