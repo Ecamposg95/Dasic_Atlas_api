@@ -29,6 +29,14 @@ auditorías y specs históricos que se consultan por necesidad, no de corrido.
 
 ---
 
+## 2b. Referencia técnica (`docs/reference/`)
+
+| Documento | Qué contiene | Cuándo leerlo |
+|---|---|---|
+| [`documentacion-tecnica.md`](reference/documentacion-tecnica.md) | **Referencia técnica completa generada desde el código** (2026-08-19): arquitectura, mapa de routers/servicios/features, modelos por dominio, enums, diagramas ER y diccionario de las 47 tablas con columnas, tipos, defaults y FKs | Al buscar una tabla/columna concreta o dar onboarding técnico. El diccionario (§7) se regenera desde `Base.metadata` — no editarlo a mano |
+
+---
+
 ## 3. Producto (`docs/product/`)
 
 Documentos de diseño/negocio. **No son especificaciones implementadas** salvo
