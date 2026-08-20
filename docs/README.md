@@ -34,7 +34,7 @@ auditorías y specs históricos que se consultan por necesidad, no de corrido.
 | Documento | Qué contiene | Cuándo leerlo |
 |---|---|---|
 | [`documentacion-tecnica.md`](reference/documentacion-tecnica.md) | **Referencia técnica completa generada desde el código** (2026-08-19): arquitectura, mapa de routers/servicios/features, modelos por dominio, enums, diagramas ER y diccionario de las 47 tablas con columnas, tipos, defaults y FKs | Al buscar una tabla/columna concreta o dar onboarding técnico. El diccionario (§7) se regenera desde `Base.metadata` — no editarlo a mano |
-| [`referencia-tecnica-atlas-one.pdf`](reference/referencia-tecnica-atlas-one.pdf) | Versión PDF del documento anterior (26 págs., sin los diagramas interactivos) — generada con fpdf2 desde el markdown | Para compartir fuera del repo o revisar offline. Se regenera junto con el `.md` |
+| [`referencia-tecnica-atlas-one.pdf`](reference/referencia-tecnica-atlas-one.pdf) | Versión PDF del documento anterior (27 págs., con los 4 diagramas en vectorial) — generada con fpdf2 desde el markdown | Para compartir fuera del repo o revisar offline. Se regenera junto con el `.md` |
 
 ---
 
